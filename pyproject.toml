@@ -1,0 +1,133 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "scrapewatch"
+dynamic = ["version"]
+description = "Health and cost monitor for any web scraper: response guard, data checks, publish gate, cleaning, cost meter and reports."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Siddharth Kumar" }]
+requires-python = ">=3.10"
+keywords = ["scraping", "monitoring", "data-quality", "proxy-cost", "scrapy", "playwright", "httpx"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Software Development :: Quality Assurance",
+  "Typing :: Typed",
+]
+# Core stays small on purpose: see docs/decisions.md "D7 core dependencies".
+dependencies = [
+  "pydantic>=2.7,<3",
+  "pyyaml>=6.0",
+  "jsonschema>=4.18",
+  "click>=8.1",
+]
+
+[project.optional-dependencies]
+requests = ["requests>=2.28"]
+httpx = ["httpx>=0.24,<1"]
+playwright = ["playwright>=1.40"]
+scrapy = ["scrapy>=2.11"]
+crawlee = ["crawlee>=1.0,<2"]
+parquet = ["pyarrow>=15"]
+all = ["scrapewatch[requests,httpx,playwright,scrapy,crawlee,parquet]"]
+
+[project.scripts]
+scrapewatch = "scrapewatch.cli.main:main"
+
+[project.urls]
+Homepage = "https://github.com/siddharthkumarx/scrapewatch"
+Documentation = "https://github.com/siddharthkumarx/scrapewatch/tree/main/docs"
+Issues = "https://github.com/siddharthkumarx/scrapewatch/issues"
+Changelog = "https://github.com/siddharthkumarx/scrapewatch/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-cov>=5.0",
+  "ruff>=0.8",
+  "mypy>=1.13",
+  "types-PyYAML",
+  "types-jsonschema",
+  "types-requests",
+  "httpx>=0.24,<1",
+  "pip-audit>=2.7",
+]
+
+[tool.hatch.version]
+path = "src/scrapewatch/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scrapewatch"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/scrapewatch", "tests", "LICENSE", "README.md", "CHANGELOG.md", "pyproject.toml"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+extend-exclude = ["checks/results", "docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF", "PT", "S", "T20", "ANN", "D"]
+ignore = [
+  "D100", "D104", "D105", "D107",  # module/package/dunder docstrings are optional
+  "D203", "D213",                  # incompatible with D211/D212
+  "ANN401",                        # Any is allowed where the data model needs it
+  "S101",                          # asserts are fine in tests; src is covered by B011
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "ANN", "S", "T20"]
+"scripts/**" = ["T20", "D"]
+"checks/**" = ["T20", "D", "S", "ANN"]
+"examples/**" = ["T20", "D", "ANN", "S"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unreachable = true
+pretty = true
+files = ["src", "tests", "scripts"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["scrapy.*", "playwright.*", "crawlee.*", "pyarrow.*", "twisted.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers --cov=scrapewatch --cov-report=term-missing:skip-covered"
+markers = [
+  "live: needs network; only runs in the live-checks workflow",
+  "perf: overhead budget tests; may be skipped on slow runners",
+  "extras: needs an optional dependency",
+]
+filterwarnings = ["error::DeprecationWarning:scrapewatch.*"]
+
+[tool.coverage.run]
+branch = true
+source = ["scrapewatch"]
+
+[tool.coverage.report]
+# Stubs raise NotImplementedError; the builder raises this as items land.
+fail_under = 0
+exclude_lines = ["pragma: no cover", "raise NotImplementedError", "if TYPE_CHECKING:"]

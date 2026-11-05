@@ -1,0 +1,73 @@
+# Live checks and benchmarks. The sandbox cannot reach most sites, so every live run happens
+# here: push a change to checks/request.yml, this workflow runs it and commits the results under
+# checks/results/<id>/ on the same branch. Keep runs rare: private Actions minutes are shared.
+name: checks
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "checks/request.yml"
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Read request
+        id: req
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import yaml, sys
+          try:
+              r = yaml.safe_load(open("checks/request.yml"))
+          except Exception as e:
+              print("enabled=false"); sys.exit(0)
+          r = r or {}
+          print(f"enabled={'true' if r.get('enabled', False) else 'false'}")
+          print(f"id={r.get('id','unnamed')}")
+          print(f"python={r.get('python','3.12')}")
+          extras = r.get("extras") or []
+          print("extras=" + " ".join(f"--extra {e}" for e in extras))
+          print(f"browser={'true' if 'playwright' in extras or 'crawlee' in extras else 'false'}")
+          PY
+
+      - if: steps.req.outputs.enabled != 'true'
+        run: echo "checks/request.yml has enabled false; nothing to do"
+
+      - if: steps.req.outputs.enabled == 'true'
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+
+      - if: steps.req.outputs.enabled == 'true'
+        run: uv sync --python ${{ steps.req.outputs.python }} --group dev ${{ steps.req.outputs.extras }}
+
+      - if: steps.req.outputs.enabled == 'true' && steps.req.outputs.browser == 'true'
+        run: uv run playwright install --with-deps chromium
+
+      - if: steps.req.outputs.enabled == 'true'
+        name: Run check
+        run: uv run python checks/run_check.py checks/request.yml
+
+      - if: steps.req.outputs.enabled == 'true'
+        name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add checks/results
+          if git diff --cached --quiet; then echo "no results to commit"; exit 0; fi
+          git commit -s -m "checks: results for ${{ steps.req.outputs.id }}"
+          git push origin HEAD:${{ github.ref_name }}

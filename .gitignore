@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.python-version
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+uv.lock.bak
+
+# scrapewatch runtime (never commit history or reports)
+.scrapewatch/
+*.scrapewatch/
+scrapewatch-report*.html
+scrapewatch-summary*.json
+
+# Examples output
+examples/**/output/
+examples/**/*.jsonl
+examples/**/*.csv
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Private (dropped before publish; see docs/publish-checklist.md)
+docs/private/*.pdf

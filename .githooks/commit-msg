@@ -1,0 +1,4 @@
+#!/bin/sh
+# scrapewatch commit-msg hook. Enable once per clone:  git config core.hooksPath .githooks
+# Policy lives in scripts/commit_policy.py (also run by CI on every pushed commit).
+exec python3 "$(git rev-parse --show-toplevel)/scripts/commit_policy.py" "$1"

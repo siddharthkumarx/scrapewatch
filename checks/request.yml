@@ -1,0 +1,12 @@
+# Live-check request. Pushing a change to this file runs .github/workflows/checks.yml, which
+# commits results to checks/results/<id>/ on the same branch. Set enabled: true only when the
+# run answers a question; set it back to false in the next commit that touches this file.
+enabled: false
+id: 0000-template
+question: "What does this run answer?"
+python: "3.12"
+extras: []            # e.g. [playwright, parquet]
+env: {}               # non-secret env vars for the commands
+commands:             # run in order from the repo root; stdout/stderr captured to log.txt
+  - uv run python -c "print('replace me')"
+artifacts: []         # files (relative to repo root) copied into checks/results/<id>/

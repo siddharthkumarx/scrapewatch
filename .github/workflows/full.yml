@@ -1,0 +1,67 @@
+# Full matrix, extras, secret scan and dependency audit.
+# Runs only on workflow_dispatch while the repo is private; docs/publish-checklist.md switches it
+# to push + pull_request at publish time.
+name: full
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+      - run: uv sync --python ${{ matrix.python }} --group dev --extra httpx
+      - run: uv run ruff check . && uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run pytest -m "not live"
+
+  extras:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        extra: ["requests", "playwright", "scrapy", "crawlee", "parquet"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+      - run: uv sync --python 3.12 --group dev --extra ${{ matrix.extra }}
+      - if: matrix.extra == 'playwright' || matrix.extra == 'crawlee'
+        run: uv run playwright install --with-deps chromium
+      - run: uv run pytest -m "not live" tests/integrations -k ${{ matrix.extra }} || [ $? -eq 5 ]
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pip-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --python 3.12 --group dev --all-extras
+      - run: uv run pip-audit --strict

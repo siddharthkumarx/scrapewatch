@@ -1,0 +1,7 @@
+# scrapewatch guard rules. Format: docs/architecture.md "Guard rules YAML".
+# Every rule needs at least one fixture under tests/guard/fixtures/<rule id>*.yml.
+# Fixtures hold features only (status, headers, cookie names, title, short markers), never pages.
+# Detection only: these rules say WHAT answered, never how to get past it.
+schema_version: 1
+rules_version: "2026.11.0"
+rules: []   # filled in build-progress item 5
