@@ -170,6 +170,46 @@ def check(
     return EXIT_BY_VERDICT[run.verdict.status]
 
 
+def _saved_response(path: str, status: int | None) -> tuple[int, dict[str, str], bytes]:
+    """A saved body, or a raw HTTP response (``curl -i`` output): (status, headers, body)."""
+    raw = Path(path).read_bytes()
+    headers: dict[str, str] = {}
+    code = 200
+    if raw.startswith(b"HTTP/"):
+        head, sep, body = raw.partition(b"\r\n\r\n")
+        if not sep:
+            head, _, body = raw.partition(b"\n\n")
+        lines = head.decode("latin-1").splitlines()
+        parts = lines[0].split()
+        if len(parts) > 1 and parts[1].isdigit():
+            code = int(parts[1])
+        for line in lines[1:]:
+            name, colon, value = line.partition(":")
+            if colon:
+                headers[name.strip().lower()] = value.strip()
+        raw = body
+    elif Path(path).suffix.lower() in (".html", ".htm"):
+        headers["content-type"] = "text/html"
+    return (status if status is not None else code), headers, raw
+
+
+def _store(history_path: str | None) -> Any:
+    from scrapewatch.config import load_settings
+    from scrapewatch.history.store import open_store
+
+    path = Path(history_path) if history_path else load_settings().history.path
+    if not (Path(path) / "history.sqlite").is_file():
+        _fail(f"no history at {path} (pass --history DIR)")
+    return open_store(path)
+
+
+def _find(store: Any, run_id: str) -> Run:
+    run: Run | None = store.find_run(run_id)
+    if run is None:
+        _fail(f"no run {run_id!r} in the history (use a full id or a unique prefix)")
+    return run
+
+
 @main.group()
 def guard() -> None:
     """Classify saved responses and extract fixture features."""
@@ -177,20 +217,54 @@ def guard() -> None:
 
 @guard.command("classify")
 @click.argument("path", type=click.Path(exists=True, dir_okay=False))
-@click.option("--status", type=int, default=200)
+@click.option(
+    "--status", type=int, default=None, help="Status code (default: from the file or 200)."
+)
 @click.option("--url", default=None)
-def guard_classify(path: str, status: int, url: str | None) -> None:
+@click.option("--final-url", default=None, help="URL after redirects, when it differs.")
+def guard_classify(path: str, status: int | None, url: str | None, final_url: str | None) -> None:
     """Classify a saved HTML/HTTP response file."""
-    raise NotImplementedError("build-progress item 14")
+    from scrapewatch.cli._output import guard_result
+    from scrapewatch.guard.classify import classify
+
+    code, headers, body = _saved_response(path, status)
+    result = classify(status=code, headers=headers, body=body, url=url, final_url=final_url)
+    click.echo(guard_result(result))
 
 
 @guard.command("features")
 @click.argument("path", type=click.Path(exists=True, dir_okay=False))
-@click.option("--status", type=int, default=200)
+@click.option(
+    "--status", type=int, default=None, help="Status code (default: from the file or 200)."
+)
 @click.option("--url", default=None)
-def guard_features(path: str, status: int, url: str | None) -> None:
+@click.option("--final-url", default=None, help="URL after redirects, when it differs.")
+def guard_features(path: str, status: int | None, url: str | None, final_url: str | None) -> None:
     """Print the fixture-safe features of a saved response (for contributing rules)."""
-    raise NotImplementedError("build-progress item 14")
+    import yaml
+
+    from scrapewatch.guard.classify import classify_features
+    from scrapewatch.guard.features import extract_features, markers_for_fixture
+    from scrapewatch.guard.rules import bundled_rules
+
+    code, headers, body = _saved_response(path, status)
+    rules = bundled_rules()
+    features = extract_features(
+        status=code,
+        headers=headers,
+        body=body,
+        request_url=url,
+        final_url=final_url,
+        markers=rules.markers(),
+    )
+    result = classify_features(features, rules)
+    safe = markers_for_fixture(features).model_dump(mode="json", exclude_none=True)
+    expect: dict[str, Any] = {"label": result.label.value}
+    if result.vendor:
+        expect["vendor"] = result.vendor
+    fixture = {"rule": result.rule_id or "<rule id>", "expect": expect, "features": safe}
+    click.echo("# Fixture-safe features: no page body, markers and title cut to 200 characters.")
+    click.echo(yaml.safe_dump(fixture, sort_keys=False, allow_unicode=True).rstrip())
 
 
 @main.group()
@@ -199,17 +273,92 @@ def rules() -> None:
 
 
 @rules.command("test")
-@click.argument("path", required=False, type=click.Path(exists=True))
-def rules_test(path: str | None) -> None:
-    """Run every guard fixture against the rules (bundled or PATH)."""
-    raise NotImplementedError("build-progress item 14")
+@click.argument("fixtures", required=False, type=click.Path(exists=True, file_okay=False))
+@click.option(
+    "--rules",
+    "rules_path",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False),
+    help="Guard rules file (default: the bundled rules).",
+)
+def rules_test(fixtures: str | None, rules_path: str | None) -> int:
+    """Run every guard fixture against the rules (bundled or --rules).
+
+    FIXTURES is the fixture directory (default: tests/guard/fixtures). Exit 1 when a fixture
+    classifies differently from its ``expect`` or a rule has no fixture.
+    """
+    from scrapewatch import _yaml
+    from scrapewatch.guard.classify import classify_features
+    from scrapewatch.guard.features import Features
+    from scrapewatch.guard.rules import bundled_rules, load_rules, rule_fixture_paths
+
+    folder = Path(fixtures or "tests/guard/fixtures")
+    if not folder.is_dir():
+        _fail(f"no fixture directory {folder} (pass FIXTURES)")
+    try:
+        ruleset = load_rules(Path(rules_path)) if rules_path else bundled_rules()
+    except ScrapewatchError as exc:
+        _fail(str(exc))
+    failures: list[str] = []
+    files = sorted(folder.glob("*.yml"))
+    for fixture in files:
+        try:
+            data = _yaml.safe_load(fixture.read_text(encoding="utf-8"))
+            features = Features.model_validate(data["features"])
+            expect = data["expect"]
+        except Exception as exc:  # a broken fixture is a failure, not a crash
+            failures.append(f"{fixture.name}: cannot be read ({type(exc).__name__}: {exc})")
+            continue
+        got = classify_features(features, ruleset)
+        wrong = [
+            f"{key} {getattr(got, attr)!r} != {expect[key]!r}"
+            for key, attr in (("label", "label"), ("vendor", "vendor"), ("rule_id", "rule_id"))
+            if key in expect
+            and (got.label.value if key == "label" else getattr(got, attr)) != expect[key]
+        ]
+        if wrong:
+            failures.append(f"{fixture.name}: {'; '.join(wrong)} (signals: {got.signals})")
+    missing = [rid for rid, paths in rule_fixture_paths(ruleset, folder).items() if not paths]
+    failures += [f"rule {rid} has no fixture" for rid in missing]
+    for line in failures:
+        click.echo(f"FAIL {line}")
+    click.echo(
+        f"{len(files)} fixtures, {len(ruleset.rules)} rules (rules_version "
+        f"{ruleset.rules_version}): {'all passed' if not failures else f'{len(failures)} failed'}"
+    )
+    return 1 if failures else 0
 
 
 @rules.command("validate")
 @click.argument("path", type=click.Path(exists=True, dir_okay=False))
-def rules_validate(path: str) -> None:
+def rules_validate(path: str) -> int:
     """Validate a guard-rules or data-rules file."""
-    raise NotImplementedError("build-progress item 14")
+    from scrapewatch import _yaml
+    from scrapewatch.checks.rules import load_data_rules
+    from scrapewatch.guard.rules import validate_rules_file
+
+    try:
+        raw = _yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    except Exception as exc:
+        click.echo(f"invalid: {path} cannot be read as YAML: {exc}")
+        return 1
+    if isinstance(raw, dict) and isinstance(raw.get("rules"), list):
+        problems = validate_rules_file(Path(path))
+        for problem in problems:
+            click.echo(f"invalid: {problem}")
+        if not problems:
+            click.echo(f"ok: guard rules, {len(raw['rules'])} rules")
+        return 1 if problems else 0
+    try:
+        data_rules = load_data_rules(path)
+    except ScrapewatchError as exc:
+        click.echo(f"invalid: {exc}")
+        return 1
+    click.echo(
+        f"ok: data rules {data_rules.name!r}, {len(data_rules.fields)} fields, "
+        f"{len(data_rules.cross)} cross rules"
+    )
+    return 0
 
 
 @main.command()
@@ -218,7 +367,25 @@ def rules_validate(path: str) -> None:
 @click.option("--out", default=None, type=click.Path(dir_okay=False))
 def report(run_id: str, history_path: str | None, out: str | None) -> None:
     """Re-render the HTML report of a past run."""
-    raise NotImplementedError("build-progress item 14")
+    from scrapewatch.models import BAD_LABELS
+    from scrapewatch.report import render_html, report_paths, write_html
+
+    store = _store(history_path)
+    try:
+        run = _find(store, run_id)
+        bad = [e for e in store.events(run.run_id) if e.guard.label in BAD_LABELS][:20]
+        history = list(reversed(store.list_runs(run.name, limit=30)))
+        history = [r for r in history if r.started_at <= run.started_at]
+        if out is None:
+            from scrapewatch.config import load_settings
+
+            report_dir = load_settings().report_dir or store.path / "reports"
+        target = Path(out) if out else report_paths(report_dir, run)[0]
+        html = render_html(run, history=history, bad_events=bad, files={"report": str(target)})
+        write_html(target, html)
+    finally:
+        store.close()
+    click.echo(f"report: {target}")
 
 
 @main.group()
@@ -229,10 +396,17 @@ def history() -> None:
 @history.command("list")
 @click.option("--history", "history_path", default=None, type=click.Path(file_okay=False))
 @click.option("--name", default=None)
-@click.option("--limit", default=20)
+@click.option("--limit", default=20, type=click.IntRange(1, 10000))
 def history_list(history_path: str | None, name: str | None, limit: int) -> None:
     """List recent runs."""
-    raise NotImplementedError("build-progress item 14")
+    from scrapewatch.cli._output import runs_table
+
+    store = _store(history_path)
+    try:
+        runs = store.list_runs(name, limit=limit)
+    finally:
+        store.close()
+    click.echo(runs_table(runs))
 
 
 @history.command("show")
@@ -240,14 +414,30 @@ def history_list(history_path: str | None, name: str | None, limit: int) -> None
 @click.option("--history", "history_path", default=None, type=click.Path(file_okay=False))
 def history_show(run_id: str, history_path: str | None) -> None:
     """Print one run's summary.json."""
-    raise NotImplementedError("build-progress item 14")
+    store = _store(history_path)
+    try:
+        run = _find(store, run_id)
+    finally:
+        store.close()
+    click.echo(json.dumps(run.model_dump(mode="json"), indent=2, ensure_ascii=False))
 
 
 @history.command("prune")
 @click.option("--history", "history_path", default=None, type=click.Path(file_okay=False))
 def history_prune(history_path: str | None) -> None:
     """Apply retention."""
-    raise NotImplementedError("build-progress item 14")
+    from scrapewatch.config import load_settings
+
+    h = load_settings().history
+    store = _store(history_path)
+    try:
+        deleted = store.prune(keep_runs=h.keep_runs, keep_event_days=h.keep_event_days)
+    finally:
+        store.close()
+    parts = ", ".join(f"{table} {n}" for table, n in deleted.items()) or "nothing"
+    click.echo(
+        f"pruned (keep {h.keep_runs} runs, events for {h.keep_event_days} days): deleted {parts}"
+    )
 
 
 @main.command()
@@ -255,7 +445,14 @@ def history_prune(history_path: str | None) -> None:
 @click.option("--history", "history_path", default=None, type=click.Path(file_okay=False))
 def cost(run_id: str, history_path: str | None) -> None:
     """Print the cost and waste breakdown of a run."""
-    raise NotImplementedError("build-progress item 14")
+    from scrapewatch.cli._output import cost_text
+
+    store = _store(history_path)
+    try:
+        run = _find(store, run_id)
+    finally:
+        store.close()
+    click.echo(cost_text(run))
 
 
 @main.group()
@@ -272,9 +469,21 @@ def alert_test(channel: str | None) -> None:
 
 @main.command()
 @click.option("--dir", "target", default=".", type=click.Path(file_okay=False))
-def init(target: str) -> None:
+@click.option("--force", is_flag=True, help="Overwrite existing files.")
+def init(target: str, force: bool) -> None:
     """Write an example rules.yml and scrapewatch.yml."""
-    raise NotImplementedError("build-progress item 14")
+    from scrapewatch.cli._init_files import CONFIG_YML, RULES_YML
+
+    folder = Path(target)
+    files = {folder / "rules.yml": RULES_YML, folder / "scrapewatch.yml": CONFIG_YML}
+    existing = [str(p) for p in files if p.exists()]
+    if existing and not force:
+        _fail(f"{', '.join(existing)} already exist; pass --force to overwrite")
+    folder.mkdir(parents=True, exist_ok=True)
+    for path, text in files.items():
+        path.write_text(text, encoding="utf-8")
+        click.echo(f"wrote {path}")
+    click.echo("next: scrapewatch rules validate rules.yml, then wrap your scraper in watch()")
 
 
 if __name__ == "__main__":  # pragma: no cover

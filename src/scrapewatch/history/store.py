@@ -299,6 +299,19 @@ class HistoryStore:
         rows = self._read("SELECT summary_json FROM runs WHERE run_id = ?", (run_id,))
         return Run.model_validate_json(rows[0]["summary_json"]) if rows else None
 
+    def find_run(self, run_id: str) -> Run | None:
+        """A run by its id or by a unique prefix of it (at least 4 characters)."""
+        exact = self.get_run(run_id)
+        if exact is not None or len(run_id) < 4:
+            return exact
+        pattern = run_id.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+        rows = self._read(
+            "SELECT summary_json FROM runs WHERE run_id LIKE ? ESCAPE '\\' LIMIT 2", (pattern,)
+        )
+        if len(rows) != 1:
+            return None
+        return Run.model_validate_json(rows[0]["summary_json"])
+
     def list_runs(self, name: str | None = None, *, limit: int = 20) -> list[Run]:
         """Most recent runs first."""
         if name is None:

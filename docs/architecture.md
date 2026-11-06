@@ -1183,19 +1183,21 @@ and returned by `scrapewatch history show`.
 | Command | Purpose | Exit |
 |---|---|---|
 | `scrapewatch check PATH --rules rules.yml [--history DIR] [--name N] [--report F] [--json F] [--promote-to LIVE [--hold-on-warn]] [--format csv|jsonl|parquet]` | check a file; optional publish gate (stage a copy of PATH, promote on the verdict) | 0 pass, 1 warn, 2 hold, 3 error |
-| `scrapewatch guard classify FILE [--status N] [--url U]` | classify a saved response | 0; prints label, vendor, rule, signals |
-| `scrapewatch guard features FILE [--status N] [--url U]` | print fixture-safe features (YAML) | 0 |
-| `scrapewatch rules test [PATH]` | run every guard fixture | 0 ok, 1 failures |
+| `scrapewatch guard classify FILE [--status N] [--url U] [--final-url U]` | classify a saved response (a body, or a raw HTTP response such as `curl -i` output) | 0; prints label, vendor, rule, signals |
+| `scrapewatch guard features FILE [--status N] [--url U] [--final-url U]` | print a fixture skeleton with fixture-safe features (YAML) | 0 |
+| `scrapewatch rules test [FIXTURES] [--rules FILE]` | run every guard fixture (default `tests/guard/fixtures`) against the bundled rules or FILE; a rule without a fixture fails | 0 ok, 1 failures |
 | `scrapewatch rules validate FILE` | validate a guard or data rules file | 0 ok, 1 invalid |
 | `scrapewatch report RUN_ID [--out F]` | re-render HTML | 0 |
 | `scrapewatch history list [--name N] [--limit N]` / `show RUN_ID` / `prune` | inspect history | 0 |
 | `scrapewatch cost RUN_ID` | cost and waste breakdown | 0 |
 | `scrapewatch alert test [--channel C]` | send a test alert | 0 ok, 1 delivery failed |
-| `scrapewatch init [--dir D]` | write example rules.yml and scrapewatch.yml | 0 |
+| `scrapewatch init [--dir D] [--force]` | write example rules.yml and scrapewatch.yml (never overwrites without `--force`) | 0 |
 | `scrapewatch --version` | | 0 |
 
-Exit 3 means the tool itself failed (bad arguments, unreadable file, rules error); CI should
-treat it like hold. Click's own usage errors exit 3 as well, not click's default 2. With
+Exit 3 means the tool itself failed (bad arguments, unreadable file, rules error, no
+history, unknown run id); CI should treat it like hold. Commands that take a RUN_ID accept a
+unique prefix of at least 4 characters. `rules validate` tells guard rules (a top-level
+`rules:` list) from data rules by their shape. Click's own usage errors exit 3 as well, not click's default 2. With
 `--promote-to`, actions of a gate recovery are added to the Run as `gate.recovered` (info)
 findings, and a live file that no longer matches the last-good pointer prints a warning. `check` prints a one-screen text summary (verdict, reasons, counts, cost)
 and the report path.

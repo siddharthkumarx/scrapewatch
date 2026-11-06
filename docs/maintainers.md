@@ -115,8 +115,8 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 14** (remaining CLI commands; M2 ends after it). M1
-(items 1 to 9b) and items 10 to 13 are done and green on GitHub (ci.yml and full.yml).
+Next item: **docs/build-progress.md item 15** (alerts; M3 starts). M1 and M2 (items 1 to 14)
+are done and green on GitHub (ci.yml and full.yml); the M2 matrix is logged.
 
 Notes for the next session:
 

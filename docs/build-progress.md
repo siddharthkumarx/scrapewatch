@@ -266,7 +266,7 @@ v0.2 or later.
 
 ### 14. Remaining CLI commands `[v0.1]`
 
-- [ ] Scope: `guard classify`, `guard features`, `rules test`, `rules validate`, `report`,
+- [x] Scope: `guard classify`, `guard features`, `rules test`, `rules validate`, `report`,
   `history list|show|prune`, `cost`, `init` (writes example `rules.yml` and
   `scrapewatch.yml` with comments), `--version`.
 - Files: `cli/main.py`, `cli/_output.py`, `tests/cli/`.
@@ -274,6 +274,11 @@ v0.2 or later.
   fixture and contains no key named `body`; `init` files load through their loaders;
   `rules test` exits 1 on a deliberately broken fixture.
 - Done when: pass, coverage ≥ 82. **M2 ends: full local matrix, log it.**
+- Notes: `rules test [FIXTURES] [--rules FILE]` (fixtures default to `tests/guard/fixtures`,
+  since they are not shipped in the wheel); `guard classify/features` also read raw HTTP
+  responses (`curl -i`); RUN_ID arguments take a unique prefix (`HistoryStore.find_run`);
+  `init` refuses to overwrite without `--force`; `report` re-renders into
+  `<history>/reports/<name>/` unless `--out` is given.
 
 ## M3 — alerts and integrations
 
@@ -447,8 +452,8 @@ v0.2 or later.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 14** (remaining CLI commands; M2 ends after it). M1
-(items 1 to 9b) and items 10 to 13 are done and green on GitHub (ci.yml and full.yml).
+Next item: **docs/build-progress.md item 15** (alerts; M3 starts). M1 and M2 (items 1 to 14)
+are done and green on GitHub (ci.yml and full.yml); the M2 matrix is logged.
 
 Notes for the next session:
 
