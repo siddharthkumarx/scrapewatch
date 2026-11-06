@@ -115,8 +115,10 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 16** (httpx integration). M1, M2 (items 1 to 14),
-the post-M2 report fixes and item 15 are done and green on GitHub (ci.yml and full.yml).
+Next item: **docs/build-progress.md item 16** (httpx integration). M1, M2 (items 1 to 14) and
+the post-M2 report fixes (908d3ef) are done and green on GitHub. Item 15 (alerts, ef18d7e) is
+done and green locally; first confirm its ci.yml run 42271244740 and full.yml run
+42271244600 are green (fix and log in docs/incidents.md if not), then start item 16.
 
 Notes for the next session:
 
