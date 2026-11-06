@@ -1,0 +1,10 @@
+currency: USD
+default_proxy: direct
+proxies:
+  direct: {per_gb: 0}
+  datacenter: {per_gb: 0.8}
+  residential: {per_gb: 8.0}
+apis:
+  unblocker: {per_1000_requests: 2.5}
+browser:
+  per_minute: 0.01

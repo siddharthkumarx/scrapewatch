@@ -24,6 +24,7 @@ from urllib.parse import urlsplit
 
 from scrapewatch._version import __version__
 from scrapewatch.config import Settings, config_hash, load_settings
+from scrapewatch.cost.meter import CostMeter
 from scrapewatch.history.stats import StatsAccumulator, value_hash
 from scrapewatch.history.store import HistoryStore, open_store
 from scrapewatch.models import (
@@ -147,6 +148,8 @@ class Watch:
         self.attached = False  # a worker writing events into a parent's run
         self._stats = StatsAccumulator()
         self._value_hashes: dict[str, str] = {}
+        self.meter = CostMeter(settings.cost)
+        self._response_hooks.append(("cost", _cost_hook))
 
     # --- lifecycle ----------------------------------------------------------------------
     def start(self) -> None:
@@ -403,6 +406,7 @@ class Watch:
             self._step("close history", self._close_store)
             return self.run
         self._step("aggregate", self._finish_aggregate)
+        self._step("cost", self._finish_cost)
         self._step("verdict", lambda: self._finish_verdict(crashed=crashed))
         self.run.finished_at = datetime.now(tz=timezone.utc)
         self.run.status = RunStatus.CRASHED if crashed else RunStatus.FINISHED
@@ -420,6 +424,17 @@ class Watch:
             counts = self._store_call("response_counts", self.run.run_id)
             for key, value in counts.items():
                 setattr(self.run.counts, key, value)
+            meter = CostMeter(self.settings.cost)
+            meter.merge_extras(self.meter)
+            for event in self._store_call("events", self.run.run_id):
+                meter.add(event)
+            self.meter = meter
+
+    def _finish_cost(self) -> None:
+        c = self.run.counts
+        self.run.cost = self.meter.breakdown(usable_records=c.usable_records, records=c.records)
+        self.run.waste = self.meter.waste()
+        self.run.findings.extend(self.meter.findings(self.run.run_id))
 
     def _finish_store(self) -> None:
         if self.store is None:
@@ -475,6 +490,10 @@ class Watch:
     def report_path(self) -> Path | None:
         """Path of the HTML report written by ``finish``, if any."""
         return Path(self.run.report_path) if self.run.report_path else None
+
+
+def _cost_hook(w: Watch, event: ResponseEvent, _ctx: ResponseContext) -> None:
+    event.cost = w.meter.add(event)
 
 
 def _body_len(body: bytes | str | None) -> int:

@@ -1,0 +1,24 @@
+{
+  "currency": "USD",
+  "total": 0.04194,
+  "by_domain": {
+    "books.toscrape.com": 0.0136,
+    "quotes.toscrape.com": 0.02634,
+    "www.scrapethissite.com": 0.002
+  },
+  "by_proxy": {
+    "datacenter": 0.00364,
+    "residential": 0.0158,
+    "unblocker": 0.0025,
+    "mystery-pool": 0.0,
+    "direct": 0.0
+  },
+  "by_resource_type": {"document": 0.01094, "image": 0.01, "font": 0.001, "xhr": 0.0},
+  "browser_minutes": 2.0,
+  "browser_cost": 0.02,
+  "api_requests": 1,
+  "api_cost": 0.0025,
+  "usable_records": 10,
+  "per_usable_record": 0.004194,
+  "per_record": 0.003495
+}

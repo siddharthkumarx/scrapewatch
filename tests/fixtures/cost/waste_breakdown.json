@@ -1,0 +1,20 @@
+{
+  "bytes_by_resource_type": {"document": 9550000, "image": 1250000, "font": 125000, "xhr": 0},
+  "retry_requests": 2,
+  "retry_bytes": 2000000,
+  "retry_cost": 0.0088,
+  "failed_requests": 3,
+  "failed_bytes": 600000,
+  "failed_cost": 0.0012,
+  "unchanged_refetch_requests": 1,
+  "unchanged_refetch_bytes": 50000,
+  "unchanged_refetch_cost": 0.00004,
+  "blockable_requests": 2,
+  "blockable_bytes": 375000,
+  "blockable_cost": 0.003,
+  "total_waste_cost": 0.01304,
+  "blocked_requests": 0,
+  "bytes_saved_estimate": 0,
+  "deduped_requests": 0,
+  "conditional_hits": 1
+}

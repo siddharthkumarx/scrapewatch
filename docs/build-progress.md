@@ -68,7 +68,7 @@ v0.2 or later.
 
 ### 3. Cost meter `[v0.1]`
 
-- [ ] Scope: A§11 formulas, `price_event`, `CostMeter.add/add_browser_seconds/breakdown/waste`,
+- [x] Scope: A§11 formulas, `price_event`, `CostMeter.add/add_browser_seconds/breakdown/waste`,
   unknown-label finding, header-size estimate helper, wiring into `Watch` so each event gets
   `cost` and `finish()` fills `run.cost` and `run.waste`.
 - Files: `cost/meter.py`, `cost/bytes.py`, `tests/cost/`.

@@ -927,7 +927,10 @@ waste:
 ```
 
 Bytes by resource type and the four waste categories are also reported in bytes and request
-counts. Costs are stored in the configured currency with full float precision; the report
+counts. Browser time given with a domain (`add_browser_seconds(s, domain=...)`) is charged to that
+domain; other browser time is spread by document-response share (by response share when the
+run had no documents). A request skipped by the in-run dedupe costs nothing. Costs are stored
+in the configured currency with full float precision; the report
 rounds for display and shows "< $0.0001" rather than 0.
 
 ### 11.3 How wire bytes are measured in each integration
