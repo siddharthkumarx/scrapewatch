@@ -1,0 +1,11 @@
+# A 200 page from a DataDome-protected origin is ok.
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html, x-datadome: protected}
+  content_type: text/html
+  cookie_names: [datadome]
+  title: Example Market
+  body_bytes: 95000
+  text_length: 8000
+  text_density: 0.08

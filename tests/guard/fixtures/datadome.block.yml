@@ -1,0 +1,10 @@
+rule: datadome.block
+expect: {label: block, vendor: datadome}
+features:
+  status: 403
+  headers: {content-type: text/html, x-datadome: protected}
+  content_type: text/html
+  cookie_names: [datadome]
+  body_bytes: 900
+  text_length: 0
+  text_density: 0.0

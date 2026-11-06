@@ -1,0 +1,13 @@
+# A page with both a consent marker and a captcha widget is a captcha (precedence).
+rule: recaptcha.captcha
+expect: {label: captcha, vendor: recaptcha}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Please verify
+  body_bytes: 3000
+  text_length: 300
+  text_density: 0.1
+  markers: [g-recaptcha, we value your privacy]
+  has_captcha_widget: true

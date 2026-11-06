@@ -101,7 +101,7 @@ v0.2 or later.
 
 ### 5. Guard rules file: vendors and generic rules `[v0.1]`
 
-- [ ] Scope: write `guard-rules.yml` with rules for cloudflare (challenge, block, turnstile
+- [x] Scope: write `guard-rules.yml` with rules for cloudflare (challenge, block, turnstile
   widget), akamai (block, bot manager challenge), datadome (captcha/challenge, block),
   human/PerimeterX (block, captcha), imperva/Incapsula (block, challenge), kasada
   (challenge), aws_waf (challenge, captcha, block), hcaptcha, recaptcha, turnstile widgets,

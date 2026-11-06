@@ -1,0 +1,11 @@
+rule: generic.consent.wall
+expect: {label: consent, vendor: null}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Example News
+  body_bytes: 243
+  text_length: 95
+  text_density: 0.39
+  markers: [cookie preferences, we value your privacy]

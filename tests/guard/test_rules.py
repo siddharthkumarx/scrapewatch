@@ -70,3 +70,14 @@ def test_bundled_rules_file_is_valid() -> None:
     rules = bundled_rules()
     assert rules.rules_version
     assert len({r.id for r in rules.rules}) == len(rules.rules)
+
+
+def test_docs_list_every_rule() -> None:
+    doc = (Path(__file__).parents[2] / "docs" / "guard-rules.md").read_text(encoding="utf-8")
+    missing = [r.id for r in bundled_rules().rules if f"`{r.id}`" not in doc]
+    assert missing == []
+    assert bundled_rules().rules_version in doc
+
+
+def test_rules_version() -> None:
+    assert bundled_rules().rules_version == "2026.11.0"

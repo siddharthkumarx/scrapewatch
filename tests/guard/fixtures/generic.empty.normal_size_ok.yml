@@ -1,0 +1,12 @@
+# A page of the usual size is ok.
+rule: generic.empty.small_vs_baseline
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Example Shop
+  body_bytes: 46000
+  text_length: 4000
+  text_density: 0.087
+  baseline_p50_bytes: 48000

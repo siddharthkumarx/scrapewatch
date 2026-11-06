@@ -1,0 +1,12 @@
+rule: generic.redirect.consent
+expect: {label: redirect, rule_id: generic.redirect.consent}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  request_url: https://news.example/story
+  final_url: https://consent.news.example/?continue=x
+  title: Before you continue
+  body_bytes: 30000
+  text_length: 1500
+  text_density: 0.05

@@ -1,0 +1,13 @@
+# An http to https redirect stays ok.
+rule: generic.redirect.login
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  request_url: http://books.toscrape.com/catalogue/page-2.html
+  final_url: https://books.toscrape.com/catalogue/page-2.html
+  title: All products | Books to Scrape - Sandbox
+  body_bytes: 51233
+  text_length: 4210
+  text_density: 0.08

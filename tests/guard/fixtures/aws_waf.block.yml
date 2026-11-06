@@ -1,0 +1,10 @@
+rule: aws_waf.block
+expect: {label: block, vendor: aws_waf}
+features:
+  status: 403
+  headers: {content-type: text/html, x-cache: Error from cloudfront, via: 1.1 abc.cloudfront.net (CloudFront)}
+  content_type: text/html
+  title: 'ERROR: The request could not be satisfied'
+  body_bytes: 900
+  text_length: 420
+  text_density: 0.47

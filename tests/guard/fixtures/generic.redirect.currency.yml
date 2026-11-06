@@ -1,0 +1,12 @@
+rule: generic.redirect.currency
+expect: {label: redirect, rule_id: generic.redirect.currency}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  request_url: https://shop.example/p/1
+  final_url: https://shop.example/p/1?currency=EUR
+  title: Example Shop
+  body_bytes: 60000
+  text_length: 5000
+  text_density: 0.08

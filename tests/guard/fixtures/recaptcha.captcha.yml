@@ -1,0 +1,12 @@
+rule: recaptcha.captcha
+expect: {label: captcha, vendor: recaptcha}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Please verify
+  body_bytes: 2200
+  text_length: 90
+  text_density: 0.04
+  markers: [g-recaptcha]
+  has_captcha_widget: true

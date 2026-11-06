@@ -1,0 +1,11 @@
+# Bot Manager cookies on a normal page are not a challenge.
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  cookie_names: [_abck, bm_sz, ak_bmsc]
+  title: Example Shop
+  body_bytes: 120000
+  text_length: 12000
+  text_density: 0.1

@@ -1,0 +1,10 @@
+rule: generic.error_page.soft_404
+expect: {label: error_page, rule_id: generic.error_page.soft_404}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Page not found - Example Shop
+  body_bytes: 40000
+  text_length: 2500
+  text_density: 0.06

@@ -1,0 +1,12 @@
+rule: cloudflare.challenge
+expect: {label: challenge, vendor: cloudflare}
+features:
+  status: 503
+  headers: {content-type: text/html, server: cloudflare, cf-ray: 8a1b2c3d4e5f6071-LHR, cf-mitigated: challenge}
+  content_type: text/html
+  cookie_names: [__cf_bm]
+  title: Just a moment...
+  body_bytes: 7421
+  text_length: 220
+  text_density: 0.03
+  markers: [cf-chl]

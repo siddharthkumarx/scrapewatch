@@ -1,0 +1,11 @@
+rule: datadome.captcha
+expect: {label: captcha, vendor: datadome}
+features:
+  status: 403
+  headers: {content-type: text/html, x-datadome: protected, x-datadome-cid: AHrlqAAAAAMA}
+  content_type: text/html
+  cookie_names: [datadome]
+  body_bytes: 1600
+  text_length: 40
+  text_density: 0.03
+  markers: [captcha-delivery.com]

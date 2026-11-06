@@ -1,0 +1,13 @@
+# A reCAPTCHA on a contact form of a full page is content, not a wall.
+rule: recaptcha.captcha
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Contact us | Example Shop
+  body_bytes: 60000
+  text_length: 5200
+  text_density: 0.09
+  markers: [g-recaptcha]
+  has_captcha_widget: true

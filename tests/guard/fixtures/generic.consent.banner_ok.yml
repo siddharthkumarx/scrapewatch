@@ -1,0 +1,12 @@
+# A consent banner on top of a full article is ok.
+rule: generic.consent.wall
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Example News - Today
+  body_bytes: 150000
+  text_length: 14000
+  text_density: 0.09
+  markers: [we value your privacy]

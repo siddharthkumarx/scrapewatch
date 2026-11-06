@@ -1,0 +1,12 @@
+rule: hcaptcha.captcha
+expect: {label: captcha, vendor: hcaptcha}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Verification
+  body_bytes: 2000
+  text_length: 80
+  text_density: 0.04
+  markers: [h-captcha]
+  has_captcha_widget: true

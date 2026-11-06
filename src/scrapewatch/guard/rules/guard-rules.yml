@@ -2,9 +2,255 @@
 # Every rule needs at least one fixture under tests/guard/fixtures/<rule id>*.yml.
 # Fixtures hold features only (status, headers, cookie names, title, short markers), never pages.
 # Detection only: these rules say WHAT answered, never how to get past it.
+# Signals are public product signatures: header names, cookie names, widget class names,
+# interstitial titles and script host names. docs/guard-rules.md lists every rule.
 schema_version: 1
 rules_version: "2026.11.0"
 rules:
+  # --- Cloudflare -------------------------------------------------------------------------
+  - id: cloudflare.challenge
+    vendor: cloudflare
+    label: challenge
+    confidence: 0.95
+    since: "2026.11.0"
+    notes: "Managed or JS challenge interstitial."
+    any:
+      - all:
+          - header: {name: cf-mitigated, regex: "^challenge$"}
+      - all:
+          - status: [403, 503]
+          - header: {name: server, regex: "^cloudflare$"}
+          - body_marker: "cf-chl"
+      - all:
+          - status: [403, 503]
+          - header: {name: server, regex: "^cloudflare$"}
+          - title_regex: "^just a moment"
+
+  - id: cloudflare.turnstile
+    vendor: cloudflare
+    label: captcha
+    confidence: 0.9
+    since: "2026.11.0"
+    notes: "Turnstile widget on a Cloudflare-served interstitial."
+    any:
+      - all:
+          - status: [403, 503]
+          - header: {name: server, regex: "^cloudflare$"}
+          - body_marker: "cf-turnstile"
+
+  - id: cloudflare.block
+    vendor: cloudflare
+    label: block
+    confidence: 0.9
+    since: "2026.11.0"
+    notes: "Firewall block page (error 1020 and similar)."
+    any:
+      - all:
+          - status: [403]
+          - header: {name: server, regex: "^cloudflare$"}
+          - body_marker: "cf-error-details"
+      - all:
+          - status: [403]
+          - header: {name: server, regex: "^cloudflare$"}
+          - title_regex: "attention required! \\| cloudflare"
+
+  # --- Akamai -----------------------------------------------------------------------------
+  - id: akamai.block
+    vendor: akamai
+    label: block
+    confidence: 0.9
+    since: "2026.11.0"
+    notes: "Edge 'Access Denied' page with an edgesuite reference."
+    any:
+      - all:
+          - status: [403]
+          - header: {name: server, regex: "^akamaighost"}
+          - title_regex: "^access denied$"
+      - all:
+          - status: [403]
+          - body_marker: "errors.edgesuite.net"
+
+  - id: akamai.challenge
+    vendor: akamai
+    label: challenge
+    confidence: 0.85
+    since: "2026.11.0"
+    notes: "Bot Manager interstitial (sec-cpt container or cookie on a short page)."
+    any:
+      - all:
+          - body_marker: "sec-if-cpt-container"
+      - all:
+          - cookie: "^sec_cpt$"
+          - text_length_below: 2000
+
+  # --- DataDome ---------------------------------------------------------------------------
+  - id: datadome.captcha
+    vendor: datadome
+    label: captcha
+    confidence: 0.95
+    since: "2026.11.0"
+    notes: "Interstitial that loads the captcha-delivery widget."
+    any:
+      - all:
+          - status: [403, 405]
+          - body_marker: "captcha-delivery.com"
+      - all:
+          - header: {name: x-datadome, exists: "true"}
+          - body_marker: "captcha-delivery.com"
+
+  - id: datadome.block
+    vendor: datadome
+    label: block
+    confidence: 0.85
+    since: "2026.11.0"
+    notes: "403 from a DataDome-protected origin."
+    any:
+      - all:
+          - status: [403]
+          - header: {name: x-datadome, exists: "true"}
+      - all:
+          - status: [403]
+          - cookie: "^datadome$"
+          - text_length_below: 500
+
+  # --- HUMAN (PerimeterX) -----------------------------------------------------------------
+  - id: human.captcha
+    vendor: human
+    label: captcha
+    confidence: 0.9
+    since: "2026.11.0"
+    notes: "Human Challenge element on the block page."
+    any:
+      - all:
+          - body_marker: "px-captcha"
+
+  - id: human.block
+    vendor: human
+    label: block
+    confidence: 0.85
+    since: "2026.11.0"
+    notes: "403 block page carrying the PerimeterX app id."
+    any:
+      - all:
+          - status: [403]
+          - body_marker: "_pxappid"
+      - all:
+          - status: [403]
+          - title_regex: "^access to this page has been denied"
+
+  # --- Imperva (Incapsula) ----------------------------------------------------------------
+  - id: imperva.block
+    vendor: imperva
+    label: block
+    confidence: 0.9
+    since: "2026.11.0"
+    notes: "Incident page with an Incapsula incident id."
+    any:
+      - all:
+          - body_marker: "incapsula incident id"
+      - all:
+          - status: [403]
+          - header: {name: x-cdn, regex: "imperva|incapsula"}
+
+  - id: imperva.challenge
+    vendor: imperva
+    label: challenge
+    confidence: 0.85
+    since: "2026.11.0"
+    notes: "Short page that only loads the _Incapsula_Resource script."
+    any:
+      - all:
+          - body_marker: "_incapsula_resource"
+          - text_length_below: 1000
+
+  # --- Kasada -----------------------------------------------------------------------------
+  - id: kasada.challenge
+    vendor: kasada
+    label: challenge
+    confidence: 0.85
+    since: "2026.11.0"
+    notes: "429 interstitial that loads the KPSDK script."
+    any:
+      - all:
+          - status: [429]
+          - body_marker: "kpsdk"
+      - all:
+          - header: {name: x-kasada-ac, exists: "true"}
+          - text_length_below: 1000
+
+  # --- AWS WAF ----------------------------------------------------------------------------
+  - id: aws_waf.challenge
+    vendor: aws_waf
+    label: challenge
+    confidence: 0.95
+    since: "2026.11.0"
+    notes: "Challenge action (x-amzn-waf-action: challenge, usually HTTP 202)."
+    any:
+      - all:
+          - header: {name: x-amzn-waf-action, regex: "^challenge$"}
+      - all:
+          - status: [202]
+          - body_marker: "awswaf.com"
+
+  - id: aws_waf.captcha
+    vendor: aws_waf
+    label: captcha
+    confidence: 0.95
+    since: "2026.11.0"
+    notes: "CAPTCHA action (x-amzn-waf-action: captcha, usually HTTP 405)."
+    any:
+      - all:
+          - header: {name: x-amzn-waf-action, regex: "^captcha$"}
+
+  - id: aws_waf.block
+    vendor: aws_waf
+    label: block
+    confidence: 0.8
+    since: "2026.11.0"
+    notes: "CloudFront 403 'request could not be satisfied' (WAF or geo block)."
+    any:
+      - all:
+          - status: [403]
+          - header: {name: x-cache, regex: "^error from cloudfront$"}
+      - all:
+          - status: [403]
+          - title_regex: "the request could not be satisfied"
+
+  # --- CAPTCHA widgets on short pages -----------------------------------------------------
+  - id: hcaptcha.captcha
+    vendor: hcaptcha
+    label: captcha
+    confidence: 0.8
+    since: "2026.11.0"
+    notes: "h-captcha widget on a page with little other text."
+    any:
+      - all:
+          - body_marker: "h-captcha"
+          - text_length_below: 1500
+
+  - id: recaptcha.captcha
+    vendor: recaptcha
+    label: captcha
+    confidence: 0.8
+    since: "2026.11.0"
+    notes: "g-recaptcha widget on a page with little other text."
+    any:
+      - all:
+          - body_marker: "g-recaptcha"
+          - text_length_below: 1500
+
+  - id: turnstile.captcha
+    vendor: turnstile
+    label: captcha
+    confidence: 0.8
+    since: "2026.11.0"
+    notes: "cf-turnstile widget on a page with little other text."
+    any:
+      - all:
+          - body_marker: "cf-turnstile"
+          - text_length_below: 1500
+
+  # --- Generic: status codes --------------------------------------------------------------
   - id: generic.rate_limit.429
     label: rate_limit
     confidence: 0.9
@@ -13,6 +259,89 @@ rules:
     any:
       - all:
           - status: [429]
+
+  - id: generic.rate_limit.text
+    label: rate_limit
+    confidence: 0.7
+    since: "2026.11.0"
+    notes: "A short page that says the client is rate limited."
+    any:
+      - all:
+          - body_marker: "too many requests"
+          - text_length_below: 1000
+      - all:
+          - body_marker: "rate limit exceeded"
+          - text_length_below: 1000
+
+  - id: generic.block.403
+    label: block
+    confidence: 0.5
+    since: "2026.11.0"
+    notes: "Any 403 no vendor rule explains."
+    any:
+      - all:
+          - status: [403]
+
+  - id: generic.login.401
+    label: login
+    confidence: 0.6
+    since: "2026.11.0"
+    notes: "HTTP 401: the page needs credentials."
+    any:
+      - all:
+          - status: [401]
+
+  - id: generic.error_page.5xx
+    label: error_page
+    confidence: 0.6
+    since: "2026.11.0"
+    notes: "Server error status no vendor rule explains."
+    any:
+      - all:
+          - status: [500, 502, 503, 504]
+
+  # --- Generic: page content --------------------------------------------------------------
+  - id: generic.login.wall
+    label: login
+    confidence: 0.75
+    since: "2026.11.0"
+    notes: "A password form after a redirect to a login path, or on a short sign-in page."
+    any:
+      - all:
+          - has_form_password: true
+          - final_url_regex: "/(login|log-in|signin|sign-in|sign_in|account/login|session/new)"
+      - all:
+          - has_form_password: true
+          - title_regex: "\\b(sign|log) ?in\\b"
+          - text_length_below: 3000
+
+  - id: generic.consent.wall
+    label: consent
+    confidence: 0.6
+    since: "2026.11.0"
+    notes: "Consent banner text on a page with little other text."
+    any:
+      - all:
+          - body_marker: "we value your privacy"
+          - text_length_below: 1500
+      - all:
+          - body_marker: "accept all cookies"
+          - text_length_below: 1500
+      - all:
+          - body_marker: "cookie preferences"
+          - text_length_below: 1500
+
+  - id: generic.empty.small_vs_baseline
+    label: empty
+    confidence: 0.7
+    since: "2026.11.0"
+    notes: "HTML under 30% of the usual size for this path, almost no text, no widget."
+    any:
+      - all:
+          - content_type: "text/html"
+          - size_below_baseline_pct: 30
+          - text_density_below: 0.05
+          - has_captcha_widget: false
 
   - id: generic.empty.tiny
     label: empty
@@ -26,3 +355,63 @@ rules:
           - size_below: 2048
           - text_length_below: 200
           - has_captcha_widget: false
+
+  - id: generic.error_page.title
+    label: error_page
+    confidence: 0.65
+    since: "2026.11.0"
+    notes: "Status 200 but the title names a server error, on a short page."
+    any:
+      - all:
+          - status: [200]
+          - title_regex: "\\b(internal server error|service unavailable|bad gateway|something went wrong|an error occurred|error 5\\d\\d)\\b"
+          - text_length_below: 2000
+
+  - id: generic.error_page.soft_404
+    label: error_page
+    confidence: 0.65
+    since: "2026.11.0"
+    notes: "Status 200 but the title says the page does not exist (soft 404)."
+    any:
+      - all:
+          - status: [200]
+          - title_regex: "\\b(404|page not found|not found|no longer available|does not exist)\\b"
+
+  # --- Generic: redirects away from the requested page ------------------------------------
+  - id: generic.redirect.login
+    label: redirect
+    confidence: 0.7
+    since: "2026.11.0"
+    notes: "Final URL is a login path."
+    any:
+      - all:
+          - final_url_regex: "/(login|log-in|signin|sign-in|sign_in|account/login|session/new|auth/)"
+
+  - id: generic.redirect.geo
+    label: redirect
+    confidence: 0.7
+    since: "2026.11.0"
+    notes: "Final URL is a region selector or a not-available-in-your-country page."
+    any:
+      - all:
+          - final_url_regex: "/(geo|region|country|location)[-_]?(block|blocked|select|selector|unavailable|restricted)"
+      - all:
+          - final_url_regex: "not[-_]available[-_]in[-_]your[-_](country|region)"
+
+  - id: generic.redirect.currency
+    label: redirect
+    confidence: 0.6
+    since: "2026.11.0"
+    notes: "Final URL switches the store currency."
+    any:
+      - all:
+          - final_url_regex: "([?&](currency|curr)=|/currency[-_]?(select|switch))"
+
+  - id: generic.redirect.consent
+    label: redirect
+    confidence: 0.6
+    since: "2026.11.0"
+    notes: "Final URL is a consent host or path."
+    any:
+      - all:
+          - final_url_regex: "^https?://consent\\.|/consent(/|\\?|$)"

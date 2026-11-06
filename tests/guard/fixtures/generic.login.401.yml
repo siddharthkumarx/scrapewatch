@@ -1,0 +1,9 @@
+rule: generic.login.401
+expect: {label: login, vendor: null}
+features:
+  status: 401
+  headers: {content-type: text/plain}
+  content_type: text/plain
+  body_bytes: 12
+  text_length: 12
+  text_density: 1.0

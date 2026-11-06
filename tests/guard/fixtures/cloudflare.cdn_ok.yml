@@ -1,0 +1,11 @@
+# A normal page served through Cloudflare's CDN is ok.
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html, server: cloudflare, cf-ray: 8a1b2c3d4e5f6073-LHR, cf-cache-status: HIT}
+  content_type: text/html
+  cookie_names: [__cf_bm]
+  title: Example Store - Home
+  body_bytes: 84000
+  text_length: 9000
+  text_density: 0.11

@@ -1,0 +1,12 @@
+rule: human.captcha
+expect: {label: captcha, vendor: human}
+features:
+  status: 403
+  headers: {content-type: text/html}
+  content_type: text/html
+  cookie_names: [_pxhd]
+  title: Access to this page has been denied
+  body_bytes: 4200
+  text_length: 310
+  text_density: 0.07
+  markers: [_pxappid, px-captcha]

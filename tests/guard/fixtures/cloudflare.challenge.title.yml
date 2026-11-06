@@ -1,0 +1,10 @@
+rule: cloudflare.challenge
+expect: {label: challenge, vendor: cloudflare, rule_id: cloudflare.challenge}
+features:
+  status: 403
+  headers: {content-type: text/html, server: cloudflare}
+  content_type: text/html
+  title: Just a moment...
+  body_bytes: 6900
+  text_length: 180
+  text_density: 0.03

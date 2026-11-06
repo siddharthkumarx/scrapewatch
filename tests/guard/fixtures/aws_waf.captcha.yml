@@ -1,0 +1,10 @@
+rule: aws_waf.captcha
+expect: {label: captcha, vendor: aws_waf}
+features:
+  status: 405
+  headers: {content-type: text/html, x-amzn-waf-action: captcha}
+  content_type: text/html
+  body_bytes: 2700
+  text_length: 120
+  text_density: 0.04
+  markers: [awswaf.com]

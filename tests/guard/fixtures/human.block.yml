@@ -1,0 +1,12 @@
+rule: human.block
+expect: {label: block, vendor: human}
+features:
+  status: 403
+  headers: {content-type: text/html}
+  content_type: text/html
+  cookie_names: [_pxhd]
+  title: Access to this page has been denied
+  body_bytes: 3900
+  text_length: 290
+  text_density: 0.07
+  markers: [_pxappid]

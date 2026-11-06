@@ -1,0 +1,11 @@
+rule: generic.rate_limit.text
+expect: {label: rate_limit, vendor: null}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Slow down
+  body_bytes: 500
+  text_length: 80
+  text_density: 0.16
+  markers: [too many requests]

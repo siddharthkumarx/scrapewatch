@@ -1,0 +1,12 @@
+rule: cloudflare.turnstile
+expect: {label: captcha, vendor: cloudflare}
+features:
+  status: 403
+  headers: {content-type: text/html, server: cloudflare}
+  content_type: text/html
+  title: Just a moment...
+  body_bytes: 8100
+  text_length: 240
+  text_density: 0.03
+  markers: [cf-chl, cf-turnstile]
+  has_captcha_widget: true

@@ -1,0 +1,10 @@
+rule: aws_waf.challenge
+expect: {label: challenge, vendor: aws_waf}
+features:
+  status: 202
+  headers: {content-type: text/html, x-amzn-waf-action: challenge}
+  content_type: text/html
+  body_bytes: 2300
+  text_length: 0
+  text_density: 0.0
+  markers: [awswaf.com]

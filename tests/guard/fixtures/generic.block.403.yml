@@ -1,0 +1,10 @@
+rule: generic.block.403
+expect: {label: block, vendor: null}
+features:
+  status: 403
+  headers: {content-type: text/html, server: nginx}
+  content_type: text/html
+  title: 403 Forbidden
+  body_bytes: 150
+  text_length: 20
+  text_density: 0.13

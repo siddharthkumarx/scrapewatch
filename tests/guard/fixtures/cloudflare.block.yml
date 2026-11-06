@@ -1,0 +1,11 @@
+rule: cloudflare.block
+expect: {label: block, vendor: cloudflare}
+features:
+  status: 403
+  headers: {content-type: text/html, server: cloudflare, cf-ray: 8a1b2c3d4e5f6072-LHR}
+  content_type: text/html
+  title: Attention Required! | Cloudflare
+  body_bytes: 5200
+  text_length: 600
+  text_density: 0.11
+  markers: [cf-error-details]

@@ -1,0 +1,12 @@
+rule: turnstile.captcha
+expect: {label: captcha, vendor: turnstile}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Checking
+  body_bytes: 1900
+  text_length: 60
+  text_density: 0.03
+  markers: [cf-turnstile]
+  has_captcha_widget: true

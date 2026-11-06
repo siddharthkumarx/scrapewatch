@@ -1,0 +1,10 @@
+rule: kasada.challenge
+expect: {label: challenge, vendor: kasada}
+features:
+  status: 429
+  headers: {content-type: text/html}
+  content_type: text/html
+  body_bytes: 1300
+  text_length: 0
+  text_density: 0.0
+  markers: [kpsdk]

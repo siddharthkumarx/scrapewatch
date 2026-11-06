@@ -1,0 +1,11 @@
+rule: imperva.challenge
+expect: {label: challenge, vendor: imperva}
+features:
+  status: 200
+  headers: {content-type: text/html, x-cdn: Imperva}
+  content_type: text/html
+  cookie_names: [visid_incap_123]
+  body_bytes: 900
+  text_length: 0
+  text_density: 0.0
+  markers: [_incapsula_resource]

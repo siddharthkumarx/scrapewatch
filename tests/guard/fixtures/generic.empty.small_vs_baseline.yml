@@ -1,0 +1,11 @@
+rule: generic.empty.small_vs_baseline
+expect: {label: empty, rule_id: generic.empty.small_vs_baseline}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Example Shop
+  body_bytes: 9000
+  text_length: 200
+  text_density: 0.022
+  baseline_p50_bytes: 48000

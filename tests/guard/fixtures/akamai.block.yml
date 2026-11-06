@@ -1,0 +1,11 @@
+rule: akamai.block
+expect: {label: block, vendor: akamai}
+features:
+  status: 403
+  headers: {content-type: text/html, server: AkamaiGHost}
+  content_type: text/html
+  title: Access Denied
+  body_bytes: 380
+  text_length: 190
+  text_density: 0.5
+  markers: [errors.edgesuite.net]

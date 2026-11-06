@@ -1,0 +1,10 @@
+rule: generic.error_page.title
+expect: {label: error_page, rule_id: generic.error_page.title}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Something went wrong | Example Shop
+  body_bytes: 7000
+  text_length: 300
+  text_density: 0.04

@@ -1,0 +1,11 @@
+rule: akamai.challenge
+expect: {label: challenge, vendor: akamai}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  cookie_names: [sec_cpt, bm_sz]
+  body_bytes: 3100
+  text_length: 60
+  text_density: 0.02
+  markers: [sec-if-cpt-container]

@@ -1,0 +1,7 @@
+# A small JSON response is not an empty HTML shell.
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: application/json}
+  content_type: application/json
+  body_bytes: 512

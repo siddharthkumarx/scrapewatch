@@ -1,0 +1,12 @@
+# A login box in the navigation of a full product page is ok.
+rule: generic.login.wall
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  title: Garden chairs | Example Shop
+  body_bytes: 110000
+  text_length: 9000
+  text_density: 0.08
+  has_form_password: true

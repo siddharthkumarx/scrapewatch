@@ -1,0 +1,12 @@
+rule: generic.redirect.geo
+expect: {label: redirect, rule_id: generic.redirect.geo}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  request_url: https://shop.example/p/1
+  final_url: https://shop.example/country-select?from=%2Fp%2F1
+  title: Choose your country
+  body_bytes: 20000
+  text_length: 1200
+  text_density: 0.06

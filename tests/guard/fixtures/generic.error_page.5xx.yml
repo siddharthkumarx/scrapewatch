@@ -1,0 +1,10 @@
+rule: generic.error_page.5xx
+expect: {label: error_page, vendor: null}
+features:
+  status: 502
+  headers: {content-type: text/html, server: nginx}
+  content_type: text/html
+  title: 502 Bad Gateway
+  body_bytes: 160
+  text_length: 30
+  text_density: 0.19
