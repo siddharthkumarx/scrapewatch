@@ -1,0 +1,22 @@
+[
+  {"input": "https://books.toscrape.com/catalogue/page-2.html", "expected": "https://books.toscrape.com/catalogue/page-2.html"},
+  {"input": "https://user:pass@example.com/path", "expected": "https://example.com/path"},
+  {"input": "https://user@example.com:8443/path?q=1", "expected": "https://example.com:8443/path?q=1"},
+  {"input": "https://example.com/search?q=books&api_key=abc123", "expected": "https://example.com/search?q=books&api_key=[redacted]"},
+  {"input": "https://example.com/?token=t&page=2", "expected": "https://example.com/?token=[redacted]&page=2"},
+  {"input": "https://example.com/?access_token=a&access-token=b", "expected": "https://example.com/?access_token=[redacted]&access-token=[redacted]"},
+  {"input": "https://example.com/?apikey=1&key=2&secret=3", "expected": "https://example.com/?apikey=[redacted]&key=[redacted]&secret=[redacted]"},
+  {"input": "https://example.com/?password=x&passwd=y&pwd=z", "expected": "https://example.com/?password=[redacted]&passwd=[redacted]&pwd=[redacted]"},
+  {"input": "https://example.com/?sessionid=1&session=2&sid=3", "expected": "https://example.com/?sessionid=[redacted]&session=[redacted]&sid=[redacted]"},
+  {"input": "https://example.com/img.png?sig=abc&signature=def&hash=ghi", "expected": "https://example.com/img.png?sig=[redacted]&signature=[redacted]&hash=[redacted]"},
+  {"input": "https://example.com/cb?code=xyz&state=s1", "expected": "https://example.com/cb?code=[redacted]&state=s1"},
+  {"input": "https://example.com/?otp=123456&auth=1", "expected": "https://example.com/?otp=[redacted]&auth=[redacted]"},
+  {"input": "https://example.com/?TOKEN=upper", "expected": "https://example.com/?TOKEN=[redacted]"},
+  {"input": "https://example.com/?api%5Fkey=enc", "expected": "https://example.com/?api%5Fkey=[redacted]"},
+  {"input": "https://example.com/?keyword=shoes&monkey=1", "expected": "https://example.com/?keyword=shoes&monkey=1"},
+  {"input": "https://example.com/?q=a%20b&utm_source=x&flag", "expected": "https://example.com/?q=a%20b&utm_source=x&flag"},
+  {"input": "https://example.com/cb#access_token=abc&token_type=bearer", "expected": "https://example.com/cb#access_token=[redacted]&token_type=bearer"},
+  {"input": "https://example.com/page#section-2", "expected": "https://example.com/page#section-2"},
+  {"input": "http://[::1/broken?token=abc", "expected": "http://[::1/broken"},
+  {"input": "/relative/path?token=abc&x=1", "expected": "/relative/path?token=[redacted]&x=1"}
+]

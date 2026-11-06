@@ -35,7 +35,7 @@ v0.2 or later.
 
 ### 1. Event model, redaction, config, run lifecycle `[v0.1]`
 
-- [ ] Scope: implement `config.load_settings`, `config.config_hash`, `redact.*`, and
+- [x] Scope: implement `config.load_settings`, `config.config_hash`, `redact.*`, and
   `runtime.Watch` in-memory (start, record_response without guard/cost/history,
   record_record without checks, finish without report/alerts), plus `_guarded()` and the
   flush queue skeleton. Add `tests/test_layering.py` enforcing A§4 import rules.

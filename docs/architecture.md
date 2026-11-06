@@ -369,6 +369,7 @@ src/scrapewatch/
   errors.py          exception hierarchy
   models.py          data model (L0)
   config.py          Settings, CostConfig, ... (L0)
+  _yaml.py           safe YAML loader with YAML 1.2 booleans (L0)
   redact.py          header/url/cookie redaction (L0)
   history/           store.py (SQLite), baselines.py, migrations.py (L1)
   cost/              meter.py (L1)
@@ -388,7 +389,8 @@ src/scrapewatch/
 Import rules (enforced by `tests/test_layering.py`, build item 1):
 
 - A module may import from its own layer or lower, never higher. L0 imports only the standard
-  library and pydantic.
+  library, pydantic and PyYAML (config loading through `_yaml.py`, which resolves only
+  `true`/`false` as booleans so the `alerts.on` key is not read as YAML 1.1 `True`).
 - `runtime.py` is the only module that imports history, cost, guard, clean, checks, report
   and alerts together.
 - `integrations/*`, `waste/*` and `cli/*` import third-party frameworks lazily (inside
@@ -708,6 +710,7 @@ PSI = Σ (actual% − baseline%) × ln(actual% / baseline%) over bins, with 0.5%
 | Any finding with severity hold | | hold |
 | Any finding with severity warn | warn | |
 | Checks engine failed (exception, rules not loadable, history unreadable when the gate is in use) | | hold |
+| Run crashed (an exception left the `watch()` block) | | hold |
 
 Verdict = hold if any hold condition, else warn if any warn condition, else pass. `reasons`
 hold one sentence per triggered condition with the numbers ("blocked share 23.4% is above
@@ -1138,7 +1141,9 @@ records `overhead_ms_p50` so a user can see the monitor's cost in their own repo
 
 - No telemetry, no update checks, no network calls except the alerts the user configured.
 - Stored headers: only names in `redact.KEPT_HEADERS`; any name in `SENSITIVE_HEADERS` or
-  matching `SENSITIVE_HEADER_RE` is dropped even if a rule asked for it.
+  matching `SENSITIVE_HEADER_RE` is dropped even if a rule asked for it. (`www-authenticate`
+  matches the pattern, so it is not kept). URL-valued headers (`location`) are redacted like
+  URLs.
 - Cookies: names only, from both request and response.
 - URLs: userinfo removed; query values whose key matches `SENSITIVE_QUERY_RE` become
   `[redacted]` in stored events, findings, reports and alerts. The guard sees the original

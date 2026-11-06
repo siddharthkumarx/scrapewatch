@@ -1,0 +1,30 @@
+# Every settings key, as in docs/architecture.md section 5.
+name: books
+rules: rules.yml
+history:
+  path: .scrapewatch
+  backend: sqlite
+  keep_runs: 50
+  keep_event_days: 30
+  baseline_runs: 7
+cost:
+  currency: USD
+  default_proxy: direct
+  proxies:
+    direct: {per_gb: 0}
+    datacenter: {per_gb: 0.8}
+    residential-a: {per_gb: 8.0}
+  apis:
+    unblocker-x: {per_1000_requests: 2.5}
+  browser:
+    per_minute: 0.0
+guard:
+  enabled: true
+  rules_path: null
+  extra_rules: [my-rules.yml]
+  body_window_bytes: 65536
+alerts:
+  on: [hold]
+  channels: [telegram, slack]
+report_dir: .scrapewatch/reports
+store_events: true
