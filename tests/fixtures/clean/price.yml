@@ -1,0 +1,95 @@
+# Golden cases for the price normalizer (docs/architecture.md 10.1).
+# Each case: input, options, expect {value, changed, flag, extra}. Omitted expect keys mean
+# value = input (unchanged), changed = false, flag = null, extra = {}.
+# The first block is every row of the architecture table; the rest are real-world shapes
+# written for this project (no page was copied).
+cases:
+  # --- architecture table 10.1 ---
+  - {input: "$1,299.00", options: {}, expect: {value: 1299.0, changed: true, extra: {currency: USD}}}
+  - {input: "1.299,00 €", options: {}, expect: {value: 1299.0, changed: true, extra: {currency: EUR}}}
+  - {input: "Rs. 499", options: {}, expect: {value: 499.0, changed: true, extra: {currency: INR}}}
+  - {input: "£51.77", options: {}, expect: {value: 51.77, changed: true, extra: {currency: GBP}}}
+  - {input: "CHF 12.50", options: {}, expect: {value: 12.5, changed: true, extra: {currency: CHF}}}
+  - {input: "12,99", options: {}, expect: {value: 12.99, changed: true}}
+  - {input: "1,299", options: {locale: auto}, expect: {flag: ambiguous_separator}}
+  - {input: "1,299", options: {locale: us}, expect: {value: 1299.0, changed: true}}
+  - {input: "1.299", options: {locale: eu}, expect: {value: 1299.0, changed: true}}
+  - {input: "$10 – $20", options: {}, expect: {flag: range}}
+  - {input: "Free", options: {allow_free: true}, expect: {value: 0.0, changed: true}}
+  - {input: "Free", options: {}, expect: {flag: non_numeric}}
+  - {input: "-5.00", options: {}, expect: {flag: negative}}
+  - {input: "Price on request", options: {}, expect: {flag: non_numeric}}
+  - {input: 1299, options: {}, expect: {}}
+  - {input: "$ 1 299,00", options: {}, expect: {value: 1299.0, changed: true, extra: {currency: USD}}}
+  # --- symbols and codes from the recognised list ---
+  - {input: "A$12.95", options: {}, expect: {value: 12.95, changed: true, extra: {currency: AUD}}}
+  - {input: "C$ 8.00", options: {}, expect: {value: 8.0, changed: true, extra: {currency: CAD}}}
+  - {input: "NZ$45", options: {}, expect: {value: 45.0, changed: true, extra: {currency: NZD}}}
+  - {input: "S$19.90", options: {}, expect: {value: 19.9, changed: true, extra: {currency: SGD}}}
+  - {input: "HK$ 1,280", options: {}, expect: {flag: ambiguous_separator}}
+  - {input: "HK$ 1,280.00", options: {}, expect: {value: 1280.0, changed: true, extra: {currency: HKD}}}
+  - {input: "MX$249", options: {}, expect: {value: 249.0, changed: true, extra: {currency: MXN}}}
+  - {input: "R$ 89,90", options: {}, expect: {value: 89.9, changed: true, extra: {currency: BRL}}}
+  - {input: "US$ 15", options: {}, expect: {value: 15.0, changed: true, extra: {currency: USD}}}
+  - {input: "¥1,980", options: {}, expect: {value: 1980.0, changed: true, extra: {currency: JPY}}}
+  - {input: "₩12.000", options: {}, expect: {value: 12000.0, changed: true, extra: {currency: KRW}}}
+  - {input: "₹ 1,499.00", options: {}, expect: {value: 1499.0, changed: true, extra: {currency: INR}}}
+  - {input: "Rs 1,29,999", options: {}, expect: {value: 129999.0, changed: true, extra: {currency: INR}}}
+  - {input: "990 ₽", options: {}, expect: {value: 990.0, changed: true, extra: {currency: RUB}}}
+  - {input: "₺149,90", options: {}, expect: {value: 149.9, changed: true, extra: {currency: TRY}}}
+  - {input: "250.000 ₫", options: {}, expect: {value: 250000.0, changed: true, extra: {currency: VND}}}
+  - {input: "₪ 79.90", options: {}, expect: {value: 79.9, changed: true, extra: {currency: ILS}}}
+  - {input: "12,99 zł", options: {}, expect: {value: 12.99, changed: true, extra: {currency: PLN}}}
+  - {input: "99 kr", options: {}, expect: {flag: ambiguous_currency}}
+  - {input: "99 kr", options: {currency_default: SEK}, expect: {value: 99.0, changed: true, extra: {currency: SEK}}}
+  - {input: "149,00 kr.", options: {currency_default: DKK}, expect: {value: 149.0, changed: true, extra: {currency: DKK}}}
+  - {input: "99 kr", options: {currency_default: EUR}, expect: {flag: ambiguous_currency}}
+  - {input: "EUR 1.299,00", options: {}, expect: {value: 1299.0, changed: true, extra: {currency: EUR}}}
+  - {input: "12.50 CHF", options: {}, expect: {value: 12.5, changed: true, extra: {currency: CHF}}}
+  - {input: "1'299.50 CHF", options: {}, expect: {value: 1299.5, changed: true, extra: {currency: CHF}}}
+  - {input: "CHF 12.-", options: {}, expect: {value: 12.0, changed: true, extra: {currency: CHF}}}
+  - {input: "12,- €", options: {}, expect: {value: 12.0, changed: true, extra: {currency: EUR}}}
+  - {input: "1.299,– €", options: {}, expect: {value: 1299.0, changed: true, extra: {currency: EUR}}}
+  - {input: "$10 USD", options: {}, expect: {value: 10.0, changed: true, extra: {currency: USD}}}
+  - {input: "€10 USD", options: {}, expect: {flag: ambiguous_currency}}
+  - {input: "$10", options: {currency_default: CAD}, expect: {value: 10.0, changed: true, extra: {currency: CAD}}}
+  - {input: "$10", options: {currency_default: EUR}, expect: {value: 10.0, changed: true, extra: {currency: USD}}}
+  - {input: "10.00", options: {currency_default: GBP}, expect: {value: 10.0, changed: true, extra: {currency: GBP}}}
+  - {input: "10.00 XYZ", options: {}, expect: {flag: non_numeric}}
+  # --- spacing, signs and separators ---
+  - {input: "  £ 51.77 ", options: {}, expect: {value: 51.77, changed: true, extra: {currency: GBP}}}
+  - {input: "51.77 €", options: {}, expect: {value: 51.77, changed: true, extra: {currency: EUR}}}
+  - {input: "1 299,00 €", options: {}, expect: {value: 1299.0, changed: true, extra: {currency: EUR}}}
+  - {input: "$1,299,000", options: {}, expect: {value: 1299000.0, changed: true, extra: {currency: USD}}}
+  - {input: "1.299.000 €", options: {}, expect: {value: 1299000.0, changed: true, extra: {currency: EUR}}}
+  - {input: "$0.99", options: {}, expect: {value: 0.99, changed: true, extra: {currency: USD}}}
+  - {input: "£0.00", options: {}, expect: {value: 0.0, changed: true, extra: {currency: GBP}}}
+  - {input: "$.99", options: {}, expect: {value: 0.99, changed: true, extra: {currency: USD}}}
+  - {input: "51.77", options: {}, expect: {value: 51.77, changed: true}}
+  - {input: "1234,567", options: {}, expect: {value: 1234.567, changed: true}}
+  - {input: "1,299", options: {locale: eu}, expect: {value: 1.299, changed: true}}
+  - {input: "1.299", options: {locale: auto}, expect: {flag: ambiguous_separator}}
+  - {input: "-$5.00", options: {}, expect: {flag: negative}}
+  - {input: "$-5.00", options: {}, expect: {flag: negative}}
+  - {input: "−5,00 €", options: {}, expect: {flag: negative}}
+  - {input: "1,2,3", options: {}, expect: {flag: non_numeric}}
+  - {input: "1.299,000,00", options: {}, expect: {flag: non_numeric}}
+  # --- words, estimates and ranges ---
+  - {input: "FREE!", options: {allow_free: true, currency_default: GBP}, expect: {value: 0.0, changed: true, extra: {currency: GBP}}}
+  - {input: "From £10.00", options: {}, expect: {flag: approximate}}
+  - {input: "$10+", options: {}, expect: {flag: approximate}}
+  - {input: "~€20", options: {}, expect: {flag: approximate}}
+  - {input: "Up to $50", options: {}, expect: {flag: approximate}}
+  - {input: "£10.00 - £15.00", options: {}, expect: {flag: range}}
+  - {input: "10 to 20 EUR", options: {}, expect: {flag: range}}
+  - {input: "$12k", options: {}, expect: {flag: suffix}}
+  - {input: "Sold out", options: {}, expect: {flag: non_numeric}}
+  - {input: "£10.00 inc. VAT", options: {}, expect: {flag: non_numeric}}
+  - {input: "Was £20, now £10", options: {}, expect: {flag: non_numeric}}
+  # --- values that are already numbers or not text ---
+  - {input: 51.77, options: {}, expect: {}}
+  - {input: 0, options: {}, expect: {}}
+  - {input: true, options: {}, expect: {value: true, flag: non_numeric}}
+  - {input: [1, 2], options: {}, expect: {value: [1, 2], flag: non_numeric}}
+  - {input: "12", options: {_field_type: integer}, expect: {value: 12, changed: true}}
+  - {input: "12.50", options: {_field_type: integer}, expect: {value: 12.5, changed: true}}

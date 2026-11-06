@@ -88,6 +88,7 @@ class RecordChecker:
                 run_id=run_id,
                 record_id=record.record_id,
                 severity=rule.severity,
+                field_type=rule.type,
             )
             if present or result.fixes:
                 values[name] = result.value

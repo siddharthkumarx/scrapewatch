@@ -190,7 +190,7 @@ v0.2 or later.
 
 ### 10. Cleaning: price and number `[v0.1]`
 
-- [ ] Scope: `clean/price.py`, `clean/number.py` with every row of A§10.1 and A§10.2,
+- [x] Scope: `clean/price.py`, `clean/number.py` with every row of A§10.1 and A§10.2,
   currency table, `extra` currency fill rule, fix accounting in `apply_normalizers`.
 - Files: `clean/price.py`, `clean/number.py`, `clean/pipeline.py`, `clean/_currency.py`,
   `tests/clean/`.
@@ -200,6 +200,10 @@ v0.2 or later.
   more real-world shapes written by the builder; property test that a fixed value never
   changes on a second pass (idempotence).
 - Done when: pass, coverage ≥ 74.
+- Notes: 84 price and 55 number golden cases (25 table rows, the rest real-world
+  shapes); seeded property tests (2,000 generated prices and numbers each) check the round
+  trip and idempotence. Decisions written into A§10.1/10.2 (currency_default, whole-unit
+  currencies, extra flags, `_field_type`).
 
 ### 11. Cleaning: date, text, url, dedupe key; pipeline wiring `[v0.1]`
 
@@ -429,8 +433,8 @@ v0.2 or later.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 10** (cleaning: price and number). M1 (items 1 to 9b)
-is done; every item is green on GitHub (ci.yml and full.yml) and the M1 matrix is logged.
+Next item: **docs/build-progress.md item 11** (cleaning: date, text, url, dedupe; pipeline
+wiring). M1 (items 1 to 9b) and item 10 are done and green on GitHub (ci.yml and full.yml).
 
 Notes for the next session:
 
@@ -444,7 +448,8 @@ Notes for the next session:
   (`checks/batch.py`) accumulates counts, field stats, value hashes and currency mismatches.
   `finish()` order: flush, aggregate (workers), cost, status, verdict (fails closed), overhead,
   store, prune, close.
-- Normalizers: `clean/price.py`, `number.py`, `date.py`, `url.py` are still stubs that raise
+- Normalizers: `clean/price.py` and `number.py` are done (shared parsing in `_numeric.py`,
+  currency table in `_currency.py`); `date.py` and `url.py` are still stubs that raise
   `NotImplementedError`; `clean/pipeline.run_normalizers` treats that as a passthrough. Remove
   that `except NotImplementedError` once items 10 and 11 are done. `clean/text.py` registers a
   stub named `text`; item 11 replaces it with `whitespace`, `html_entities`, `strip_tags` and

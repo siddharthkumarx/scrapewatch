@@ -63,14 +63,18 @@ def run_normalizers(
     run_id: str,
     record_id: str,
     severity: Severity = Severity.WARN,
+    field_type: str | None = None,
 ) -> PipelineResult:
     """Apply normalizers in order, stopping at the first flag (detailed result).
 
     ``None`` and ``""`` pass through without calling any normalizer. A name without an
     implementation is a passthrough. A normalizer that raises leaves the value unchanged and
-    records a ``clean.<name>.error`` finding.
+    records a ``clean.<name>.error`` finding. ``field_type`` reaches the normalizers as the
+    reserved option ``_field_type`` (numbers come back as int in integer fields).
     """
     out = PipelineResult(value=value)
+    if field_type is not None:
+        options = {**options, "_field_type": field_type}
     if value is None or (isinstance(value, str) and value == ""):
         return out  # required-ness is a field rule; normalizers never coerce None or ""
     for name in names:

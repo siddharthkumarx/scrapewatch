@@ -858,6 +858,18 @@ Currency symbols and codes recognised: `$ (USD unless prefixed A$/C$/NZ$/S$/HK$/
 CHF, and any ISO 4217 code adjacent to the number`. A symbol with several currencies flags
 `ambiguous_currency` unless `currency_default` is set.
 
+Details fixed while building (item 10): `currency_default` is also the currency of a value
+that names none, settles a shared symbol only when it is one of the candidates (`kr` with
+`SEK`), and is the reading of a bare `$` when it is a dollar currency (CAD, AUD, ...;
+otherwise `$` stays USD). Two currencies that disagree (`€10 USD`) flag `ambiguous_currency`.
+For currencies without a minor unit (JPY, KRW, VND, CLP, ...) a single separator before three
+digits groups thousands (`¥1,980`). Further flags: `approximate` (`From £10`, `$10+`, `~€20`),
+`suffix` (`$12k`), and `non_numeric` for any other text around the number (`£10 inc. VAT`).
+Also accepted: apostrophe thousands (`1'299.50`), Indian grouping (`Rs 1,29,999`), a trailing
+`,-` or `.-` for no fraction (`12,- €`, `CHF 12.-`), NBSP and thin spaces. The pipeline passes
+the field's `type` to normalizers as the reserved option `_field_type`, so integer fields get
+`int` values. Goldens: `tests/fixtures/clean/price.yml` and `number.yml`.
+
 ### 10.2 number
 
 Options: `locale`, `allow_suffix: false` (k, M), `integer: false`.
@@ -871,6 +883,10 @@ Options: `locale`, `allow_suffix: false` (k, M), `integer: false`.
 | `"≈ 40"` / `"40+"` | unchanged | flag `approximate` |
 | `"n/a"` | unchanged | flag `non_numeric` |
 | `"4.5 out of 5"` | unchanged | flag `non_numeric` |
+
+Also: `"10-20"` flags `range`; `"3.5"` with `integer: true` flags `not_integer`; `1.5e3` reads
+as 1500; signs `-`, `+` and `−` are kept (negative numbers are fine here, unlike prices);
+suffixes are k/K (thousand), M (million), B/bn (billion).
 
 ### 10.3 date
 

@@ -115,8 +115,8 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 10** (cleaning: price and number). M1 (items 1 to 9b)
-is done; every item is green on GitHub (ci.yml and full.yml) and the M1 matrix is logged.
+Next item: **docs/build-progress.md item 11** (cleaning: date, text, url, dedupe; pipeline
+wiring). M1 (items 1 to 9b) and item 10 are done and green on GitHub (ci.yml and full.yml).
 
 Notes for the next session:
 
@@ -130,7 +130,8 @@ Notes for the next session:
   (`checks/batch.py`) accumulates counts, field stats, value hashes and currency mismatches.
   `finish()` order: flush, aggregate (workers), cost, status, verdict (fails closed), overhead,
   store, prune, close.
-- Normalizers: `clean/price.py`, `number.py`, `date.py`, `url.py` are still stubs that raise
+- Normalizers: `clean/price.py` and `number.py` are done (shared parsing in `_numeric.py`,
+  currency table in `_currency.py`); `date.py` and `url.py` are still stubs that raise
   `NotImplementedError`; `clean/pipeline.run_normalizers` treats that as a passthrough. Remove
   that `except NotImplementedError` once items 10 and 11 are done. `clean/text.py` registers a
   stub named `text`; item 11 replaces it with `whitespace`, `html_entities`, `strip_tags` and

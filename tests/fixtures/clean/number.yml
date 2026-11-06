@@ -1,0 +1,60 @@
+# Golden cases for the number normalizer (docs/architecture.md 10.2).
+# Same format as price.yml. The first block is every row of the architecture table.
+cases:
+  # --- architecture table 10.2 ---
+  - {input: "1 234,5", options: {}, expect: {value: 1234.5, changed: true}}
+  - {input: "1,234.56", options: {}, expect: {value: 1234.56, changed: true}}
+  - {input: "3.5", options: {}, expect: {value: 3.5, changed: true}}
+  - {input: "12k", options: {allow_suffix: true}, expect: {value: 12000.0, changed: true}}
+  - {input: "12k", options: {}, expect: {flag: suffix}}
+  - {input: "≈ 40", options: {}, expect: {flag: approximate}}
+  - {input: "40+", options: {}, expect: {flag: approximate}}
+  - {input: "n/a", options: {}, expect: {flag: non_numeric}}
+  - {input: "4.5 out of 5", options: {}, expect: {flag: non_numeric}}
+  # --- real-world shapes ---
+  - {input: "42", options: {}, expect: {value: 42.0, changed: true}}
+  - {input: " 42 ", options: {integer: true}, expect: {value: 42, changed: true}}
+  - {input: "007", options: {}, expect: {value: 7.0, changed: true}}
+  - {input: "-3.5", options: {}, expect: {value: -3.5, changed: true}}
+  - {input: "−7", options: {}, expect: {value: -7.0, changed: true}}
+  - {input: "+5", options: {}, expect: {value: 5.0, changed: true}}
+  - {input: "-0", options: {}, expect: {value: 0.0, changed: true}}
+  - {input: "1.5e3", options: {}, expect: {value: 1500.0, changed: true}}
+  - {input: "2E-2", options: {}, expect: {value: 0.02, changed: true}}
+  - {input: "1,234", options: {}, expect: {flag: ambiguous_separator}}
+  - {input: "1,234", options: {locale: us}, expect: {value: 1234.0, changed: true}}
+  - {input: "1,234", options: {locale: eu}, expect: {value: 1.234, changed: true}}
+  - {input: "1.234", options: {locale: eu}, expect: {value: 1234.0, changed: true}}
+  - {input: "1.234.567,89", options: {}, expect: {value: 1234567.89, changed: true}}
+  - {input: "1'234'567", options: {}, expect: {value: 1234567.0, changed: true}}
+  - {input: "12 345", options: {}, expect: {value: 12345.0, changed: true}}
+  - {input: "12 34", options: {}, expect: {flag: non_numeric}}
+  - {input: "0,5", options: {}, expect: {value: 0.5, changed: true}}
+  - {input: ".25", options: {}, expect: {value: 0.25, changed: true}}
+  - {input: "3,000,000", options: {integer: true}, expect: {value: 3000000, changed: true}}
+  - {input: "3.5", options: {integer: true}, expect: {flag: not_integer}}
+  - {input: "12", options: {_field_type: integer}, expect: {value: 12, changed: true}}
+  - {input: "12.5", options: {_field_type: integer}, expect: {value: 12.5, changed: true}}
+  - {input: "1.2M", options: {allow_suffix: true}, expect: {value: 1200000.0, changed: true}}
+  - {input: "3 bn", options: {allow_suffix: true}, expect: {value: 3000000000.0, changed: true}}
+  - {input: "2.5K", options: {allow_suffix: true, integer: true}, expect: {value: 2500, changed: true}}
+  - {input: "1.2M", options: {}, expect: {flag: suffix}}
+  - {input: "~40", options: {}, expect: {flag: approximate}}
+  - {input: "ca. 40", options: {}, expect: {flag: approximate}}
+  - {input: "over 100", options: {}, expect: {flag: approximate}}
+  - {input: "<5", options: {}, expect: {flag: approximate}}
+  - {input: "10-20", options: {}, expect: {flag: range}}
+  - {input: "10 – 20", options: {}, expect: {flag: range}}
+  - {input: "45%", options: {}, expect: {flag: non_numeric}}
+  - {input: "12 kg", options: {}, expect: {flag: non_numeric}}
+  - {input: "1.2.3", options: {}, expect: {flag: non_numeric}}
+  - {input: "4,5 von 5", options: {}, expect: {flag: non_numeric}}
+  - {input: "1234,567,890", options: {}, expect: {flag: non_numeric}}
+  - {input: "0.299.000", options: {}, expect: {flag: non_numeric}}
+  - {input: "1,299,-", options: {}, expect: {flag: non_numeric}}
+  - {input: "1.299 000,-", options: {}, expect: {flag: non_numeric}}
+  - {input: "1.299,-", options: {}, expect: {value: 1299.0, changed: true}}
+  - {input: 7, options: {}, expect: {}}
+  - {input: 2.5, options: {}, expect: {}}
+  - {input: .nan, options: {}, expect: {value: .nan, flag: non_numeric}}
+  - {input: false, options: {}, expect: {value: false, flag: non_numeric}}
