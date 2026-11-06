@@ -54,12 +54,18 @@ jobs:
           cache-dependency-glob: "pyproject.toml"
       # crawlee's browser crawler needs the playwright extra as well
       - run: uv sync --python 3.12 --group dev --extra ${{ matrix.extra }} ${{ matrix.extra == 'crawlee' && '--extra playwright' || '' }}
-      - if: matrix.extra == 'playwright' || matrix.extra == 'crawlee'
+      - name: Find integration tests
+        id: tests
+        run: |
+          if [ -d tests/integrations ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "no integration tests yet"; echo "present=false" >> "$GITHUB_OUTPUT"; fi
+      # The browser and its apt dependencies are installed only when there are tests to run;
+      # the apt step can take over ten minutes on a slow mirror, so it is capped.
+      - if: steps.tests.outputs.present == 'true' && (matrix.extra == 'playwright' || matrix.extra == 'crawlee')
+        timeout-minutes: 10
         run: uv run playwright install --with-deps chromium
       - name: Integration tests
-        run: |
-          if [ ! -d tests/integrations ]; then echo "no integration tests yet"; exit 0; fi
-          uv run pytest -m "not live" tests/integrations -k ${{ matrix.extra }} || [ $? -eq 5 ]
+        if: steps.tests.outputs.present == 'true'
+        run: uv run pytest -m "not live" tests/integrations -k ${{ matrix.extra }} || [ $? -eq 5 ]
 
   gitleaks:
     runs-on: ubuntu-latest
