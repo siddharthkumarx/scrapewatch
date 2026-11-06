@@ -96,7 +96,7 @@ class Settings(BaseModel):
     history: HistoryConfig = Field(default_factory=HistoryConfig)
     alerts: AlertConfig = Field(default_factory=AlertConfig)
     guard: GuardConfig = Field(default_factory=GuardConfig)
-    report_dir: Path = Path(".scrapewatch/reports")
+    report_dir: Path | None = None  # None: <history.path>/reports
     store_events: bool = True
 
 

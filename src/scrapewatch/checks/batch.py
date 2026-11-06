@@ -70,7 +70,7 @@ class SampleKeeper:
                 sample = FindingSample(check=f.check, field=f.field, severity=f.severity)
                 self.findings[key] = sample
             sample.count += 1
-            if len(sample.examples) < self.examples:
+            if f.observed is not None and len(sample.examples) < self.examples:
                 sample.examples.append(example_value(f.observed))
         for fix in record.fixes:
             fkey = (fix.normalizer, fix.field)

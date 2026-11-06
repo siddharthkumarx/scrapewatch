@@ -91,6 +91,7 @@ def test_run_json_shape() -> None:
         "samples",
         "report_path",
         "overhead_ms_p50",
+        "overhead_ms_p95",
     }
     assert data["status"] == "running"
     assert data["verdict"]["status"] == "pass"

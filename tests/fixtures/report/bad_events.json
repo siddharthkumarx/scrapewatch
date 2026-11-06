@@ -1,0 +1,121 @@
+[
+  {
+    "schema_version": 1,
+    "event_id": "e0000000000000000000000000000000",
+    "run_id": "9a1b2c3d4e5f60718293a4b5c6d7e8f9",
+    "ts": "2026-11-05T14:12:00Z",
+    "url": "https://books.toscrape.com/catalogue/page-2.html?session=[redacted]",
+    "final_url": null,
+    "method": "GET",
+    "domain": "books.toscrape.com",
+    "status": 403,
+    "elapsed_ms": null,
+    "wire_bytes": 0,
+    "body_bytes": 0,
+    "bytes_source": "unknown",
+    "resource_type": "document",
+    "proxy": null,
+    "attempt": 1,
+    "retry_of": null,
+    "headers": {},
+    "cookie_names": [],
+    "guard": {
+      "label": "challenge",
+      "vendor": "cloudflare",
+      "rule_id": "cloudflare.challenge",
+      "confidence": 0.9,
+      "signals": [
+        "status in [403]",
+        "header cf-mitigated ~ ^challenge$"
+      ]
+    },
+    "cache": {
+      "conditional": false,
+      "unchanged": false,
+      "deduped": false
+    },
+    "error": null,
+    "integration": "manual",
+    "cost": null,
+    "monitor_error": null
+  },
+  {
+    "schema_version": 1,
+    "event_id": "e1000000000000000000000000000000",
+    "run_id": "9a1b2c3d4e5f60718293a4b5c6d7e8f9",
+    "ts": "2026-11-05T14:12:10Z",
+    "url": "https://books.toscrape.com/catalogue/page-3.html?session=[redacted]",
+    "final_url": null,
+    "method": "GET",
+    "domain": "books.toscrape.com",
+    "status": 200,
+    "elapsed_ms": null,
+    "wire_bytes": 0,
+    "body_bytes": 0,
+    "bytes_source": "unknown",
+    "resource_type": "document",
+    "proxy": null,
+    "attempt": 1,
+    "retry_of": null,
+    "headers": {},
+    "cookie_names": [],
+    "guard": {
+      "label": "empty",
+      "vendor": null,
+      "rule_id": "generic.empty.small_vs_baseline",
+      "confidence": 0.9,
+      "signals": [
+        "size below 30% of baseline",
+        "text density below 0.05"
+      ]
+    },
+    "cache": {
+      "conditional": false,
+      "unchanged": false,
+      "deduped": false
+    },
+    "error": null,
+    "integration": "manual",
+    "cost": null,
+    "monitor_error": null
+  },
+  {
+    "schema_version": 1,
+    "event_id": "e2000000000000000000000000000000",
+    "run_id": "9a1b2c3d4e5f60718293a4b5c6d7e8f9",
+    "ts": "2026-11-05T14:12:20Z",
+    "url": "https://books.toscrape.com/catalogue/page-4.html?session=[redacted]",
+    "final_url": null,
+    "method": "GET",
+    "domain": "books.toscrape.com",
+    "status": 429,
+    "elapsed_ms": null,
+    "wire_bytes": 0,
+    "body_bytes": 0,
+    "bytes_source": "unknown",
+    "resource_type": "document",
+    "proxy": null,
+    "attempt": 1,
+    "retry_of": null,
+    "headers": {},
+    "cookie_names": [],
+    "guard": {
+      "label": "rate_limit",
+      "vendor": null,
+      "rule_id": "generic.rate_limit.429",
+      "confidence": 0.9,
+      "signals": [
+        "status in [429]"
+      ]
+    },
+    "cache": {
+      "conditional": false,
+      "unchanged": false,
+      "deduped": false
+    },
+    "error": null,
+    "integration": "manual",
+    "cost": null,
+    "monitor_error": null
+  }
+]

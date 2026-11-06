@@ -180,8 +180,14 @@ def test_json_and_report_outputs(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     run = Run.model_validate_json(out.read_text("utf-8"))
     assert run.counts.records == 50
-    assert Run.model_validate_json(report.with_suffix(".json").read_text("utf-8")) == run
+    beside = Run.model_validate_json(report.with_suffix(".json").read_text("utf-8"))
+    assert beside.report_path == str(report)
+    assert beside.counts == run.counts
+    html = report.read_text("utf-8")
+    assert "<h2>Data checks</h2>" in html
+    assert "<script" not in html
     assert f"summary: {out}" in result.output
+    assert f"report: {report}" in result.output
 
 
 def test_promote_to_and_hold_keeps_previous_live(tmp_path: Path) -> None:

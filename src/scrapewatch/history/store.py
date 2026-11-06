@@ -408,7 +408,13 @@ class HistoryStore:
             "ORDER BY status",
             (run_id,),
         )
+        domains = self._read(
+            "SELECT domain, COUNT(*) AS n FROM events WHERE run_id = ? GROUP BY domain "
+            "ORDER BY domain",
+            (run_id,),
+        )
         return {
+            "by_domain": {r["domain"]: int(r["n"]) for r in domains},
             "responses": int(total["n"]),
             "document_responses": int(total["docs"]),
             "bad_documents": int(total["bad_docs"]),

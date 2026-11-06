@@ -49,7 +49,8 @@ def test_unopenable_history_fails_open(tmp_path: Path) -> None:
         assert w.record_response("https://example.com/", status=200) is not None
     assert w.store is None
     assert w.history_failed
-    assert w.run.counts.monitor_errors == 1
+    assert w.run.counts.monitor_errors == 2  # opening history, then the report under it
+    assert w.run.report_path is None
     assert w.run.status == RunStatus.FINISHED
 
 

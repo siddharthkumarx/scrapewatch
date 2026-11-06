@@ -215,8 +215,9 @@ is a dotted id from a fixed vocabulary (section 8.4). `rule_id` is set for guard
     "baseline_runs": ["8b...", "7a...", "6c..."]
   },
   "findings": [],
-  "report_path": ".scrapewatch/reports/books/2026-11-05T14-12-00_9a1b.html",
-  "overhead_ms_p50": 0.21
+  "report_path": ".scrapewatch/reports/books/2026-11-05T14-12-00_9a1b2c3d.html",
+  "overhead_ms_p50": 0.21,
+  "overhead_ms_p95": 0.48
 }
 ```
 
@@ -452,7 +453,7 @@ guard:
 alerts:
   on: [hold]                      # any of pass, warn, hold
   channels: [telegram, slack]     # empty = every channel whose env vars are set
-report_dir: .scrapewatch/reports
+report_dir: null                  # null = <history.path>/reports
 store_events: true                # false = store run summaries and field stats only
 ```
 
@@ -1059,7 +1060,9 @@ as "measured" only when every event in the run is measured.
 ### 12.1 Files
 
 `<history.path>/history.sqlite` (WAL mode, `busy_timeout` 5 s), plus
-`<history.path>/reports/<name>/<started_at>_<run_id[:8]>.html` and `.json`. `SCRAPEWATCH_HOME`
+`<history.path>/reports/<name>/<started_at>_<run_id[:8]>.html` and `.json` (`report_dir`
+replaces `<history.path>/reports` when set; `started_at` is written `YYYY-MM-DDTHH-MM-SS` so
+the name is valid on Windows). `SCRAPEWATCH_HOME`
 or `history.path` relocates everything. The JSONL backend (later item) writes
 `runs.jsonl` and `events/<run_id>.jsonl` instead, append-only.
 
@@ -1154,6 +1157,21 @@ table when it holds more events than the parent wrote itself.
 
 Plain language throughout: "blocked" rather than "HTTP 403 with WAF signature", with the
 technical detail in a smaller line underneath.
+
+Details fixed while building (item 13): `report/html.py::render_html(run, *, history=(),
+bad_events=(), gate=None, files=None)` replaces the stub's `findings`/`records_sample`
+arguments: batch and run findings are on the Run, record findings and fixes come from
+`Run.samples`, `bad_events` are the first 20 responses with a bad label (kept in memory by
+`Watch`, or read from history), `gate` is one sentence on the output and `files` the paths
+shown in the footer. The template is `report/templates/base.html`, filled with
+`string.Template` (CSS braces need no escaping); every value goes through `html.escape`, URLs
+from the data are text, never links, and tables scroll sideways on a phone. Light and dark
+colour schemes follow `prefers-color-scheme`. The output is deterministic for a given input
+(golden: `tests/fixtures/report/report_warn.html`). `Watch.finish` writes the report and
+summary in a guarded step after the overhead numbers and before the store, so
+`report_path` is in the stored summary. The Run gained `counts.by_domain`,
+`counts.by_bytes_source`, `counts.events_stored` and `overhead_ms_p95` for the report.
+`scrapewatch check --report F` writes `F` and `F` with `.json`.
 
 ### 13.2 JSON summary
 

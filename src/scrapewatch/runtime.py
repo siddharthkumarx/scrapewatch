@@ -52,12 +52,15 @@ from scrapewatch.models import (
     VerdictStatus,
 )
 from scrapewatch.redact import cookie_names, redact_headers, redact_url
+from scrapewatch.report.html import render_html, report_paths, write_html
+from scrapewatch.report.summary import write_summary
 
 logger = logging.getLogger("scrapewatch")
 
 FLUSH_EVERY_EVENTS = 200
 FLUSH_EVERY_SECONDS = 2.0
 PRUNE_EVERY_RUNS = 20
+BAD_EVENTS_KEPT = 20  # blocked or empty responses listed in the report
 SIZE_BASELINE_CACHE = 512  # (domain, path pattern) lookups kept per run
 RETRY_KEYS_MAX = 50_000  # request keys remembered for retry linkage
 _OVERHEAD_SAMPLES = 10_000
@@ -167,6 +170,7 @@ class Watch:
         self._response_hooks: list[tuple[str, ResponseHook]] = []
         self._record_hooks: list[tuple[str, RecordHook]] = []
         self.flushed_events = 0
+        self.bad_events: list[ResponseEvent] = []  # first BAD_EVENTS_KEPT, for the report
         self.store: HistoryStore | None = None
         self.history_failed = False  # history could not be opened or written
         self.attached = False  # a worker writing events into a parent's run
@@ -443,6 +447,11 @@ class Watch:
         if event.attempt > 1:
             c.retries += 1
         c.wire_bytes += event.wire_bytes
+        c.by_domain[event.domain] = c.by_domain.get(event.domain, 0) + 1
+        source = event.bytes_source.value
+        c.by_bytes_source[source] = c.by_bytes_source.get(source, 0) + 1
+        if event.guard.label in BAD_LABELS and len(self.bad_events) < BAD_EVENTS_KEPT:
+            self.bad_events.append(event)
 
     # --- records ------------------------------------------------------------------------
     def record_record(
@@ -503,6 +512,7 @@ class Watch:
             self._monitor_error("flush", exc)
             return 0
         self.flushed_events += written
+        self.run.counts.events_stored = self.flushed_events
         return written
 
     def _write_events(self, batch: list[ResponseEvent]) -> int:
@@ -529,6 +539,7 @@ class Watch:
         self.run.status = RunStatus.CRASHED if crashed else RunStatus.FINISHED
         self._step("verdict", lambda: self._finish_verdict(crashed=crashed))
         self._step("overhead", self._finish_overhead)
+        self._step("report", self._finish_report)
         self._step("store", self._finish_store)
         self._step("prune", self._finish_prune)
         self._step("close history", self._close_store)
@@ -617,9 +628,26 @@ class Watch:
             )
             raise
 
+    def _finish_report(self) -> None:
+        """Write report.html and summary.json (architecture 12.1, 13.1, 13.2)."""
+        settings = self.settings
+        report_dir = settings.report_dir or Path(settings.history.path) / "reports"
+        html_path, json_path = report_paths(report_dir, self.run)
+        history: list[Run] = []
+        if self.store is not None:
+            history = list(reversed(self._store_call("list_runs", self.run.name, limit=30)))
+        files = {"report": str(html_path), "summary": str(json_path)}
+        html = render_html(self.run, history=history, bad_events=self.bad_events, files=files)
+        write_html(html_path, html)
+        self.run.report_path = str(html_path)
+        write_summary(self.run, json_path)
+
     def _finish_overhead(self) -> None:
         if self._overhead_ms:
-            self.run.overhead_ms_p50 = round(statistics.median(self._overhead_ms), 4)
+            data = self._overhead_ms
+            self.run.overhead_ms_p50 = round(statistics.median(data), 4)
+            p95 = statistics.quantiles(data, n=20)[18] if len(data) > 1 else data[0]
+            self.run.overhead_ms_p95 = round(p95, 4)
 
     def _step(self, where: str, fn: Callable[[], object]) -> bool:
         try:

@@ -238,7 +238,11 @@ def test_watch_normal_exit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> N
     assert w.run.name == "fromfile"
     assert w.run.status == RunStatus.FINISHED
     assert w.verdict.status == VerdictStatus.PASS
-    assert w.report_path() is None
+    report = w.report_path()
+    assert report is not None
+    assert report.parent == Path(".scrapewatch", "reports", "fromfile")
+    assert report.is_file()
+    assert report.with_suffix(".json").is_file()
     with watch("explicit", rules=tmp_path / "rules.yml") as w2:
         pass
     assert w2.run.name == "explicit"

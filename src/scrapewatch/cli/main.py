@@ -86,6 +86,35 @@ def _gate(run: Run, source: Path, live: Path, *, promote_on_warn: bool) -> str:
     )
 
 
+def _write_report(
+    run: Run, path: Path, history_path: str | None, gate_line: str | None
+) -> list[str]:
+    """Write the HTML report and summary.json beside it; returns lines for the summary."""
+    from scrapewatch.config import load_settings
+    from scrapewatch.history.store import open_store
+    from scrapewatch.report import render_html, write_html, write_summary
+
+    history: list[Run] = []
+    store_path = Path(history_path) if history_path else load_settings().history.path
+    try:
+        store = open_store(store_path)
+        try:
+            history = list(reversed(store.list_runs(run.name, limit=30)))
+        finally:
+            store.close()
+    except ScrapewatchError:
+        pass  # the report still renders, without the history section's earlier runs
+    summary = path.with_suffix(".json")
+    run.report_path = str(path)
+    gate = gate_line.removeprefix("live: ").split("\n")[0] if gate_line else None
+    html = render_html(
+        run, history=history, gate=gate, files={"report": str(path), "summary": str(summary)}
+    )
+    write_html(path, html)
+    write_summary(run, summary)
+    return [f"report: {path}", f"summary: {summary}"]
+
+
 @click.group(cls=_Group, context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(__version__, prog_name="scrapewatch")
 def main() -> None:
@@ -130,10 +159,7 @@ def check(
             _write_json(json_path, run)
             files.append(f"summary: {json_path}")
         if report_path is not None:
-            # The HTML report comes with build item 13; until then the summary is written.
-            summary = Path(report_path).with_suffix(".json")
-            _write_json(summary, run)
-            files.append(f"summary: {summary} (the HTML report is not built yet)")
+            files += _write_report(run, Path(report_path), history_path, gate_line)
     except ScrapewatchError as exc:
         _fail(str(exc))
     except OSError as exc:

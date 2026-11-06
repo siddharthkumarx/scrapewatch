@@ -246,7 +246,7 @@ v0.2 or later.
 
 ### 13. JSON summary and HTML report `[v0.1]`
 
-- [ ] Scope: A§13.1 sections, A§13.2 summary, inline SVG sparklines, atomic writes, report
+- [x] Scope: A§13.1 sections, A§13.2 summary, inline SVG sparklines, atomic writes, report
   path on the Run, `Watch.finish` writes both; plain-language strings.
 - Files: `report/html.py`, `report/summary.py`, `report/_svg.py`, `report/templates/base.html`
   (a Python format-string template with `html.escape`), `tests/report/`.
@@ -258,6 +258,11 @@ v0.2 or later.
   `Run.model_validate`; report renders with an empty history and with zero records.
 - Done when: pass; a screenshot of the golden report rendered by Playwright (local, offline)
   is committed to `docs/images/report-sample.png`; coverage ≥ 80.
+- Notes: `render_html` takes `history`, `bad_events`, `gate` and `files` instead of
+  `findings`/`records_sample` (A§13.1 updated); record examples come from `Run.samples`. The
+  report is checked at phone width (no sideways page scroll) and in dark mode. Golden inputs
+  are built by `tests/fixtures/report/make_report_inputs.py`; regenerate the golden with
+  `SCRAPEWATCH_REGEN_GOLDEN=1 uv run pytest tests/report` and say why in the commit.
 
 ### 14. Remaining CLI commands `[v0.1]`
 
@@ -442,8 +447,8 @@ v0.2 or later.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 13** (JSON summary and HTML report). M1 (items 1 to
-9b) and items 10 to 12 are done and green on GitHub (ci.yml and full.yml).
+Next item: **docs/build-progress.md item 14** (remaining CLI commands; M2 ends after it). M1
+(items 1 to 9b) and items 10 to 13 are done and green on GitHub (ci.yml and full.yml).
 
 Notes for the next session:
 
@@ -464,9 +469,7 @@ Notes for the next session:
 - A normalizer's `extra` (the currency of a price) fills an empty field with a Fix, and a
   conflicting non-empty value gives a `clean.<name>.extra_conflict` info finding that
   `batch.currency` counts.
-- Still open for later items: replace the `--report` placeholder in `cli/main.py` and
-  reconcile `report_dir` with the report path in architecture 12.1 (item 13); write
-  `tests/perf/test_overhead.py` (architecture 15) before item 24 (only the 64 KiB classify
+- Still open for later items: write `tests/perf/test_overhead.py` (architecture 15) before item 24 (only the 64 KiB classify
   budget is tested so far, in `tests/guard/test_classify.py`).
 - Tests that need an extra are marked `extras` and carry the extra's name in their id; the
   extras jobs of full.yml run `-m "extras and not live" -k <extra>` without coverage.

@@ -301,6 +301,9 @@ class RunCounts(_Model):
     flags: int = 0  # values a normalizer could not fix (clean.* findings above info)
     monitor_errors: int = 0
     wire_bytes: int = 0
+    by_domain: dict[str, int] = Field(default_factory=dict)  # responses per domain
+    by_bytes_source: dict[str, int] = Field(default_factory=dict)  # how wire_bytes was measured
+    events_stored: int = 0  # events written to history by this process
 
 
 class FindingSample(_Model):
@@ -350,6 +353,7 @@ class Run(_Model):
     samples: RecordSamples = Field(default_factory=RecordSamples)  # record findings and fixes
     report_path: str | None = None
     overhead_ms_p50: float | None = None
+    overhead_ms_p95: float | None = None
 
 
 __all__ = [
