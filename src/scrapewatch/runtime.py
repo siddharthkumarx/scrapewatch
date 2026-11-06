@@ -13,7 +13,7 @@ import logging
 import statistics
 import threading
 import time
-from collections import deque
+from collections import OrderedDict, deque
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -29,7 +29,7 @@ from scrapewatch.guard.classify import classify_features
 from scrapewatch.guard.features import extract_features
 from scrapewatch.guard.rules import GuardRuleSet, bundled_rules, load_rules
 from scrapewatch.history.stats import StatsAccumulator, value_hash
-from scrapewatch.history.store import HistoryStore, open_store
+from scrapewatch.history.store import HistoryStore, open_store, path_pattern
 from scrapewatch.models import (
     BytesSource,
     ErrorInfo,
@@ -53,6 +53,8 @@ logger = logging.getLogger("scrapewatch")
 FLUSH_EVERY_EVENTS = 200
 FLUSH_EVERY_SECONDS = 2.0
 PRUNE_EVERY_RUNS = 20
+SIZE_BASELINE_CACHE = 512  # (domain, path pattern) lookups kept per run
+RETRY_KEYS_MAX = 50_000  # request keys remembered for retry linkage
 _OVERHEAD_SAMPLES = 10_000
 _LOG_INTERVAL_SECONDS = 60.0
 
@@ -156,6 +158,8 @@ class Watch:
         self.meter = CostMeter(settings.cost)
         self.guard_rules: GuardRuleSet | None = None
         self._finding_queue: list[Finding] = []
+        self._size_cache: OrderedDict[tuple[str, str], int | None] = OrderedDict()
+        self._attempts: OrderedDict[str, tuple[str, int]] = OrderedDict()
         self._response_hooks.append(("guard", _guard_hook))
         self._response_hooks.append(("cost", _cost_hook))
 
@@ -291,6 +295,8 @@ class Watch:
     ) -> ResponseEvent:
         t0 = time.perf_counter()
         raw_headers: Mapping[str, str] = headers if headers is not None else {}
+        meta = meta or {}
+        attempt, retry_of, request_key = self._link_retry(meta, attempt, retry_of)
         if body_bytes is None:
             body_bytes = _body_len(body)
         stored_final = redact_url(final_url) if final_url and final_url != url else None
@@ -316,12 +322,19 @@ class Watch:
         )
         if error is not None and status is None:
             event.guard = GuardResult(label=GuardLabel.ERROR, signals=["transport error"])
+        if request_key is not None:
+            with self._lock:
+                first = retry_of or event.event_id
+                self._attempts[request_key] = (first, event.attempt)
+                self._attempts.move_to_end(request_key)
+                while len(self._attempts) > RETRY_KEYS_MAX:
+                    self._attempts.popitem(last=False)
         ctx = ResponseContext(
             body=body,
             raw_url=url,
             raw_final_url=final_url,
             raw_headers=raw_headers,
-            meta=meta or {},
+            meta=meta,
         )
         for name, hook in self._response_hooks:
             try:
@@ -345,6 +358,46 @@ class Watch:
             self.flush()
         self._overhead_ms.append((time.perf_counter() - t0) * 1000.0)
         return event
+
+    def _link_retry(
+        self, meta: Mapping[str, Any], attempt: int, retry_of: str | None
+    ) -> tuple[int, str | None, str | None]:
+        """Attempt number and first event id from integration meta.
+
+        ``meta["retry_times"]`` (Scrapy's counter) gives the attempt directly;
+        ``meta["request_key"]`` (a stable id of one logical request) links a repeated key to
+        the first attempt's event.
+        """
+        retry_times = meta.get("retry_times")
+        if isinstance(retry_times, int) and retry_times > 0:
+            attempt = max(attempt, retry_times + 1)
+        key = meta.get("request_key")
+        if key is None:
+            return attempt, retry_of, None
+        key = str(key)
+        with self._lock:
+            seen = self._attempts.get(key)
+        if seen is not None:
+            attempt = max(attempt, seen[1] + 1)
+            retry_of = retry_of or seen[0]
+        return attempt, retry_of, key
+
+    def size_baseline(self, domain: str, url: str) -> int | None:
+        """p50 body size of past OK documents for this domain and path pattern (LRU cached)."""
+        if self.store is None:
+            return None
+        key = (domain, path_pattern(url))
+        with self._lock:
+            if key in self._size_cache:
+                self._size_cache.move_to_end(key)
+                return self._size_cache[key]
+        found = self._store_call("size_baseline", *key)
+        value = int(found[0]) if found else None
+        with self._lock:
+            self._size_cache[key] = value
+            while len(self._size_cache) > SIZE_BASELINE_CACHE:
+                self._size_cache.popitem(last=False)
+        return value
 
     def _count_response(self, event: ResponseEvent) -> None:
         c = self.run.counts
@@ -472,6 +525,12 @@ class Watch:
         self._store_call("write_value_hashes", self.run.run_id, self._value_hashes)
         self._store_call("write_findings", self.run.findings)
         self._store_call("finish_run", self.run)
+        if (
+            self.run.status == RunStatus.FINISHED
+            and self.run.verdict.status == VerdictStatus.PASS
+            and self.settings.store_events
+        ):
+            self._store_call("update_size_baselines", self.run.run_id)
 
     def _finish_prune(self) -> None:
         if self.store is None:
@@ -541,6 +600,8 @@ def _guard_hook(w: Watch, event: ResponseEvent, ctx: ResponseContext) -> None:
     if rules is None or (event.error is not None and event.status is None):
         return
     baseline = ctx.meta.get("baseline_p50_bytes")
+    if baseline is None and event.resource_type == ResourceType.DOCUMENT:
+        baseline = w.size_baseline(event.domain, ctx.raw_url)
     features = extract_features(
         status=event.status,
         headers=ctx.raw_headers,

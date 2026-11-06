@@ -121,7 +121,7 @@ v0.2 or later.
 
 ### 6. Size baselines, empty-shell and redirect detection wired to history `[v0.1]`
 
-- [ ] Scope: `Watch.record_response` looks up `size_baseline(domain, path_pattern)` through
+- [x] Scope: `Watch.record_response` looks up `size_baseline(domain, path_pattern)` through
   a small LRU, passes `baseline_p50_bytes` to features; `finish()` updates size baselines
   from this run's OK document responses (only when the verdict is pass); redirect label
   requires `final_url != url`; retry linkage (`retry_of`) and attempt counting from

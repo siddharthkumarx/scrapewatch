@@ -112,6 +112,9 @@ Field notes:
 - `resource_type` is one of document, xhr, script, stylesheet, image, font, media, other.
   HTTP-client integrations always report document unless the caller says otherwise.
 - `attempt` starts at 1; a retry carries `attempt: 2` and `retry_of: <first event_id>`.
+  Integrations can pass `meta={"retry_times": n}` (attempt is n + 1) or
+  `meta={"request_key": k}`, a stable id of one logical request: a repeated key becomes the
+  next attempt with `retry_of` set to the first attempt's event.
 - `headers` is the allow-listed, redacted subset (section 16). `cookie_names` are names only.
 - `guard.label` is one of ok, block, challenge, captcha, consent, login, rate_limit, empty,
   redirect, error_page, error, unknown.
