@@ -434,4 +434,4 @@ gitleaks and pip-audit result). Example:
 
 | Date | Milestone | Commit | 3.10 | 3.11 | 3.12 | 3.13 | gitleaks | pip-audit | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| (none yet) | | | | | | | | | |
+| 2026-11-06 | M1 (after item 8) | afc6548 | 590 passed | 590 passed | 590 passed | 590 passed | full.yml run 42228291643 green (gitleaks job; the binary could not be fetched in the sandbox) | no known vulnerabilities (locked deps, all extras) | ci.yml and full.yml green on afc6548 |

@@ -115,5 +115,7 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 1** (event model, redaction, config, run lifecycle).
-Nothing has been implemented yet; every function still raises `NotImplementedError`.
+Next item: **docs/build-progress.md item 9** (publish gate for single files), then 9b.
+Items 1 to 8 are done and green on GitHub (ci.yml and full.yml); the M1 matrix is logged.
+The full workflow installs Chromium only once `tests/integrations/` exists, so expect the
+extras jobs to take several minutes from item 16 on.
