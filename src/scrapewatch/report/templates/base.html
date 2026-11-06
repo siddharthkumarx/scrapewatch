@@ -38,15 +38,17 @@ h3 { font-size: 15px; margin: 16px 0 6px; }
 .tiles { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
 .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
   padding: 10px 14px; min-width: 150px; }
+.tile.headline { border-color: var(--accent); }
+.notice { margin: 0 0 16px; padding: 8px 12px; border: 2px dashed var(--warn); border-radius: 8px;
+  font-weight: 700; color: var(--warn); }
 .tile .v { font-size: 20px; font-weight: 700; } .tile .k { color: var(--muted); font-size: 12px; }
 .tw { overflow-x: auto; margin: 6px 0 12px; }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line);
-  vertical-align: top; overflow-wrap: break-word; }
+  vertical-align: top; overflow-wrap: normal; word-break: normal; hyphens: manual; }
 th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; }
 td.num, th.num { text-align: right; white-space: nowrap; }
 code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-td code { overflow-wrap: anywhere; }
 .sev { font-weight: 700; } .sev.hold { color: var(--hold); } .sev.warn { color: var(--warn); }
 .sev.info { color: var(--muted); }
 .track { fill: var(--track); } .bar { fill: var(--accent); } .bar.bad { fill: var(--hold); }

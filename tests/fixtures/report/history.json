@@ -42,7 +42,9 @@
       "api_cost": 0.0,
       "usable_records": 998,
       "per_usable_record": 1.1122244488977957e-05,
-      "per_record": null
+      "per_record": null,
+      "per_1000_usable_records": 0.011122244488977957,
+      "per_1000_records": null
     },
     "waste": {
       "bytes_by_resource_type": {},
@@ -123,7 +125,9 @@
       "api_cost": 0.0,
       "usable_records": 996,
       "per_usable_record": 1.1144578313253013e-05,
-      "per_record": null
+      "per_record": null,
+      "per_1000_usable_records": 0.011144578313253013,
+      "per_1000_records": null
     },
     "waste": {
       "bytes_by_resource_type": {},
@@ -204,7 +208,9 @@
       "api_cost": 0.0,
       "usable_records": 998,
       "per_usable_record": 1.1122244488977957e-05,
-      "per_record": null
+      "per_record": null,
+      "per_1000_usable_records": 0.011122244488977957,
+      "per_1000_records": null
     },
     "waste": {
       "bytes_by_resource_type": {},
@@ -285,7 +291,9 @@
       "api_cost": 0.0,
       "usable_records": 999,
       "per_usable_record": 1.1111111111111112e-05,
-      "per_record": null
+      "per_record": null,
+      "per_1000_usable_records": 0.011111111111111112,
+      "per_1000_records": null
     },
     "waste": {
       "bytes_by_resource_type": {},
@@ -366,7 +374,9 @@
       "api_cost": 0.0,
       "usable_records": 997,
       "per_usable_record": 1.1133400200601806e-05,
-      "per_record": null
+      "per_record": null,
+      "per_1000_usable_records": 0.011133400200601806,
+      "per_1000_records": null
     },
     "waste": {
       "bytes_by_resource_type": {},
@@ -447,7 +457,9 @@
       "api_cost": 0.0,
       "usable_records": 998,
       "per_usable_record": 1.1122244488977957e-05,
-      "per_record": null
+      "per_record": null,
+      "per_1000_usable_records": 0.011122244488977957,
+      "per_1000_records": null
     },
     "waste": {
       "bytes_by_resource_type": {},
@@ -528,7 +540,9 @@
       "api_cost": 0.0,
       "usable_records": 995,
       "per_usable_record": 1.1155778894472363e-05,
-      "per_record": null
+      "per_record": null,
+      "per_1000_usable_records": 0.011155778894472362,
+      "per_1000_records": null
     },
     "waste": {
       "bytes_by_resource_type": {},
@@ -609,7 +623,9 @@
       "api_cost": 0.0,
       "usable_records": 998,
       "per_usable_record": 1.1122244488977957e-05,
-      "per_record": null
+      "per_record": null,
+      "per_1000_usable_records": 0.011122244488977957,
+      "per_1000_records": null
     },
     "waste": {
       "bytes_by_resource_type": {},

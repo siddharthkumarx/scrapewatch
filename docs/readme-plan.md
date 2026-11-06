@@ -32,7 +32,12 @@ CLI command.
 
 ## Visuals
 
-- `docs/images/report-sample.png`: the golden report rendered offline (item 13).
+- `docs/images/report-sample.png`: **Synthetic example** (labelled so in the image). It is the
+  golden report from made-up test fixtures (`scripts/report_sample.py`), e.g. books.toscrape.com
+  answering with a Cloudflare challenge, which is not real. It may illustrate docs about the
+  report layout only, always captioned "Synthetic example".
+- The README must not use that sample. Its report screenshot must come from a real committed
+  run (the benchmark of build-progress item 24, `checks/results/<id>/`), cited by path.
 - `docs/images/check-demo.gif` or `.svg`: terminal recording of `scrapewatch check` going
   from pass to hold on a fixture with x100 prices, rendered offline (item 26).
 - Keep every image under 1 MB and generated from committed fixtures so it can be regenerated.

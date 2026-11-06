@@ -247,6 +247,31 @@ class CostBreakdown(_Model):
     usable_records: int = 0
     per_usable_record: float | None = None  # None when usable_records == 0
     per_record: float | None = None
+    # Set only when the per-record figure is below PER_1000_BELOW (0.01 in the run's currency):
+    # tiny numbers read better per 1,000 records, and then this is the headline figure.
+    per_1000_usable_records: float | None = None
+    per_1000_records: float | None = None
+
+    def headline(self, *, usable: bool = True) -> tuple[float, str] | None:
+        """(value, unit) to show: per 1,000 records when small, else per record."""
+        per_1000 = self.per_1000_usable_records if usable else self.per_1000_records
+        single = self.per_usable_record if usable else self.per_record
+        noun = "usable records" if usable else "records"
+        if per_1000 is not None:
+            return per_1000, f"per 1,000 {noun}"
+        if single is not None:
+            return single, f"per {noun[:-1]}"
+        return None
+
+
+PER_1000_BELOW = 0.01  # below this per-record cost, the headline is per 1,000 records
+
+
+def per_1000(per_record: float | None) -> float | None:
+    """Cost per 1,000 records when the per-record cost is below ``PER_1000_BELOW``."""
+    if per_record is None or per_record >= PER_1000_BELOW:
+        return None
+    return per_record * 1000
 
 
 class WasteBreakdown(_Model):

@@ -32,6 +32,8 @@ Sums:
   mystery-pool 0, direct 0.
 - By resource type (events only): document 0.01094, image 0.01, font 0.001, xhr 0.
 - Per usable record 0.04194 / 10 = 0.004194; per record 0.04194 / 12 = 0.003495.
+- Both are below 0.01, so the per-1,000 figures are set: 4.194 per 1,000 usable records
+  and 3.495 per 1,000 records.
 
 Waste: retry 2 requests, 2,000,000 bytes, 0.0088; failed 3, 600,000, 0.0012; unchanged 1,
 50,000, 0.00004; blockable 2, 375,000, 0.003; total 0.01304. Bytes by type: document

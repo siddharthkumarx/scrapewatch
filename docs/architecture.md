@@ -196,7 +196,8 @@ is a dotted id from a fixed vocabulary (section 8.4). `rule_id` is set for guard
     "by_proxy": {"datacenter": 0.0111},
     "by_resource_type": {"document": 0.0111},
     "browser_minutes": 0.0, "browser_cost": 0.0, "api_requests": 0, "api_cost": 0.0,
-    "usable_records": 998, "per_usable_record": 0.0000111, "per_record": 0.0000111
+    "usable_records": 998, "per_usable_record": 0.0000111, "per_record": 0.0000111,
+    "per_1000_usable_records": 0.0111, "per_1000_records": 0.0111
   },
   "waste": {
     "bytes_by_resource_type": {"document": 13891022},
@@ -1021,6 +1022,8 @@ cost(domain)           = Σ cost(event) for events of that domain + browser_cost
 cost(proxy)            = Σ cost(event) for events with that label
 cost_per_record        = cost(run) / records                 (null when records = 0)
 cost_per_usable_record = cost(run) / usable_records          (null when usable_records = 0)
+per_1000_records       = cost_per_record × 1000          (set only when cost_per_record < 0.01)
+per_1000_usable_records = cost_per_usable_record × 1000  (same rule)
 
 waste:
   retry_cost             = Σ cost(event) with attempt > 1
@@ -1036,7 +1039,12 @@ counts. Browser time given with a domain (`add_browser_seconds(s, domain=...)`) 
 domain; other browser time is spread by document-response share (by response share when the
 run had no documents). A request skipped by the in-run dedupe costs nothing. Costs are stored
 in the configured currency with full float precision; the report
-rounds for display and shows "< $0.0001" rather than 0.
+rounds for display and shows "< $0.0001" rather than 0. When the cost per usable record is
+below 0.01 (in the run's currency) the headline figure everywhere (report tiles, history
+sparkline, `scrapewatch cost`, alerts) is the cost per 1,000 usable records, e.g. "$0.0115
+per 1,000 usable records"; the same holds for the cost per record. `summary.json` carries
+both per-1,000 fields (null when the per-record cost is 0.01 or more), and
+`CostBreakdown.headline()` returns the figure and unit to show.
 
 ### 11.3 How wire bytes are measured in each integration
 
@@ -1165,7 +1173,10 @@ arguments: batch and run findings are on the Run, record findings and fixes come
 `Watch`, or read from history), `gate` is one sentence on the output and `files` the paths
 shown in the footer. The template is `report/templates/base.html`, filled with
 `string.Template` (CSS braces need no escaping); every value goes through `html.escape`, URLs
-from the data are text, never links, and tables scroll sideways on a phone. Light and dark
+from the data are text, never links, and tables scroll sideways on a phone. Table cells never
+break inside a word (they wrap only at spaces and the usual URL break points); a wide table
+scrolls instead. `render_html(..., notice=...)` adds a banner, used for the synthetic sample
+image. Light and dark
 colour schemes follow `prefers-color-scheme`. The output is deterministic for a given input
 (golden: `tests/fixtures/report/report_warn.html`). `Watch.finish` writes the report and
 summary in a guarded step after the overhead numbers and before the store, so

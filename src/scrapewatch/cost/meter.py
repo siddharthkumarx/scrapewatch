@@ -15,6 +15,7 @@ from scrapewatch.models import (
     ResponseEvent,
     Severity,
     WasteBreakdown,
+    per_1000,
 )
 
 BLOCKABLE_TYPES: frozenset[ResourceType] = frozenset(
@@ -164,6 +165,8 @@ class CostMeter:
         for d, secs in self._browser_seconds_by_domain.items():
             by_domain[d] = by_domain.get(d, 0.0) + secs / 60 * per_minute
         total = math.fsum([*self._event_costs, browser_cost])
+        per_usable = total / usable_records if usable_records > 0 else None
+        per_any = total / records if records > 0 else None
         return CostBreakdown(
             currency=self.cost.currency,
             total=total,
@@ -175,8 +178,10 @@ class CostMeter:
             api_requests=self._api_requests,
             api_cost=math.fsum(self._api_costs),
             usable_records=usable_records,
-            per_usable_record=total / usable_records if usable_records > 0 else None,
-            per_record=total / records if records > 0 else None,
+            per_usable_record=per_usable,
+            per_record=per_any,
+            per_1000_usable_records=per_1000(per_usable),
+            per_1000_records=per_1000(per_any),
         )
 
     def waste(self, events: Iterable[ResponseEvent] | None = None) -> WasteBreakdown:

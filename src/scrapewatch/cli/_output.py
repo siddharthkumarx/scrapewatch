@@ -70,6 +70,13 @@ def _money(x: float | None, currency: str) -> str:
     return f"{x:,.6f}".rstrip("0").rstrip(".") + f" {currency}"
 
 
+def _figure(figure: tuple[float, str] | None, currency: str, noun: str) -> str:
+    if figure is None:
+        return f"per {noun} -"
+    value, unit = figure
+    return f"{_money(value, currency)} {unit}"
+
+
 def runs_table(runs: list[Run]) -> str:
     """Recent runs, newest first, one per line."""
     if not runs:
@@ -91,8 +98,8 @@ def cost_text(run: Run) -> str:
     cur = c.currency
     lines = [
         f"scrapewatch · {run.name} · run {run.run_id}",
-        f"total {_money(c.total, cur)} · per usable record {_money(c.per_usable_record, cur)}"
-        f" · per record {_money(c.per_record, cur)}",
+        f"total {_money(c.total, cur)} · {_figure(c.headline(usable=True), cur, 'usable record')}"
+        f" · {_figure(c.headline(usable=False), cur, 'record')}",
     ]
     for title, table in (
         ("by domain", c.by_domain),

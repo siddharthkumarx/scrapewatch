@@ -20,5 +20,7 @@
   "api_cost": 0.0025,
   "usable_records": 10,
   "per_usable_record": 0.004194,
-  "per_record": 0.003495
+  "per_record": 0.003495,
+  "per_1000_usable_records": 4.194,
+  "per_1000_records": 3.495
 }

@@ -257,7 +257,8 @@ v0.2 or later.
   links to the project; every section heading present; `summary.json` round-trips through
   `Run.model_validate`; report renders with an empty history and with zero records.
 - Done when: pass; a screenshot of the golden report rendered by Playwright (local, offline)
-  is committed to `docs/images/report-sample.png`; coverage ≥ 80.
+  is committed to `docs/images/report-sample.png` (a **synthetic example**, labelled so in
+  the image; regenerate with `scripts/report_sample.py`); coverage ≥ 80.
 - Notes: `render_html` takes `history`, `bad_events`, `gate` and `files` instead of
   `findings`/`records_sample` (A§13.1 updated); record examples come from `Run.samples`. The
   report is checked at phone width (no sideways page scroll) and in dark mode. Golden inputs

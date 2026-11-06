@@ -73,7 +73,9 @@
     "api_cost": 0.0,
     "usable_records": 962,
     "per_usable_record": 0.00001153846153846154,
-    "per_record": 0.000011326530612244899
+    "per_record": 0.000011326530612244899,
+    "per_1000_usable_records": 0.011538461538461539,
+    "per_1000_records": 0.011326530612244898
   },
   "waste": {
     "bytes_by_resource_type": {
@@ -120,7 +122,7 @@
   },
   "findings": [
     {
-      "finding_id": "ee318793652b4250add6762e595f49ed",
+      "finding_id": "10f0c56dd8404bc1ae560f0fa93e99cd",
       "run_id": "9a1b2c3d4e5f60718293a4b5c6d7e8f9",
       "scope": "batch",
       "ref": null,
@@ -135,7 +137,7 @@
       "rule_id": null
     },
     {
-      "finding_id": "13570290200243f5ba5dd0039eaf4688",
+      "finding_id": "d94ee8267d5b49be9c17911a37b1702f",
       "run_id": "9a1b2c3d4e5f60718293a4b5c6d7e8f9",
       "scope": "batch",
       "ref": null,
@@ -150,7 +152,7 @@
       "rule_id": null
     },
     {
-      "finding_id": "a9a473185edc4352ac3c22cddab30391",
+      "finding_id": "b3e94d2be64b43218be8d4a5369defd9",
       "run_id": "9a1b2c3d4e5f60718293a4b5c6d7e8f9",
       "scope": "batch",
       "ref": null,
@@ -165,7 +167,7 @@
       "rule_id": null
     },
     {
-      "finding_id": "2554c2008d964f21b9cf6cd9dabec10c",
+      "finding_id": "3f05be7885474116a77f7b5f54b34134",
       "run_id": "9a1b2c3d4e5f60718293a4b5c6d7e8f9",
       "scope": "run",
       "ref": null,

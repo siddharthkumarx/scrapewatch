@@ -28,6 +28,7 @@ from scrapewatch.models import (
     Verdict,
     VerdictStatus,
     WasteBreakdown,
+    per_1000,
 )
 
 HERE = Path(__file__).parent
@@ -61,6 +62,7 @@ def history() -> list[Run]:
                     total=0.0111,
                     usable_records=records - 2,
                     per_usable_record=0.0111 / (records - 2),
+                    per_1000_usable_records=per_1000(0.0111 / (records - 2)),
                 ),
                 verdict=Verdict(status=VerdictStatus.PASS if i != 5 else VerdictStatus.WARN),
             )
@@ -110,6 +112,8 @@ def run() -> Run:
             usable_records=962,
             per_usable_record=0.0111 / 962,
             per_record=0.0111 / 980,
+            per_1000_usable_records=per_1000(0.0111 / 962),
+            per_1000_records=per_1000(0.0111 / 980),
         ),
         waste=WasteBreakdown(
             bytes_by_resource_type={"document": 13891022},

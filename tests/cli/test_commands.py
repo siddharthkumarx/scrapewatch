@@ -231,3 +231,12 @@ def test_cost_text_optional_lines() -> None:
     assert "waste cutter: 3 blocked" in text
     assert "per usable record -" in text
     assert "total < 0.0001 USD" in text
+
+
+def test_cost_text_per_1000() -> None:
+    from scrapewatch.cli._output import cost_text
+    from scrapewatch.models import Run
+
+    run = Run(name="x")
+    run.cost.per_usable_record, run.cost.per_1000_usable_records = 0.0000115, 0.0115
+    assert "0.0115 USD per 1,000 usable records" in cost_text(run)

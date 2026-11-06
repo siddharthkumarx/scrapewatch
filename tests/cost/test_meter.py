@@ -205,3 +205,20 @@ def test_parallel_workers_are_priced(tmp_path: Path) -> None:
     run = parent.finish()
     assert run.counts.responses == 2
     assert run.cost.total == pytest.approx(1.6)
+
+
+def test_per_1000_only_below_one_cent() -> None:
+    from scrapewatch.models import PER_1000_BELOW, CostBreakdown, per_1000
+
+    assert PER_1000_BELOW == 0.01
+    assert per_1000(None) is None
+    assert per_1000(0.01) is None
+    assert per_1000(0.0115) is None
+    assert per_1000(0.0000115) == pytest.approx(0.0115)
+    assert per_1000(0.0) == 0.0
+    small = CostBreakdown(per_usable_record=0.00001, per_1000_usable_records=0.01)
+    assert small.headline() == (0.01, "per 1,000 usable records")
+    big = CostBreakdown(per_usable_record=0.5, per_record=0.4)
+    assert big.headline() == (0.5, "per usable record")
+    assert big.headline(usable=False) == (0.4, "per record")
+    assert CostBreakdown().headline() is None

@@ -173,3 +173,49 @@ def test_helpers_and_optional_sections() -> None:
     assert "180.0 KB not downloaded" in html
     assert "Browser time: 3.5 minutes" in html
     assert "…" in html  # the long example is cut
+
+
+def test_table_cells_never_break_inside_words() -> None:
+    from importlib import resources
+
+    css = resources.files("scrapewatch.report").joinpath("templates/base.html").read_text("utf-8")
+    cell_rule = re.search(r"th, td \{[^}]*\}", css)
+    assert cell_rule is not None
+    assert "overflow-wrap: normal" in cell_rule.group(0)
+    assert "word-break: normal" in cell_rule.group(0)
+    for bad in ("break-all", "break-word", "td code"):
+        assert bad not in css
+    rules = [line for line in css.splitlines() if "anywhere" in line]
+    assert all(line.startswith("header") for line in rules)  # the run id in the header only
+
+
+def test_small_costs_headline_per_1000_records() -> None:
+    run, _, _ = _inputs()
+    html = render_html(run).split('<section id="cost">')[1]
+    tiles = re.findall(
+        r'<div class="tile( headline)?"><div class="v">([^<]*)</div>'
+        r'<div class="k">([^<]*)</div>',
+        html,
+    )
+    assert tiles[0] == (" headline", "$0.0115", "per 1,000 usable records")
+    assert ("", "$0.0113", "per 1,000 records") in tiles
+    assert "Cost per 1,000 usable records" in html
+    data = json.loads(run.model_dump_json())
+    assert data["cost"]["per_1000_usable_records"] == pytest.approx(0.0111 / 962 * 1000)
+
+
+def test_larger_costs_headline_per_record() -> None:
+    run, _, _ = _inputs()
+    run.cost.per_usable_record, run.cost.per_1000_usable_records = 0.25, None
+    run.cost.per_record, run.cost.per_1000_records = 0.2, None
+    html = render_html(run)
+    assert '<div class="v">$0.2500</div><div class="k">per usable record</div>' in html
+    assert "Cost per usable record" in html
+    assert "per 1,000" not in html
+
+
+def test_notice_banner() -> None:
+    run, _, _ = _inputs()
+    html = render_html(run, notice="Synthetic example")
+    assert '<p class="notice">Synthetic example</p>' in html
+    assert "notice" not in render_html(run).split("<main>")[1]

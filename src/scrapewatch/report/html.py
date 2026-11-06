@@ -374,9 +374,9 @@ def _cost(run: Run) -> str:
         return "".join(out)
     out.append(
         '<div class="tiles">'
+        + _headline_tile(cost.headline(usable=True), cur, "per usable record", headline=True)
         + _tile(_money(cost.total, cur), "total")
-        + _tile(_money(cost.per_usable_record, cur), "per usable record")
-        + _tile(_money(cost.per_record, cur), "per record")
+        + _headline_tile(cost.headline(usable=False), cur, "per record")
         + _tile(_money(waste.total_waste_cost, cur), "bought nothing usable")
         + "</div>"
     )
@@ -438,6 +438,18 @@ def _cost(run: Run) -> str:
     return "".join(out)
 
 
+def _headline_tile(
+    figure: tuple[float, str] | None, currency: str, fallback: str, *, headline: bool = False
+) -> str:
+    """A cost tile: per 1,000 records when the per-record cost is below 0.01."""
+    value, unit = figure if figure is not None else (None, fallback)
+    css = "tile headline" if headline else "tile"
+    return (
+        f'<div class="{css}"><div class="v">{_money(value, currency)}</div>'
+        f'<div class="k">{_e(unit)}</div></div>'
+    )
+
+
 def _history(run: Run, history: Sequence[Run]) -> str:
     earlier = [r for r in history if r.run_id != run.run_id][-(HISTORY_RUNS - 1) :]
     runs = [*earlier, run]
@@ -449,11 +461,7 @@ def _history(run: Run, history: Sequence[Run]) -> str:
             [_blocked_share(r) for r in runs],
             "\u2013" if _blocked_share(run) is None else f"{_blocked_share(run):.1f}%",
         ),
-        (
-            "Cost per usable record",
-            [r.cost.per_usable_record for r in runs],
-            _money(run.cost.per_usable_record, run.cost.currency),
-        ),
+        _cost_series(run, runs),
     ]
     rows = [[_e(name), sparkline(vals, mark=mark, label=name), now] for name, vals, now in series]
     statuses = " ".join(
@@ -466,6 +474,17 @@ def _history(run: Run, history: Sequence[Run]) -> str:
         + _table(["", "trend", "this run"], rows, num=(2,))
         + f'<p class="small">Verdicts: {statuses}</p></section>'
     )
+
+
+def _cost_series(run: Run, runs: Sequence[Run]) -> tuple[str, list[float | None], str]:
+    """Cost per usable record over the runs, per 1,000 when this run's headline is."""
+    scale = 1000 if run.cost.per_1000_usable_records is not None else 1
+    name = "Cost per 1,000 usable records" if scale == 1000 else "Cost per usable record"
+    values = [
+        None if r.cost.per_usable_record is None else r.cost.per_usable_record * scale for r in runs
+    ]
+    now = values[-1] if values else None
+    return name, values, _money(now, run.cost.currency)
 
 
 def _health(run: Run) -> str:
@@ -514,16 +533,20 @@ def render_html(
     bad_events: Sequence[ResponseEvent] = (),
     gate: str | None = None,
     files: Mapping[str, str] | None = None,
+    notice: str | None = None,
 ) -> str:
     """Render the report. Sections: docs/architecture.md "HTML report".
 
     ``history`` are earlier runs of the same name (oldest first; the run itself is added),
     ``bad_events`` the responses without data to list, ``gate`` one sentence on what happened
-    to the output, ``files`` paths to show in the footer.
+    to the output, ``files`` paths to show in the footer, ``notice`` a banner shown above
+    everything (for example "Synthetic example" on documentation images).
     """
     bad = [ev for ev in bad_events if ev.guard.label != GuardLabel.OK]
+    banner = f'<p class="notice">{_e(notice)}</p>' if notice else ""
     body = "\n".join(
         [
+            banner,
             _header(run),
             _meaning(run, gate),
             _responses(run, bad),
