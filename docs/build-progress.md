@@ -167,7 +167,7 @@ v0.2 or later.
 
 ### 9. Publish gate `[v0.1]`
 
-- [ ] Scope: A§9 for single-file outputs: lock, stage, promote (fsync, journal, replace,
+- [x] Scope: A§9 for single-file outputs: lock, stage, promote (fsync, journal, replace,
   pointer), hold, last_good, verify_live, recover, keep_good pruning; `--promote-to` in the
   CLI comes in item 12.
 - Files: `gate.py`, `tests/test_gate.py`.

@@ -792,6 +792,16 @@ Algorithm:
 4. `verify_live()` compares the live file hash with the pointer; the CLI prints a warning when
    they differ (someone edited the live file by hand).
 
+Details fixed while building (item 9): the lock taken by `stage()` is held until `promote()`
+or `hold()` (or `release()`), and released at once if staging raises. The journal is written
+in place with fsync (it carries run id, sha256, size and the verdict, so recovery writes the
+right pointer). Rolling back removes the `good/<run_id>` copy and keeps the staging file. A
+lock is stale after 6 hours or when its pid is not running on the same host (checked with
+`os.kill(pid, 0)` on POSIX and `OpenProcess` on Windows). A promotion without a verdict holds;
+a promotion with nothing staged or with an unreadable pointer raises `GateError`. The
+actions of the last recovery are on `gate.recovered` for the caller to report as
+`gate.recovered` findings.
+
 Crash safety: at every step the live path is either the previous complete file or the new
 complete file. Directory outputs (many files per run) are a later item: same journal, but the
 swap is `rename(live, prev)`, `rename(staging, live)`, `rmtree(prev)`, with recovery for each
