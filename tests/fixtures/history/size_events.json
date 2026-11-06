@@ -1,0 +1,26 @@
+{
+  "comment": "OK document responses of one run; size_baseline groups them by domain and path pattern (digit runs -> {n}, at most three segments). Non-ok, non-document and empty bodies are ignored.",
+  "events": [
+    {"url": "https://books.toscrape.com/catalogue/page-2.html", "body_bytes": 51000},
+    {"url": "https://books.toscrape.com/catalogue/page-3.html", "body_bytes": 52000},
+    {"url": "https://books.toscrape.com/catalogue/page-10.html?x=1", "body_bytes": 50000},
+    {"url": "https://books.toscrape.com/catalogue/page-4.html", "body_bytes": 900, "label": "empty"},
+    {"url": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html", "body_bytes": 21000},
+    {"url": "https://books.toscrape.com/catalogue/tipping-the-velvet_999/index.html", "body_bytes": 23000},
+    {"url": "https://books.toscrape.com/catalogue/category/books/travel_2/index.html", "body_bytes": 30000},
+    {"url": "https://books.toscrape.com/catalogue/category/books/mystery_3/index.html", "body_bytes": 32000},
+    {"url": "https://books.toscrape.com/static/logo.png", "body_bytes": 4000, "resource_type": "image"},
+    {"url": "https://quotes.toscrape.com/page/1/", "body_bytes": 11000},
+    {"url": "https://quotes.toscrape.com/page/2/", "body_bytes": 11400},
+    {"url": "https://quotes.toscrape.com/", "body_bytes": 11000},
+    {"url": "https://quotes.toscrape.com/login", "body_bytes": 0}
+  ],
+  "expected": [
+    {"domain": "books.toscrape.com", "path_pattern": "/catalogue/category/books", "n": 2, "p50_bytes": 31000},
+    {"domain": "books.toscrape.com", "path_pattern": "/catalogue/page-{n}.html", "n": 3, "p50_bytes": 51000},
+    {"domain": "books.toscrape.com", "path_pattern": "/catalogue/tipping-the-velvet_{n}/index.html", "n": 1, "p50_bytes": 23000},
+    {"domain": "books.toscrape.com", "path_pattern": "/catalogue/a-light-in-the-attic_{n}/index.html", "n": 1, "p50_bytes": 21000},
+    {"domain": "quotes.toscrape.com", "path_pattern": "/", "n": 1, "p50_bytes": 11000},
+    {"domain": "quotes.toscrape.com", "path_pattern": "/page/{n}/", "n": 2, "p50_bytes": 11200}
+  ]
+}

@@ -24,6 +24,8 @@ from urllib.parse import urlsplit
 
 from scrapewatch._version import __version__
 from scrapewatch.config import Settings, config_hash, load_settings
+from scrapewatch.history.stats import StatsAccumulator, value_hash
+from scrapewatch.history.store import HistoryStore, open_store
 from scrapewatch.models import (
     BytesSource,
     ErrorInfo,
@@ -44,6 +46,7 @@ logger = logging.getLogger("scrapewatch")
 
 FLUSH_EVERY_EVENTS = 200
 FLUSH_EVERY_SECONDS = 2.0
+PRUNE_EVERY_RUNS = 20
 _OVERHEAD_SAMPLES = 10_000
 _LOG_INTERVAL_SECONDS = 60.0
 
@@ -139,6 +142,11 @@ class Watch:
         self._response_hooks: list[tuple[str, ResponseHook]] = []
         self._record_hooks: list[tuple[str, RecordHook]] = []
         self.flushed_events = 0
+        self.store: HistoryStore | None = None
+        self.history_failed = False  # history could not be opened or written
+        self.attached = False  # a worker writing events into a parent's run
+        self._stats = StatsAccumulator()
+        self._value_hashes: dict[str, str] = {}
 
     # --- lifecycle ----------------------------------------------------------------------
     def start(self) -> None:
@@ -149,6 +157,48 @@ class Watch:
             self._started = True
             self.run.started_at = datetime.now(tz=timezone.utc)
             self.run.status = RunStatus.RUNNING
+        if self._step("open history", self._open_store) and self.store is not None:
+            self._step("start run", lambda: self._store_call("start_run", self.run))
+
+    @classmethod
+    def attach(
+        cls,
+        run_id: str,
+        settings: Settings | None = None,
+        *,
+        config: str | Path | None = None,
+        integration: str = "manual",
+    ) -> Watch:
+        """Join a run another process started (parallel workers, architecture 12.5).
+
+        The worker writes its events into the parent's run and never updates the run row;
+        the parent's ``finish()`` aggregates every writer's events from the store. Records
+        should be recorded in the parent (field statistics are per run, not per writer).
+        """
+        w = cls(settings or load_settings(config), integration=integration)
+        w.run.run_id = run_id
+        w.attached = True
+        with w._lock:
+            w._started = True
+        w._step("open history", w._open_store)
+        return w
+
+    def _open_store(self) -> None:
+        try:
+            self.store = open_store(self.settings.history.path)
+        except Exception:
+            self.history_failed = True
+            raise
+
+    def _store_call(self, method: str, *args: Any, **kwargs: Any) -> Any:
+        """Call a store method; a failure marks history as failed and is re-raised."""
+        if self.store is None:
+            return None
+        try:
+            return getattr(self.store, method)(*args, **kwargs)
+        except Exception:
+            self.history_failed = True
+            raise
 
     # --- responses ----------------------------------------------------------------------
     def record_response(
@@ -301,6 +351,9 @@ class Watch:
                 self._monitor_error(f"record hook {name}", exc)
         with self._lock:
             self._count_record(record)
+            self._stats.add(record.data)
+            if record.dedupe_key and record.usable:
+                self._value_hashes.setdefault(record.dedupe_key, value_hash(record.data))
         self._overhead_ms.append((time.perf_counter() - t0) * 1000.0)
         return record
 
@@ -332,8 +385,11 @@ class Watch:
         return written
 
     def _write_events(self, batch: list[ResponseEvent]) -> int:
-        """Persist a batch. Without a history store the events are only counted."""
-        return len(batch)
+        """Persist a batch. Without a history store (or with store_events off) only counted."""
+        if self.store is None or not self.settings.store_events:
+            return len(batch)
+        written: int = self._store_call("write_events", batch)
+        return written
 
     # --- finish -------------------------------------------------------------------------
     def finish(self, *, crashed: bool = False) -> Run:
@@ -343,11 +399,47 @@ class Watch:
                 return self.run
             self._finished = True
         self._step("flush", self.flush)
+        if self.attached:
+            self._step("close history", self._close_store)
+            return self.run
+        self._step("aggregate", self._finish_aggregate)
         self._step("verdict", lambda: self._finish_verdict(crashed=crashed))
         self.run.finished_at = datetime.now(tz=timezone.utc)
         self.run.status = RunStatus.CRASHED if crashed else RunStatus.FINISHED
         self._step("overhead", self._finish_overhead)
+        self._step("store", self._finish_store)
+        self._step("prune", self._finish_prune)
+        self._step("close history", self._close_store)
         return self.run
+
+    def _finish_aggregate(self) -> None:
+        """Take response counters from the store when other processes wrote events too."""
+        if self.store is None or not self.settings.store_events:
+            return
+        if self._store_call("event_count", self.run.run_id) > self.flushed_events:
+            counts = self._store_call("response_counts", self.run.run_id)
+            for key, value in counts.items():
+                setattr(self.run.counts, key, value)
+
+    def _finish_store(self) -> None:
+        if self.store is None:
+            return
+        self._store_call("write_field_stats", self.run.run_id, self._stats.result())
+        self._store_call("write_value_hashes", self.run.run_id, self._value_hashes)
+        self._store_call("write_findings", self.run.findings)
+        self._store_call("finish_run", self.run)
+
+    def _finish_prune(self) -> None:
+        if self.store is None:
+            return
+        runs = self._store_call("run_count")
+        if runs and runs % PRUNE_EVERY_RUNS == 0:
+            h = self.settings.history
+            self._store_call("prune", keep_runs=h.keep_runs, keep_event_days=h.keep_event_days)
+
+    def _close_store(self) -> None:
+        if self.store is not None:
+            self.store.close()
 
     def _finish_verdict(self, *, crashed: bool) -> None:
         if crashed:
@@ -361,11 +453,13 @@ class Watch:
         if self._overhead_ms:
             self.run.overhead_ms_p50 = round(statistics.median(self._overhead_ms), 4)
 
-    def _step(self, where: str, fn: Callable[[], object]) -> None:
+    def _step(self, where: str, fn: Callable[[], object]) -> bool:
         try:
             fn()
         except Exception as exc:
-            self._monitor_error(f"finish {where}", exc)
+            self._monitor_error(where, exc)
+            return False
+        return True
 
     # --- helpers ------------------------------------------------------------------------
     def _monitor_error(self, where: str, exc: BaseException) -> None:

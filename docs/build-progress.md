@@ -52,7 +52,7 @@ v0.2 or later.
 
 ### 2. History store (SQLite) and baselines `[v0.1]`
 
-- [ ] Scope: A§12 schema, migrations table, batched event writes, field stats computation
+- [x] Scope: A§12 schema, migrations table, batched event writes, field stats computation
   (quantile bins, top values), record hashes, size baseline, retention, `Watch.attach(run_id)`
   for workers, `compute_baseline`.
 - Files: `history/store.py`, `history/baselines.py`, `history/migrations.py`,

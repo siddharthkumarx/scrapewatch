@@ -991,7 +991,14 @@ store never needs the raw records.
 and verdict pass (D6, D15). With fewer than `min_runs` it returns an empty baseline and batch
 checks emit info findings ("no baseline yet, 2 of 3 passing runs"). Row count baseline is the
 median; per-field coverage and quantiles are medians across runs; categorical top values are
-unioned; `previous_value_hashes` come from the most recent passing run only.
+unioned; `previous_value_hashes` come from the most recent passing run only. The numeric
+histogram baseline is the element-wise median of the runs' 10 quantile-bin edges with the
+mean share per bin. `HistoryStore.field_stats(run_ids)` returns per-run statistics
+(`{field: {run_id: FieldStats}}`); `compute_baseline` does the aggregation.
+
+Size baselines (`size_baseline`) are updated by `update_size_baselines(run_id)` from the run's
+OK document responses: per domain and path pattern, the run's median body size is blended
+with the stored p50, past samples weighing at most 50.
 
 ### 12.4 Retention and maintenance
 
@@ -1008,7 +1015,10 @@ batches of 200 (or every 2 seconds) inside one transaction, and never updates `r
 parent's `finish()` aggregates from the tables. SQLite WAL plus `busy_timeout` handles the
 contention; a write that still fails after the timeout is counted as a monitor error and
 dropped, never retried in a loop. The `watch()` context in a worker is created with
-`Watch.attach(run_id=...)` (item 2) rather than `start()`.
+`Watch.attach(run_id=...)` (item 2) rather than `start()`. Workers contribute events only; records
+are recorded in the parent process, because field statistics and value hashes are stored per
+run rather than per writer. The parent's `finish()` takes response counters from the events
+table when it holds more events than the parent wrote itself.
 
 ---
 

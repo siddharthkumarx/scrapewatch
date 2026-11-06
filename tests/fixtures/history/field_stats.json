@@ -1,0 +1,297 @@
+{
+ "price": {
+  "count": 1000,
+  "null_count": 40,
+  "distinct_count": 882,
+  "numeric_count": 960,
+  "p05": 13.126000000000001,
+  "p50": 34.58,
+  "p95": 57.153,
+  "mean": 35.170572916666664,
+  "hist": {
+   "edges": [
+    10.1,
+    15.659,
+    21.306,
+    25.75,
+    30.426,
+    34.58,
+    39.822,
+    45.073,
+    49.99,
+    55.016999999999996,
+    59.99
+   ],
+   "counts": [
+    96,
+    96,
+    96,
+    96,
+    96,
+    96,
+    96,
+    95,
+    97,
+    96
+   ]
+  },
+  "top_values": []
+ },
+ "rating": {
+  "count": 1000,
+  "null_count": 0,
+  "distinct_count": 5,
+  "numeric_count": 0,
+  "p05": null,
+  "p50": null,
+  "p95": null,
+  "mean": null,
+  "hist": null,
+  "top_values": [
+   [
+    "Five",
+    220
+   ],
+   [
+    "Four",
+    206
+   ],
+   [
+    "Three",
+    200
+   ],
+   [
+    "Two",
+    191
+   ],
+   [
+    "One",
+    183
+   ]
+  ]
+ },
+ "stock": {
+  "count": 1000,
+  "null_count": 25,
+  "distinct_count": 23,
+  "numeric_count": 975,
+  "p05": 1.0,
+  "p50": 11.0,
+  "p95": 21.0,
+  "mean": 11.414358974358974,
+  "hist": {
+   "edges": [
+    0.0,
+    2.0,
+    5.0,
+    7.0,
+    9.0,
+    11.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0,
+    22.0
+   ],
+   "counts": [
+    73,
+    108,
+    81,
+    83,
+    90,
+    148,
+    79,
+    95,
+    83,
+    135
+   ]
+  },
+  "top_values": []
+ },
+ "title": {
+  "count": 1000,
+  "null_count": 20,
+  "distinct_count": 64,
+  "numeric_count": 0,
+  "p05": null,
+  "p50": null,
+  "p95": null,
+  "mean": null,
+  "hist": null,
+  "top_values": [
+   [
+    "tipping velvet",
+    24
+   ],
+   [
+    "objects tipping",
+    22
+   ],
+   [
+    "sharp attic",
+    22
+   ],
+   [
+    "light tipping",
+    21
+   ],
+   [
+    "objects requiem",
+    21
+   ],
+   [
+    "sharp tipping",
+    21
+   ],
+   [
+    "light requiem",
+    20
+   ],
+   [
+    "soumission requiem",
+    20
+   ],
+   [
+    "tipping light",
+    20
+   ],
+   [
+    "light velvet",
+    19
+   ],
+   [
+    "objects velvet",
+    19
+   ],
+   [
+    "requiem light",
+    19
+   ],
+   [
+    "soumission objects",
+    19
+   ],
+   [
+    "velvet light",
+    19
+   ],
+   [
+    "light attic",
+    18
+   ],
+   [
+    "sharp sharp",
+    18
+   ],
+   [
+    "soumission soumission",
+    18
+   ],
+   [
+    "tipping requiem",
+    18
+   ],
+   [
+    "tipping tipping",
+    18
+   ],
+   [
+    "velvet sharp",
+    18
+   ]
+  ]
+ },
+ "url": {
+  "count": 1000,
+  "null_count": 0,
+  "distinct_count": 1000,
+  "numeric_count": 0,
+  "p05": null,
+  "p50": null,
+  "p95": null,
+  "mean": null,
+  "hist": null,
+  "top_values": [
+   [
+    "https://books.toscrape.com/catalogue/book_0/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_1/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_10/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_100/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_101/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_102/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_103/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_104/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_105/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_106/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_107/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_108/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_109/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_11/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_110/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_111/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_112/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_113/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_114/index.html",
+    1
+   ],
+   [
+    "https://books.toscrape.com/catalogue/book_115/index.html",
+    1
+   ]
+  ]
+ }
+}
