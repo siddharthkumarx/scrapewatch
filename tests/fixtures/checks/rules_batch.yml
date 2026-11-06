@@ -1,0 +1,13 @@
+# Rules for the batch fixtures (item 8).
+schema_version: 1
+name: books
+key: [url]
+fields:
+  title: {type: string, required: true}
+  price: {type: number, required: true, min: 0}
+  currency: {type: string}
+  category: {type: string}
+  url: {type: url, required: true}
+batch:
+  unit_error: {fields: [price]}
+  currency: {field: currency, value_field: price, expected: [GBP], hold_mismatch_pct: 1}

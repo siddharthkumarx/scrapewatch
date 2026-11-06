@@ -1,0 +1,16 @@
+{
+  "run_ids": ["base3", "base2", "base1"],
+  "candidate_runs": 3,
+  "min_runs": 3,
+  "row_count_median": 100.0,
+  "fields": {
+    "title": {"runs": 3, "coverage": 1.0, "numeric_share": 0.0, "p05": null, "p50": null, "p95": null, "mean": null, "distinct_count": 100.0, "top_values": []},
+    "price": {"runs": 3, "coverage": 1.0, "numeric_share": 1.0, "p05": 11.0, "p50": 20.0, "p95": 29.0, "mean": 20.0, "distinct_count": 100.0,
+              "hist": {"edges": [10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0], "shares": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]},
+              "top_values": []},
+    "currency": {"runs": 3, "coverage": 1.0, "numeric_share": 0.0, "p05": null, "p50": null, "p95": null, "mean": null, "distinct_count": 1.0, "top_values": ["GBP"]},
+    "category": {"runs": 3, "coverage": 0.98, "numeric_share": 0.0, "p05": null, "p50": null, "p95": null, "mean": null, "distinct_count": 3.0, "top_values": ["fiction", "poetry", "travel"]},
+    "url": {"runs": 3, "coverage": 1.0, "numeric_share": 0.0, "p05": null, "p50": null, "p95": null, "mean": null, "distinct_count": 100.0, "top_values": []}
+  },
+  "previous_value_hashes": {}
+}

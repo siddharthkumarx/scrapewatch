@@ -1,0 +1,17 @@
+{
+ "verdict": "hold",
+ "findings": [
+  {
+   "check": "batch.distribution.numeric",
+   "severity": "warn",
+   "field": "price",
+   "message": "The distribution of price shifted (PSI 4.63, limit 0.25)."
+  },
+  {
+   "check": "batch.unit_error",
+   "severity": "hold",
+   "field": "price",
+   "message": "Median price 2,000 is about 100x the baseline 20: a unit or scale error?"
+  }
+ ]
+}

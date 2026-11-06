@@ -12,8 +12,10 @@ from urllib.parse import urlsplit
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel, ConfigDict, Field
 
+from scrapewatch.checks.batch import BatchStats, batch_findings
 from scrapewatch.checks.expr import compile_expr, evaluate
 from scrapewatch.checks.rules import DataRules, FieldRule
+from scrapewatch.checks.verdict import compute_verdict
 from scrapewatch.clean import dedupe_key
 from scrapewatch.clean.pipeline import run_normalizers
 from scrapewatch.history.baselines import Baseline
@@ -92,7 +94,19 @@ class RecordChecker:
             fixes.extend(result.fixes)
             findings.extend(result.findings)
             for key, val in result.extra.items():
-                if _missing(values.get(key)):
+                current = values.get(key)
+                if not _missing(current) and current != val:
+                    finding(
+                        f"clean.{result.extra_source[key]}.extra_conflict",
+                        Severity.INFO,
+                        f"{key} is {current!r} but {name} {result.fixes[0].before!r} says {val!r}"
+                        if result.fixes
+                        else f"{key} is {current!r} but {name} says {val!r}",
+                        field=key,
+                        observed=current,
+                        expected=val,
+                    )
+                if _missing(current):
                     fixes.append(
                         Fix(
                             field=key,
@@ -331,7 +345,7 @@ def check_batch(
     records: list[Record], rules: DataRules, baseline: Baseline, *, run_id: str
 ) -> list[Finding]:
     """Duplicates and batch-vs-history rules."""
-    raise NotImplementedError("build-progress item 8")
+    return batch_findings(BatchStats.from_records(records, rules), rules, baseline, run_id=run_id)
 
 
 def check_records(
@@ -341,8 +355,58 @@ def check_records(
     baseline: Baseline | None = None,
     run: Run | None = None,
 ) -> CheckResult:
-    """Check an iterable of items end to end (records, batch findings, verdict)."""
-    raise NotImplementedError("build-progress item 8")
+    """Check an iterable of items end to end (records, batch findings, verdict).
+
+    The verdict fails closed: if anything raises while checking, the run is held with the
+    reason, and the records checked so far are returned.
+    """
+    run = run or Run(name=rules.name)
+    baseline = baseline or Baseline()
+    checker = RecordChecker(rules)
+    batch = BatchStats(rules)
+    records: list[Record] = []
+    findings: list[Finding] = []
+    failed = False
+    try:
+        for item in items:
+            rec = checker.check(item, run_id=run.run_id)
+            records.append(rec)
+            batch.add(rec)
+        findings = batch_findings(batch, rules, baseline, run_id=run.run_id)
+    except Exception as exc:
+        failed = True
+        findings.append(
+            Finding(
+                run_id=run.run_id,
+                scope=FindingScope.RUN,
+                check="run.checks_failed",
+                severity=Severity.HOLD,
+                message=f"The checks failed: {type(exc).__name__}: {exc}",
+            )
+        )
+    fill_record_counts(run, batch, records)
+    run.findings = [*run.findings, *findings]
+    run.verdict = compute_verdict(run, findings, rules.verdict, checks_failed=failed)
+    run.verdict.baseline_runs = list(baseline.run_ids)
+    return CheckResult(records=records, batch_findings=findings, run=run)
+
+
+def fill_record_counts(run: Run, batch: BatchStats, records: Iterable[Record]) -> None:
+    """Record counters on the Run from a batch (findings and fixes from the records)."""
+    c = run.counts
+    c.records = batch.records
+    c.usable_records = batch.usable
+    c.duplicates = batch.duplicates
+    c.schema_invalid = batch.schema_invalid
+    for rec in records:
+        for f in rec.findings:
+            c.findings_by_severity[f.severity.value] = (
+                c.findings_by_severity.get(f.severity.value, 0) + 1
+            )
+            if f.check.startswith("clean.") and f.severity != Severity.INFO:
+                c.flags += 1
+        for fix in rec.fixes:
+            c.fixes_by_normalizer[fix.normalizer] = c.fixes_by_normalizer.get(fix.normalizer, 0) + 1
 
 
 def check(

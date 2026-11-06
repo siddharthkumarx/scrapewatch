@@ -152,7 +152,7 @@ v0.2 or later.
 
 ### 8. Batch checks and verdict `[v0.1]`
 
-- [ ] Scope: `check_batch` (A§8.2 table: row count, coverage, distribution PSI and new
+- [x] Scope: `check_batch` (A§8.2 table: row count, coverage, distribution PSI and new
   categories, changed share, unit error, currency, duplicates share), `compute_verdict`
   (A§8.3 with reasons text), `check_records`, wiring into `Watch.finish`, `checks_failed`
   path.

@@ -112,6 +112,14 @@ class StatsAccumulator:
             else:
                 self._others.setdefault(key, set()).add(_hashable(value))
 
+    def numbers(self, key: str) -> list[float]:
+        """Numeric values seen for a field (in arrival order)."""
+        return self._numbers.get(key, [])
+
+    def strings(self, key: str) -> Counter[str]:
+        """Counts of the string values seen for a field."""
+        return self._strings.get(key, Counter())
+
     def result(self) -> dict[str, FieldStats]:
         """Statistics per field, sorted by field name."""
         out: dict[str, FieldStats] = {}

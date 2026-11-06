@@ -1,0 +1,11 @@
+{
+ "verdict": "hold",
+ "findings": [
+  {
+   "check": "batch.row_count",
+   "severity": "hold",
+   "field": null,
+   "message": "Row count 40 is 60% below baseline 100."
+  }
+ ]
+}

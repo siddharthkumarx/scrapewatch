@@ -182,10 +182,10 @@ is a dotted id from a fixed vocabulary (section 8.4). `rule_id` is set for guard
   "rules_version": "2026.11.0",
   "config_hash": "7c1e3a",
   "counts": {
-    "responses": 1052, "document_responses": 1052,
+    "responses": 1052, "document_responses": 1052, "bad_documents": 3,
     "by_label": {"ok": 1049, "empty": 2, "error": 1},
     "by_status": {"200": 1051, "null": 1},
-    "retries": 3, "records": 1000, "usable_records": 998, "duplicates": 2,
+    "retries": 3, "records": 1000, "usable_records": 998, "duplicates": 2, "schema_invalid": 0,
     "findings_by_severity": {"info": 4, "warn": 3, "hold": 0},
     "fixes_by_normalizer": {"price": 1000, "whitespace": 412},
     "flags": 0, "monitor_errors": 0, "wire_bytes": 13891022
@@ -716,15 +716,25 @@ Compared with the baseline (section 12.3) when it exists; otherwise info finding
 
 PSI = Σ (actual% − baseline%) × ln(actual% / baseline%) over bins, with 0.5% floors.
 
+Notes: the categorical check runs only for fields whose baseline had at most 20 distinct
+values (the stored top values are then complete), so free-text fields such as titles never
+trip it. `batch.currency` counts records whose currency is outside `expected` or that carry a
+`clean.<normalizer>.extra_conflict` finding (the price string names another currency than the
+currency field). `batch.row_count` below `min_rows`, `batch.coverage` below a field's
+`coverage_hold_below_pct`, `batch.duplicates` and `batch.currency` need no history; the rest
+need a baseline, and without one the run gets a single `batch.baseline` info finding.
+`BatchStats` accumulates what these checks need record by record, so neither the runtime nor
+`check()` keeps a run's records in memory.
+
 ### 8.3 Run level (in `compute_verdict`)
 
 | Rule | Warn | Hold |
 |---|---|---|
-| Blocked share: responses with a bad label / document responses | > 2% | > 20% |
+| Blocked share: document responses with a bad label (`counts.bad_documents`) / document responses | > 2% | > 20% |
 | Schema-invalid records share | > 1% | > 5% |
-| Flagged (unfixable) values share | > 5% | |
+| Flagged (unfixable) values: `counts.flags` / records | > 5% | |
 | Monitor errors | ≥ 1 | |
-| Usable records | | < `min_usable_records` |
+| Usable records (only when data rules are set or records were recorded) | | < `min_usable_records` |
 | Any finding with severity hold | | hold |
 | Any finding with severity warn | warn | |
 | Checks engine failed (exception, rules not loadable, history unreadable when the gate is in use) | | hold |
@@ -738,7 +748,9 @@ without a rules file.
 ### 8.4 Check id vocabulary
 
 `guard.<label>`, `schema.invalid`, `field.required|type|range|length|regex|allowed`,
-`cross.<id>`, `dup.repeat`, `clean.<normalizer>.<flag>`, `batch.<name>` as in 8.2,
+`cross.<id>`, `dup.repeat`, `dup.key_missing`, `clean.<normalizer>.<flag>` (including
+`clean.<normalizer>.error` and the info `clean.<normalizer>.extra_conflict`), `batch.<name>` as
+in 8.2 plus `batch.baseline` (info: no baseline yet), `cost.unknown_label`,
 `run.blocked_share|schema_invalid|flagged|monitor_errors|usable_records|checks_failed`.
 
 ---

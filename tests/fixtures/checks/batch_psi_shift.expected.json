@@ -1,0 +1,11 @@
+{
+ "verdict": "warn",
+ "findings": [
+  {
+   "check": "batch.distribution.numeric",
+   "severity": "warn",
+   "field": "price",
+   "message": "The distribution of price shifted (PSI 0.42, limit 0.25)."
+  }
+ ]
+}

@@ -392,6 +392,8 @@ class HistoryStore:
         """Response counters of a run aggregated from the events table (all writers)."""
         total = self._read(
             "SELECT COUNT(*) AS n, COALESCE(SUM(resource_type = 'document'), 0) AS docs, "
+            "COALESCE(SUM(resource_type = 'document' AND label NOT IN ('ok', 'unknown')), 0) "
+            "AS bad_docs, "
             "COALESCE(SUM(attempt > 1), 0) AS retries, COALESCE(SUM(wire_bytes), 0) AS wire "
             "FROM events WHERE run_id = ?",
             (run_id,),
@@ -409,6 +411,7 @@ class HistoryStore:
         return {
             "responses": int(total["n"]),
             "document_responses": int(total["docs"]),
+            "bad_documents": int(total["bad_docs"]),
             "retries": int(total["retries"]),
             "wire_bytes": int(total["wire"]),
             "by_label": {r["label"]: int(r["n"]) for r in labels},

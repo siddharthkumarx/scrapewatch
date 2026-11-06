@@ -72,6 +72,7 @@ def aggregate_field(stats: list[FieldStats]) -> dict[str, Any]:
         "p50": _median([s.p50 for s in stats]),
         "p95": _median([s.p95 for s in stats]),
         "mean": _median([s.mean for s in stats]),
+        "distinct_count": _median([float(s.distinct_count) for s in stats]),
     }
     hists = [s.hist for s in stats if s.hist]
     if hists:

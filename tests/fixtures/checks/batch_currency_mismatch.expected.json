@@ -1,0 +1,11 @@
+{
+ "verdict": "hold",
+ "findings": [
+  {
+   "check": "batch.currency",
+   "severity": "hold",
+   "field": "currency",
+   "message": "3 records (3.0%) have a currency that disagrees with the price or is not one of ['GBP']; the limit is 1%."
+  }
+ ]
+}

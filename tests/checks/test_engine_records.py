@@ -150,3 +150,21 @@ def test_apply_normalizers_tuple_and_stubs() -> None:
         "f", " x ", ["passthrough", "not_registered"], {}, run_id="r", record_id="c"
     )
     assert (value, fixes, findings, extra) == (" x ", [], [], {})
+
+
+def test_extra_conflict_is_reported() -> None:
+    def fake(value: object, options: object) -> CleanOutcome:
+        return CleanOutcome(value=5.0, changed=True, extra={"currency": "USD"})
+
+    NORMALIZERS["test_conflict"] = fake
+    try:
+        rules = DataRules.model_validate({"fields": {"price": {}}})
+        rules.fields["price"].clean = ["test_conflict"]
+        rec = RecordChecker(rules).check({"price": "$5", "currency": "GBP"}, run_id="r")
+        assert rec.data["currency"] == "GBP"
+        f = rec.findings[0]
+        assert f.check == "clean.test_conflict.extra_conflict"
+        assert f.severity == Severity.INFO
+        assert f.message == "currency is 'GBP' but price '$5' says 'USD'"
+    finally:
+        del NORMALIZERS["test_conflict"]

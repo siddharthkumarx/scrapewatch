@@ -1,0 +1,11 @@
+{
+ "verdict": "warn",
+ "findings": [
+  {
+   "check": "batch.duplicates",
+   "severity": "warn",
+   "field": null,
+   "message": "2 records (2.0%) were duplicates."
+  }
+ ]
+}

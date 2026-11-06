@@ -1,0 +1,11 @@
+{
+ "verdict": "warn",
+ "findings": [
+  {
+   "check": "batch.coverage",
+   "severity": "warn",
+   "field": "category",
+   "message": "Coverage of category fell from 98.0% to 90.0% (8.0 points)."
+  }
+ ]
+}

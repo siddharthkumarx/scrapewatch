@@ -23,16 +23,19 @@ from typing import Any, TypeVar
 from urllib.parse import urlsplit
 
 from scrapewatch._version import __version__
+from scrapewatch.checks.batch import BatchStats, batch_findings
 from scrapewatch.checks.engine import RecordChecker
-from scrapewatch.checks.rules import DataRules, load_data_rules
+from scrapewatch.checks.rules import DataRules, VerdictThresholds, load_data_rules
+from scrapewatch.checks.verdict import compute_verdict
 from scrapewatch.config import Settings, config_hash, load_settings
 from scrapewatch.cost.meter import CostMeter
 from scrapewatch.guard.classify import classify_features
 from scrapewatch.guard.features import extract_features
 from scrapewatch.guard.rules import GuardRuleSet, bundled_rules, load_rules
-from scrapewatch.history.stats import StatsAccumulator, value_hash
+from scrapewatch.history.baselines import Baseline, compute_baseline
 from scrapewatch.history.store import HistoryStore, open_store, path_pattern
 from scrapewatch.models import (
+    BAD_LABELS,
     BytesSource,
     ErrorInfo,
     Finding,
@@ -167,8 +170,7 @@ class Watch:
         self.store: HistoryStore | None = None
         self.history_failed = False  # history could not be opened or written
         self.attached = False  # a worker writing events into a parent's run
-        self._stats = StatsAccumulator()
-        self._value_hashes: dict[str, str] = {}
+        self._batch = BatchStats(rules)
         self.meter = CostMeter(settings.cost)
         self.guard_rules: GuardRuleSet | None = None
         self._finding_queue: list[Finding] = []
@@ -232,6 +234,7 @@ class Watch:
                 self.data_rules = load_data_rules(self.settings.rules)
             if self.data_rules is not None:
                 self.checker = RecordChecker(self.data_rules)
+                self._batch.rules = self.data_rules
         except Exception:
             self.checks_failed = True
             raise
@@ -430,6 +433,8 @@ class Watch:
         c.responses += 1
         if event.resource_type == ResourceType.DOCUMENT:
             c.document_responses += 1
+            if event.guard.label in BAD_LABELS:
+                c.bad_documents += 1
         label = event.guard.label.value
         c.by_label[label] = c.by_label.get(label, 0) + 1
         status = "null" if event.status is None else str(event.status)
@@ -459,9 +464,7 @@ class Watch:
                 self._monitor_error(f"record hook {name}", exc)
         with self._lock:
             self._count_record(record)
-            self._stats.add(record.data)
-            if record.dedupe_key and record.usable:
-                self._value_hashes.setdefault(record.dedupe_key, value_hash(record.data))
+            self._batch.add(record)
         self._overhead_ms.append((time.perf_counter() - t0) * 1000.0)
         return record
 
@@ -473,10 +476,12 @@ class Watch:
         for finding in record.findings:
             sev = finding.severity.value
             c.findings_by_severity[sev] = c.findings_by_severity.get(sev, 0) + 1
-            if finding.check.startswith("clean."):
+            if finding.check.startswith("clean.") and finding.severity != Severity.INFO:
                 c.flags += 1
             elif finding.check == "dup.repeat":
                 c.duplicates += 1
+        if any(f.check == "schema.invalid" for f in record.findings):
+            c.schema_invalid += 1
         for fix in record.fixes:
             c.fixes_by_normalizer[fix.normalizer] = c.fixes_by_normalizer.get(fix.normalizer, 0) + 1
 
@@ -519,9 +524,9 @@ class Watch:
             return self.run
         self._step("aggregate", self._finish_aggregate)
         self._step("cost", self._finish_cost)
-        self._step("verdict", lambda: self._finish_verdict(crashed=crashed))
         self.run.finished_at = datetime.now(tz=timezone.utc)
         self.run.status = RunStatus.CRASHED if crashed else RunStatus.FINISHED
+        self._step("verdict", lambda: self._finish_verdict(crashed=crashed))
         self._step("overhead", self._finish_overhead)
         self._step("store", self._finish_store)
         self._step("prune", self._finish_prune)
@@ -551,8 +556,8 @@ class Watch:
     def _finish_store(self) -> None:
         if self.store is None:
             return
-        self._store_call("write_field_stats", self.run.run_id, self._stats.result())
-        self._store_call("write_value_hashes", self.run.run_id, self._value_hashes)
+        self._store_call("write_field_stats", self.run.run_id, self._batch.stats.result())
+        self._store_call("write_value_hashes", self.run.run_id, self._batch.value_hashes)
         self._store_call("write_findings", self.run.findings)
         self._store_call("finish_run", self.run)
         if (
@@ -575,12 +580,40 @@ class Watch:
             self.store.close()
 
     def _finish_verdict(self, *, crashed: bool) -> None:
-        if crashed:
+        """Batch checks against the baseline, then the verdict. Fails closed (hold)."""
+        try:
+            rules = self.data_rules
+            failed = self.checks_failed or (self.history_failed and rules is not None)
+            baseline = Baseline()
+            findings: list[Finding] = []
+            if rules is not None:
+                if self.store is not None:
+                    n = self.settings.history.baseline_runs
+                    try:
+                        baseline = compute_baseline(self.store, self.run.name, n=n)
+                    except Exception:
+                        self.history_failed = failed = True
+                        raise
+                findings = batch_findings(self._batch, rules, baseline, run_id=self.run.run_id)
+            self.run.findings.extend(findings)
+            thresholds = rules.verdict if rules is not None else VerdictThresholds()
+            verdict = compute_verdict(
+                self.run,
+                self.run.findings,
+                thresholds,
+                checks_failed=failed,
+                expect_records=rules is not None or self.run.counts.records > 0,
+            )
+            verdict.baseline_runs = list(baseline.run_ids)
+            self.run.verdict = verdict
+        except Exception as exc:
+            reason = f"The checks failed ({type(exc).__name__}: {exc}); holding to be safe."
             self.run.verdict = Verdict(
                 status=VerdictStatus.HOLD,
-                reasons=["The scraper crashed before the run finished."],
+                reasons=[reason],
                 counts={Severity.HOLD.value: 1},
             )
+            raise
 
     def _finish_overhead(self) -> None:
         if self._overhead_ms:

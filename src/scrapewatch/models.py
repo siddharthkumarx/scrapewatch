@@ -288,15 +288,17 @@ class RunCounts(_Model):
 
     responses: int = 0
     document_responses: int = 0
+    bad_documents: int = 0  # document responses with a label in BAD_LABELS
     by_label: dict[str, int] = Field(default_factory=dict)
     by_status: dict[str, int] = Field(default_factory=dict)
     retries: int = 0
     records: int = 0
     usable_records: int = 0
     duplicates: int = 0
+    schema_invalid: int = 0  # records with at least one schema.invalid finding
     findings_by_severity: dict[str, int] = Field(default_factory=dict)
     fixes_by_normalizer: dict[str, int] = Field(default_factory=dict)
-    flags: int = 0
+    flags: int = 0  # values a normalizer could not fix (clean.* findings above info)
     monitor_errors: int = 0
     wire_bytes: int = 0
 
