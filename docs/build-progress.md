@@ -427,6 +427,41 @@ v0.2 or later.
 
 ---
 
+## Continue here
+
+Next item: **docs/build-progress.md item 10** (cleaning: price and number). M1 (items 1 to 9b)
+is done; every item is green on GitHub (ci.yml and full.yml) and the M1 matrix is logged.
+
+Notes for the next session:
+
+- Local gate: `uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run
+  pytest -m "not live"`. Export `UV_SYSTEM_CERTS=1` and unset `UV_NATIVE_TLS`. The sandbox
+  cannot download the gitleaks binary; use the gitleaks job of full.yml as the evidence.
+- `tests/conftest.py` runs every test in its own temporary working directory and clears
+  `SCRAPEWATCH_*` variables, so default history paths never touch the repository.
+- Runtime structure (`runtime.py`): response hooks `guard` then `cost`, record hook `checks`;
+  each hook fails open (counted in `monitor_errors`). Records are never kept: `BatchStats`
+  (`checks/batch.py`) accumulates counts, field stats, value hashes and currency mismatches.
+  `finish()` order: flush, aggregate (workers), cost, status, verdict (fails closed), overhead,
+  store, prune, close.
+- Normalizers: `clean/price.py`, `number.py`, `date.py`, `url.py` are still stubs that raise
+  `NotImplementedError`; `clean/pipeline.run_normalizers` treats that as a passthrough. Remove
+  that `except NotImplementedError` once items 10 and 11 are done. `clean/text.py` registers a
+  stub named `text`; item 11 replaces it with `whitespace`, `html_entities`, `strip_tags` and
+  `mojibake` (the names in `checks/rules.KNOWN_NORMALIZERS`). `clean/dedupe.dedupe_key` is done.
+- A normalizer's `extra` (the currency of a price) fills an empty field with a Fix, and a
+  conflicting non-empty value gives a `clean.<name>.extra_conflict` info finding that
+  `batch.currency` counts.
+- Still open for later items: keep three examples per finding (`DataRules.examples`, item 11);
+  report `gate.recovered` actions as findings and `verify_live` warnings in the CLI (item 12);
+  reconcile `report_dir` with the report path in architecture 12.1 (item 13); write
+  `tests/perf/test_overhead.py` (architecture 15) before item 24 (only the 64 KiB classify
+  budget is tested so far, in `tests/guard/test_classify.py`).
+- full.yml installs Chromium only once `tests/integrations/` exists; from item 16 on the
+  extras jobs take several minutes.
+
+---
+
 ## Milestone log
 
 Record each full local matrix here (date, commit, Python versions, pass/fail per version,
