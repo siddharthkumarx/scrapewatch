@@ -20,6 +20,8 @@ CLI. Production-grade, adoptable in 5 minutes, every number in docs from a commi
   or proxies because of a block (the proxy label is recorded for cost only), no advice on
   evasion anywhere (code, rules, docs, comments, commit messages).
 - No personal data. No telemetry or phoning home of any kind.
+- This repository is public: every push is visible at once. Never commit private notes
+  (`docs/private/` is git-ignored), credentials or tokens.
 - Never use large marketplaces or login-protected sites (Amazon, Walmart, eBay, Etsy,
   LinkedIn, Indeed, Glassdoor, Zillow, Google) in examples, fixtures, benchmarks or docs.
   Allowed: books.toscrape.com, quotes.toscrape.com, webscraper.io test sites,
@@ -61,7 +63,7 @@ uv run mypy
 # "playwright install" again there)
 uv sync --python 3.12 --group dev --all-extras
 
-# full local matrix (before each milestone; record in docs/build-progress.md "Milestone log")
+# full local matrix (optional: full.yml runs the same on every push to main)
 uv python install 3.10 3.11 3.12 3.13
 for v in 3.10 3.11 3.12 3.13; do
   uv sync --python $v --group dev --all-extras && uv run --python $v pytest -m "not live" || echo "FAILED $v"
@@ -79,16 +81,17 @@ gitleaks detect --source . --no-banner   # install: https://github.com/gitleaks/
 Use `uv run` for everything so the locked environment is used. The `UV_NATIVE_TLS`
 variable in this sandbox is deprecated; export `UV_SYSTEM_CERTS=1` if uv warns.
 
-## CI split (Actions minutes are shared and limited while private)
+## CI (public repository: Actions run free)
 
-- `ci.yml` on every push: one job, ubuntu-latest, Python 3.12: commit-message policy, ruff,
-  mypy, pytest. Concurrency cancels older runs per branch; docs-only pushes (`docs/**`,
-  `**/*.md`, `checks/results/**`) skip it; uv cache enabled.
-- `full.yml` on workflow_dispatch only: 3.10–3.13 matrix, extras jobs (requests, playwright,
-  scrapy, crawlee, parquet), gitleaks, pip-audit. Dispatch it once per milestone at most;
-  otherwise run the matrix locally (commands above).
-- `checks.yml` on pushes that change `checks/request.yml`: runs the request and commits
-  results under `checks/results/<id>/`. Use only when the run answers a question.
+- `ci.yml` on every push and pull request: one job, ubuntu-latest, Python 3.12:
+  commit-message policy, ruff, mypy, pytest. Concurrency cancels older runs per branch;
+  docs-only pushes (`docs/**`, `**/*.md`, `checks/results/**`) skip it; uv cache enabled.
+- `full.yml` on every push to main and on pull requests (docs-only pushes skip it), plus
+  workflow_dispatch: 3.10–3.13 matrix, extras jobs (requests, playwright, scrapy, crawlee,
+  parquet), gitleaks, pip-audit.
+- `checks.yml` on pushes to main that change `checks/request.yml`: runs the request and
+  commits results under `checks/results/<id>/`. Free, but every run adds a commit: use it
+  only when the run answers a question.
 - `release.yml` on `v*` tags: build, twine check, draft GitHub release. PyPI publishing stays
   off (`PYPI_PUBLISH` repo variable unset) until the owner says "publish".
 
@@ -99,8 +102,10 @@ variable in this sandbox is deprecated; export `UV_SYSTEM_CERTS=1` if uv warns.
    commands above.
 3. Replace the stub's `raise NotImplementedError`, raise `fail_under` in pyproject by the
    amount the item says, update docs if a signature changed.
-4. Tick the item, commit, push, confirm `ci.yml` is green on GitHub before the next item.
-5. Before each milestone: full local matrix, pip-audit, gitleaks; log the result.
+4. Tick the item, commit, push, confirm `ci.yml` and `full.yml` are green on GitHub before the
+   next item.
+5. Before each milestone: confirm the latest `full.yml` run on main is green (or run the full
+   local matrix, pip-audit and gitleaks) and log the result.
 6. Record anything that went wrong in docs/incidents.md.
 
 If an item cannot be completed as written, do not shrink it silently: finish what is

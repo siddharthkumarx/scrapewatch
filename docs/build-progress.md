@@ -413,13 +413,10 @@ v0.2 or later.
   docs/benchmarks.md.
 - Done when: the owner approves the README.
 
-### 27. Private explainer `[v0.1]`
+### 27. Private explainer (outside this repository)
 
-- [ ] Scope: `docs/private/explainer.md` and `explainer.pdf` (rendered offline with a
-  Markdown-to-PDF route available in the sandbox, e.g. a headless Chromium print of the
-  rendered HTML): plain-words how it works, 3 design choices and why, the weakest point, 7
-  questions people may ask with short answers. Not for the public repo (dropped at publish).
-- Done when: both files exist and the PDF opens.
+- [x] Handled outside this repository: the owner keeps a plain-words explainer privately.
+  Never commit `docs/private/` (it is git-ignored).
 
 ### 28. Release candidate checks `[v0.1]`
 

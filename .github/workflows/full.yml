@@ -1,10 +1,21 @@
 # Full matrix, extras, secret scan and dependency audit.
-# Runs only on workflow_dispatch while the repo is private; docs/publish-checklist.md switches it
-# to push + pull_request at publish time.
+# Runs on every push to main, on pull requests and on demand (Actions are free for this
+# public repository). Docs-only pushes skip it.
 name: full
 
 on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - "checks/results/**"
+  pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: full-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

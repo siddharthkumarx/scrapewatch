@@ -1,5 +1,5 @@
-# Lean CI while the repo is private (shared Actions minutes). One job, one Python.
-# The full matrix, extras, gitleaks and pip-audit live in full.yml (workflow_dispatch only).
+# Fast check on every push and pull request: one job, one Python.
+# The full matrix, extras, gitleaks and pip-audit live in full.yml.
 name: ci
 
 on:
@@ -9,6 +9,7 @@ on:
       - "docs/**"
       - "**/*.md"
       - "checks/results/**"
+  pull_request:
   workflow_dispatch:
 
 concurrency:

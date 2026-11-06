@@ -117,7 +117,9 @@ current release. Until 1.0, a minor version may change the API with a changelog 
 
 **D18. Lean CI while private.** One job on one Python for every push; matrix, extras, secret
 scanning and dependency audit on dispatch only; docs-only pushes skip CI. Actions minutes are
-shared with other private repositories.
+shared with other private repositories. Superseded on 2026-11-06: development moved to this
+public repository, where Actions run free, so `full.yml` also runs on every push to main and
+on pull requests.
 
 **D19. Commit hygiene enforced twice.** A local `commit-msg` hook and the same script in CI
 allow only `Signed-off-by` trailers and reject generated-with footers, so the public history

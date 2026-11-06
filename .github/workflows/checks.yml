@@ -1,11 +1,11 @@
 # Live checks and benchmarks. The sandbox cannot reach most sites, so every live run happens
 # here: push a change to checks/request.yml, this workflow runs it and commits the results under
-# checks/results/<id>/ on the same branch. Keep runs rare: private Actions minutes are shared.
+# checks/results/<id>/ on the same branch. Run it only when the result answers a question.
 name: checks
 
 on:
   push:
-    branches: ["**"]
+    branches: ["main"]
     paths:
       - "checks/request.yml"
 

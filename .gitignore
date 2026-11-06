@@ -36,5 +36,5 @@ examples/**/*.csv
 .vscode/
 *.swp
 
-# Private (dropped before publish; see docs/publish-checklist.md)
-docs/private/*.pdf
+# Private notes never go in this public repository
+docs/private/

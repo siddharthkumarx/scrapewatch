@@ -1,31 +1,25 @@
 # Publish checklist
 
-Run top to bottom when the owner says "publish". Nothing here happens before that.
+Sections 1 and 2 were done on 2026-11-06, when development moved to this public repository.
+Sections 3 and 4 run when the owner says "publish".
 
-## 1. Fresh public repository with a clean history
+## 1. Public repository with a clean history
 
-- [ ] All v0.1 items in docs/build-progress.md ticked; milestone log complete; CI green.
-- [ ] Clone this private repo to a scratch directory and run `git filter-repo` to produce
-  the public history:
-  - drop `docs/private/` from every commit (`--path docs/private --invert-paths`);
-  - drop `checks/results/` runs that were only exploratory (keep the ones cited in docs);
-  - keep author identity as is (Signed-off-by lines stay).
-- [ ] In `docs/maintainers.md`, trim the "Continue here"
-  section and the branch names; keep the goal, hard rules, commands and CI split.
-- [ ] Create the public repo `siddharthkumarx/scrapewatch` (empty, MIT, no README from the
-  template), push `main` from the filtered clone, set `main` as default, protect it
-  (require CI, no force-push).
-- [ ] `git log --format=%B | grep -i -E "generated (with|by)|co-authored-by"` returns nothing.
-- [ ] `gitleaks detect` on the public clone returns nothing.
+- [x] History rewritten with `git filter-repo` before the repository went public: maintainer
+  guide at `docs/maintainers.md`, branch `main`, unsigned commits, author identity kept.
+- [x] `main` is the only branch and the default branch.
+- [ ] Rename the repository to `scrapewatch` if it still has its working name (owner,
+  Settings → General); GitHub redirects the old URLs.
+- [ ] Protect `main` once the build is stable (require CI, no force-push).
+- [ ] Before the release: `git log --format=%B | grep -i -E "generated (with|by)|co-authored-by"`
+  returns nothing, and `gitleaks detect` on a fresh clone returns nothing.
 
 ## 2. Workflows
 
-- [ ] `full.yml`: change `on:` to `push` (branches: main) and `pull_request`, keep
-  `workflow_dispatch`.
-- [ ] `ci.yml`: keep as the fast check on every push and pull request.
-- [ ] `checks.yml`: keep, but restrict `branches` to `main` and feature branches of
-  maintainers; document in checks/README.md that forks cannot commit results.
-- [ ] `release.yml`: unchanged.
+- [x] `full.yml`: runs on push to `main`, on pull requests and on demand.
+- [x] `ci.yml`: the fast check on every push and pull request.
+- [x] `checks.yml`: runs on `main` only; forks cannot commit results (checks/README.md).
+- [ ] `release.yml`: unchanged until the first release.
 
 ## 3. PyPI Trusted Publishing
 
@@ -42,4 +36,3 @@ Run top to bottom when the owner says "publish". Nothing here happens before tha
 
 - [ ] README badges (PyPI version, CI) added; docs/benchmarks.md links verified.
 - [ ] Open the first contributor issues from docs/readme-plan.md.
-- [ ] Archive this private repo (`scrapewatch-wip`) read-only.
