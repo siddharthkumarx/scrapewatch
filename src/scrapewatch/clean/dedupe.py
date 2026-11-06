@@ -1,14 +1,25 @@
-"""dedupe normalizer(s). Input/output table: docs/architecture.md "Cleaning"."""
+"""Dedupe key of a record (docs/architecture.md "Cleaning" 10.6). Not a field normalizer."""
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+import hashlib
+import json
+from collections.abc import Mapping, Sequence
 from typing import Any
 
-from scrapewatch.clean.pipeline import CleanOutcome, register
+
+def _missing(value: Any) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
 
 
-@register("dedupe")
-def normalize_dedupe(value: Any, options: Mapping[str, Any]) -> CleanOutcome:
-    """See docs/architecture.md "Cleaning" for the exact behaviour and flags."""
-    raise NotImplementedError("build-progress item 10/11")
+def dedupe_key(record: Mapping[str, Any], key_fields: Sequence[str]) -> str | None:
+    """``sha256:`` + hex of the canonical JSON of the key fields (after cleaning).
+
+    Returns None when ``key_fields`` is empty or any key field is missing; the engine then
+    records a ``dup.key_missing`` finding.
+    """
+    if not key_fields or any(_missing(record.get(k)) for k in key_fields):
+        return None
+    payload = {k: record.get(k) for k in key_fields}
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    return "sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["title", "url"],
+  "properties": {
+    "title": {"type": "string"},
+    "url": {"type": "string"},
+    "price": {"type": ["number", "null"]},
+    "tags": {"type": "array", "items": {"type": "string"}}
+  }
+}

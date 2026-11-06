@@ -1,0 +1,26 @@
+# Record-level checks without normalizers (items 10 and 11 add cleaning goldens).
+schema_version: 1
+name: records
+key: [url]
+schema: schema_books.json
+fields:
+  title: {type: string, required: true, min_length: 2, max_length: 40}
+  price: {type: number, required: true, min: 0, max: 1000, severity: hold}
+  currency: {type: string, allowed: [GBP, USD, EUR]}
+  sku: {type: string, regex: "^[A-Z]{3}-\\d{4}$"}
+  stock: {type: integer, nullable: false}
+  url: {type: url, required: true}
+  published: {type: date}
+  updated_at: {type: datetime}
+  tags: {type: array, max_length: 3}
+  in_stock: {type: boolean}
+  dims: {type: object}
+cross:
+  - id: sale_le_regular
+    expr: "sale_price <= price"
+    when: "sale_price is not None"
+    message: "sale price above regular price"
+  - id: discount_sane
+    expr: "price - sale_price < 500"
+    when: "sale_price is not None"
+    severity: info

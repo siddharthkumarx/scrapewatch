@@ -1,0 +1,216 @@
+{
+ "schema_version": 1,
+ "name": "books",
+ "key": [
+  "url"
+ ],
+ "schema": {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+   "title",
+   "url"
+  ],
+  "properties": {
+   "title": {
+    "type": "string"
+   },
+   "url": {
+    "type": "string"
+   },
+   "price": {
+    "type": [
+     "number",
+     "null"
+    ]
+   },
+   "tags": {
+    "type": "array",
+    "items": {
+     "type": "string"
+    }
+   }
+  }
+ },
+ "fields": {
+  "title": {
+   "type": "string",
+   "required": true,
+   "nullable": true,
+   "min": null,
+   "max": null,
+   "min_length": 1,
+   "max_length": null,
+   "regex": null,
+   "allowed": null,
+   "clean": [
+    "whitespace",
+    "html_entities",
+    "mojibake"
+   ],
+   "clean_options": {},
+   "severity": "warn",
+   "coverage_hold_below_pct": null
+  },
+  "price": {
+   "type": "number",
+   "required": true,
+   "nullable": true,
+   "min": 0.0,
+   "max": 100000.0,
+   "min_length": null,
+   "max_length": null,
+   "regex": null,
+   "allowed": null,
+   "clean": [
+    "price"
+   ],
+   "clean_options": {
+    "locale": "auto"
+   },
+   "severity": "hold",
+   "coverage_hold_below_pct": 95.0
+  },
+  "currency": {
+   "type": "string",
+   "required": false,
+   "nullable": true,
+   "min": null,
+   "max": null,
+   "min_length": null,
+   "max_length": null,
+   "regex": null,
+   "allowed": [
+    "GBP",
+    "USD",
+    "EUR"
+   ],
+   "clean": [],
+   "clean_options": {},
+   "severity": "warn",
+   "coverage_hold_below_pct": null
+  },
+  "sale_price": {
+   "type": "number",
+   "required": false,
+   "nullable": true,
+   "min": 0.0,
+   "max": null,
+   "min_length": null,
+   "max_length": null,
+   "regex": null,
+   "allowed": null,
+   "clean": [
+    "price"
+   ],
+   "clean_options": {},
+   "severity": "warn",
+   "coverage_hold_below_pct": null
+  },
+  "url": {
+   "type": "url",
+   "required": true,
+   "nullable": true,
+   "min": null,
+   "max": null,
+   "min_length": null,
+   "max_length": null,
+   "regex": null,
+   "allowed": null,
+   "clean": [
+    "url"
+   ],
+   "clean_options": {
+    "drop_params": [
+     "utm_*",
+     "gclid",
+     "fbclid",
+     "ref"
+    ]
+   },
+   "severity": "warn",
+   "coverage_hold_below_pct": null
+  },
+  "published_at": {
+   "type": "datetime",
+   "required": false,
+   "nullable": true,
+   "min": null,
+   "max": null,
+   "min_length": null,
+   "max_length": null,
+   "regex": null,
+   "allowed": null,
+   "clean": [
+    "date"
+   ],
+   "clean_options": {
+    "day_first": false,
+    "assume_tz": "UTC"
+   },
+   "severity": "warn",
+   "coverage_hold_below_pct": null
+  }
+ },
+ "cross": [
+  {
+   "id": "sale_le_regular",
+   "expr": "sale_price <= price",
+   "when": "sale_price is not None",
+   "severity": "warn",
+   "message": "sale price above regular price"
+  }
+ ],
+ "batch": {
+  "row_count": {
+   "warn_pct": 20.0,
+   "hold_pct": 50.0,
+   "min_rows": 10
+  },
+  "coverage": {
+   "warn_drop_points": 5.0,
+   "hold_drop_points": 20.0
+  },
+  "distribution": {
+   "psi_warn": 0.25,
+   "psi_hold": null,
+   "new_values_warn_pct": 10.0
+  },
+  "changed_share": {
+   "warn_above_pct": 50.0,
+   "hold_above_pct": null,
+   "warn_below_pct": null
+  },
+  "unit_error": {
+   "fields": [
+    "price"
+   ],
+   "ratios": [
+    100.0,
+    1000.0
+   ],
+   "tolerance_pct": 15.0,
+   "severity": "hold"
+  },
+  "currency": {
+   "field": "currency",
+   "value_field": "price",
+   "expected": [
+    "GBP"
+   ],
+   "hold_mismatch_pct": 1.0
+  },
+  "duplicates_warn_pct": 1.0,
+  "duplicates_hold_pct": null
+ },
+ "verdict": {
+  "blocked_share_warn_pct": 2.0,
+  "blocked_share_hold_pct": 20.0,
+  "schema_invalid_warn_pct": 1.0,
+  "schema_invalid_hold_pct": 5.0,
+  "flagged_warn_pct": 5.0,
+  "monitor_errors_warn": 1,
+  "min_usable_records": 1
+ },
+ "examples": 3
+}

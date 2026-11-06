@@ -1,0 +1,15 @@
+{"title": "A Light in the Attic", "price": 51.77, "currency": "GBP", "sku": "ABC-1234", "stock": 22, "url": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html", "published": "2026-11-01", "updated_at": "2026-11-05T14:12:03Z", "tags": ["poetry"], "in_stock": true, "dims": {"w": 1}}
+{"title": "Missing price", "url": "https://books.toscrape.com/catalogue/b_2/index.html"}
+{"title": "Text price", "price": "51.77", "url": "https://books.toscrape.com/catalogue/c_3/index.html"}
+{"title": "Too expensive", "price": 125000, "url": "https://books.toscrape.com/catalogue/d_4/index.html"}
+{"title": "Negative", "price": -1, "url": "https://books.toscrape.com/catalogue/e_5/index.html"}
+{"title": "X", "price": 10, "url": "https://books.toscrape.com/catalogue/f_6/index.html", "tags": ["a", "b", "c", "d"]}
+{"title": "Bad sku and currency", "price": 10, "currency": "JPY", "sku": "abc-12", "url": "https://books.toscrape.com/catalogue/g_7/index.html"}
+{"title": "Sale above price", "price": 10, "sale_price": 12, "url": "https://books.toscrape.com/catalogue/h_8/index.html"}
+{"title": "Sale text", "price": 10, "sale_price": "cheap", "url": "https://books.toscrape.com/catalogue/i_9/index.html"}
+{"title": "Duplicate of first", "price": 51.77, "url": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"}
+{"title": "Schema errors", "price": 5, "url": 42, "tags": ["ok", 7]}
+{"price": 3, "url": "https://books.toscrape.com/catalogue/j_10/index.html"}
+{"title": "Types", "price": 3, "stock": 2.5, "url": "ftp://books.toscrape.com/x", "published": "05/11/2026", "updated_at": "2026-11-05", "in_stock": "yes", "dims": [1]}
+{"title": "Null stock", "price": 3, "stock": null, "url": "https://books.toscrape.com/catalogue/k_11/index.html", "updated_at": "2026-11-05 14:12:03"}
+{"title": "   ", "price": 4, "url": ""}

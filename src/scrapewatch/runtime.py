@@ -23,6 +23,8 @@ from typing import Any, TypeVar
 from urllib.parse import urlsplit
 
 from scrapewatch._version import __version__
+from scrapewatch.checks.engine import RecordChecker
+from scrapewatch.checks.rules import DataRules, load_data_rules
 from scrapewatch.config import Settings, config_hash, load_settings
 from scrapewatch.cost.meter import CostMeter
 from scrapewatch.guard.classify import classify_features
@@ -131,9 +133,21 @@ def _domain(url: str) -> str:
 class Watch:
     """A live run. Create it through :func:`watch`."""
 
-    def __init__(self, settings: Settings, *, integration: str = "manual") -> None:
-        """Initialise a run without starting it (``start()`` opens history and the clock)."""
+    def __init__(
+        self,
+        settings: Settings,
+        *,
+        integration: str = "manual",
+        rules: DataRules | None = None,
+    ) -> None:
+        """Initialise a run without starting it (``start()`` opens history and the clock).
+
+        ``rules`` is a programmatic DataRules object; otherwise ``settings.rules`` is loaded.
+        """
         self.settings = settings
+        self.data_rules: DataRules | None = rules
+        self.checker: RecordChecker | None = None
+        self.checks_failed = False  # rules could not be loaded or a check crashed
         self.run = Run(
             name=settings.name,
             integration=integration,
@@ -162,6 +176,7 @@ class Watch:
         self._attempts: OrderedDict[str, tuple[str, int]] = OrderedDict()
         self._response_hooks.append(("guard", _guard_hook))
         self._response_hooks.append(("cost", _cost_hook))
+        self._record_hooks.append(("checks", _checks_hook))
 
     # --- lifecycle ----------------------------------------------------------------------
     def start(self) -> None:
@@ -173,6 +188,7 @@ class Watch:
             self.run.started_at = datetime.now(tz=timezone.utc)
             self.run.status = RunStatus.RUNNING
         self._step("load guard rules", self._load_guard_rules)
+        self._step("load data rules", self._load_data_rules)
         if self._step("open history", self._open_store) and self.store is not None:
             self._step("start run", lambda: self._store_call("start_run", self.run))
 
@@ -209,6 +225,16 @@ class Watch:
         else:
             self.guard_rules = load_rules(g.rules_path, extra=list(g.extra_rules))
         self.run.rules_version = self.guard_rules.rules_version
+
+    def _load_data_rules(self) -> None:
+        try:
+            if self.data_rules is None and self.settings.rules is not None:
+                self.data_rules = load_data_rules(self.settings.rules)
+            if self.data_rules is not None:
+                self.checker = RecordChecker(self.data_rules)
+        except Exception:
+            self.checks_failed = True
+            raise
 
     def _open_store(self) -> None:
         try:
@@ -447,6 +473,10 @@ class Watch:
         for finding in record.findings:
             sev = finding.severity.value
             c.findings_by_severity[sev] = c.findings_by_severity.get(sev, 0) + 1
+            if finding.check.startswith("clean."):
+                c.flags += 1
+            elif finding.check == "dup.repeat":
+                c.duplicates += 1
         for fix in record.fixes:
             c.fixes_by_normalizer[fix.normalizer] = c.fixes_by_normalizer.get(fix.normalizer, 0) + 1
 
@@ -634,6 +664,21 @@ def _guard_finding(event: ResponseEvent) -> Finding | None:
     )
 
 
+def _checks_hook(w: Watch, record: Record) -> None:
+    if w.checker is None:
+        return
+    try:
+        checked = w.checker.check(record.data, run_id=record.run_id, record_id=record.record_id)
+    except Exception:
+        w.checks_failed = True  # the verdict fails closed
+        raise
+    record.data = checked.data
+    record.findings = checked.findings
+    record.fixes = checked.fixes
+    record.usable = checked.usable
+    record.dedupe_key = checked.dedupe_key
+
+
 def _cost_hook(w: Watch, event: ResponseEvent, _ctx: ResponseContext) -> None:
     event.cost = w.meter.add(event)
 
@@ -674,7 +719,7 @@ def _describe(where: str, exc: BaseException) -> str:
 def watch(
     name: str = "default",
     *,
-    rules: str | Path | None = None,
+    rules: str | Path | DataRules | None = None,
     config: str | Path | None = None,
     settings: Settings | None = None,
     integration: str = "manual",
@@ -690,22 +735,24 @@ def watch(
     On exit the run is finished (``crashed=True`` if an exception propagated) and the
     exception is re-raised. Monitoring errors never raise.
     """
+    rules_obj = rules if isinstance(rules, DataRules) else None
+    rules_path = None if isinstance(rules, DataRules) else rules
     if settings is None:
         overrides: dict[str, Any] = {}
         if name != "default":
             overrides["name"] = name
-        if rules is not None:
-            overrides["rules"] = rules
+        if rules_path is not None:
+            overrides["rules"] = rules_path
         settings = load_settings(config, overrides=overrides)
     else:
         updates: dict[str, Any] = {}
         if name != "default":
             updates["name"] = name
-        if rules is not None:
-            updates["rules"] = Path(rules)
+        if rules_path is not None:
+            updates["rules"] = Path(rules_path)
         if updates:
             settings = settings.model_copy(update=updates)
-    w = Watch(settings, integration=integration)
+    w = Watch(settings, integration=integration, rules=rules_obj)
     w.start()
     try:
         yield w

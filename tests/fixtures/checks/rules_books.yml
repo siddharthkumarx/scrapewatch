@@ -1,0 +1,58 @@
+# The example from docs/architecture.md section 7, with a JSON Schema file next to it.
+schema_version: 1
+name: books
+key: [url]
+schema: schema_books.json
+fields:
+  title:
+    type: string
+    required: true
+    min_length: 1
+    clean: [whitespace, html_entities, mojibake]
+  price:
+    type: number
+    required: true
+    min: 0
+    max: 100000
+    clean: [price]
+    clean_options: {locale: auto}
+    severity: hold
+    coverage_hold_below_pct: 95
+  currency:
+    type: string
+    allowed: [GBP, USD, EUR]
+  sale_price:
+    type: number
+    min: 0
+    clean: [price]
+  url:
+    type: url
+    required: true
+    clean: [url]
+    clean_options: {drop_params: [utm_*, gclid, fbclid, ref]}
+  published_at:
+    type: datetime
+    clean: [date]
+    clean_options: {day_first: false, assume_tz: UTC}
+cross:
+  - id: sale_le_regular
+    expr: "sale_price <= price"
+    when: "sale_price is not None"
+    severity: warn
+    message: "sale price above regular price"
+batch:
+  row_count: {warn_pct: 20, hold_pct: 50, min_rows: 10}
+  coverage: {warn_drop_points: 5, hold_drop_points: 20}
+  distribution: {psi_warn: 0.25, new_values_warn_pct: 10}
+  changed_share: {warn_above_pct: 50}
+  unit_error: {fields: [price], ratios: [100, 1000], tolerance_pct: 15, severity: hold}
+  currency: {field: currency, value_field: price, expected: [GBP], hold_mismatch_pct: 1}
+  duplicates_warn_pct: 1
+verdict:
+  blocked_share_warn_pct: 2
+  blocked_share_hold_pct: 20
+  schema_invalid_warn_pct: 1
+  schema_invalid_hold_pct: 5
+  flagged_warn_pct: 5
+  monitor_errors_warn: 1
+  min_usable_records: 1

@@ -241,7 +241,7 @@ Everything below is importable from `scrapewatch` unless a module path is given.
 def watch(
     name: str = "default",
     *,
-    rules: str | Path | None = None,       # data rules file (rules.yml)
+    rules: str | Path | DataRules | None = None,  # rules.yml, or a DataRules object
     config: str | Path | None = None,      # scrapewatch.yml (cost model, history, alerts)
     settings: Settings | None = None,      # programmatic alternative to config
     integration: str = "manual",
@@ -663,7 +663,8 @@ verdict:
   min_usable_records: 1
 ```
 
-Rules: `schema` and `fields` may be combined (schema first, then field rules). Field `type`
+`examples: 3` (top level, default 3) sets how many example values per finding the report keeps
+(section 16); `examples: 0` keeps none. Rules: `schema` and `fields` may be combined (schema first, then field rules). Field `type`
 values: string, number, integer, boolean, date, datetime, url, object, array. A Pydantic model
 can be passed programmatically instead of a schema path (`DataRules.json_schema` accepts a
 dict; `watch(rules=...)` accepts a `DataRules` object; a helper `DataRules.from_model(Model)`
@@ -684,12 +685,18 @@ Cross-rule expressions (D16): comparisons (`< <= == != >= >`), `and`, `or`, `not
 1. Cleaning: for each field with a `clean:` list, run the normalizers in order (section 10).
    A flag stops the chain for that field and adds a Finding `clean.<normalizer>.<flag>`.
 2. Schema: validate `data` against the JSON Schema (if any). Each error becomes a Finding
-   `schema.invalid` with the JSON pointer in `field`; the record is unusable.
+   `schema.invalid` (severity info) with the JSON pointer in `field`; the record is unusable.
+   The run-level schema-invalid share (8.3) decides warn or hold, so one bad record does not
+   hold a run by itself.
 3. Field rules: `field.required`, `field.type`, `field.range`, `field.length`, `field.regex`,
    `field.allowed`, each with the field's severity.
-4. Cross rules: `cross.<id>` with the rule's severity.
+4. Cross rules: `cross.<id>` with the rule's severity. A rule that cannot be evaluated on a
+   record (comparing None with a number, dividing by zero) gives `cross.<id>` with severity
+   info and the error in the message; use `when:` to skip records the rule does not apply to.
 5. Dedupe key: sha256 of the JSON of the `key` fields (after cleaning). Later duplicates get
-   `dup.repeat` (info) and `usable=false`.
+   `dup.repeat` (info) and `usable=false`. A record missing a key field gets `dup.key_missing` (warn). Duplicate
+   detection needs one `RecordChecker` per run (the runtime and `check_records` keep one);
+   `check_record` on its own checks a single record.
 
 ### 8.2 Per batch (in `check_batch`, at finish)
 
@@ -795,7 +802,7 @@ the name used in `clean:` lists. A normalizer returns one of:
   field's severity) is recorded. A flag stops the chain for that field.
 
 `None` and empty strings pass through unchanged (required-ness is a field rule, not a
-normalizer's job). Numbers come back as `float` (or `int` when integral and the field type is
+normalizer's job); the pipeline enforces this by not calling normalizers for them. Numbers come back as `float` (or `int` when integral and the field type is
 integer); Decimal is used internally so "0.1" + "0.2" artefacts do not appear.
 
 ### 10.1 price

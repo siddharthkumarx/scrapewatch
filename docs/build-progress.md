@@ -134,7 +134,7 @@ v0.2 or later.
 
 ### 7. Checks engine: data rules, expressions, schema, field and cross rules `[v0.1]`
 
-- [ ] Scope: `load_data_rules` (relative schema path, `DataRules.from_model`), `expr.py`
+- [x] Scope: `load_data_rules` (relative schema path, `DataRules.from_model`), `expr.py`
   (ast whitelist interpreter), `check_record` (clean → schema → field → cross → dedupe key),
   check-id vocabulary A§8.4, `Record.usable` rule. Cleaning calls go through
   `clean.apply_normalizers`, which at this point is implemented with a `passthrough`
