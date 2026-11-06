@@ -395,6 +395,7 @@ def check_records(
 def fill_record_counts(run: Run, batch: BatchStats, records: Iterable[Record]) -> None:
     """Record counters on the Run from a batch (findings and fixes from the records)."""
     c = run.counts
+    run.samples = batch.samples.result()
     c.records = batch.records
     c.usable_records = batch.usable
     c.duplicates = batch.duplicates

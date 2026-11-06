@@ -303,6 +303,32 @@ class RunCounts(_Model):
     wire_bytes: int = 0
 
 
+class FindingSample(_Model):
+    """Record findings of one kind in a run: how many, and a few observed values."""
+
+    check: str
+    field: str | None = None
+    severity: Severity
+    count: int = 0
+    examples: list[Any] = Field(default_factory=list)  # at most DataRules.examples
+
+
+class FixSample(_Model):
+    """Fixes one normalizer made to one field in a run, with a few before/after pairs."""
+
+    normalizer: str
+    field: str
+    count: int = 0
+    examples: list[dict[str, Any]] = Field(default_factory=list)  # {"before": .., "after": ..}
+
+
+class RecordSamples(_Model):
+    """What the report shows about records without keeping them (architecture 16)."""
+
+    findings: list[FindingSample] = Field(default_factory=list)
+    fixes: list[FixSample] = Field(default_factory=list)
+
+
 class Run(_Model):
     """Summary of one scraper run. Serialised as summary.json and stored in history."""
 
@@ -321,6 +347,7 @@ class Run(_Model):
     waste: WasteBreakdown = Field(default_factory=WasteBreakdown)
     verdict: Verdict = Field(default_factory=Verdict)
     findings: list[Finding] = Field(default_factory=list)  # batch- and run-scope findings only
+    samples: RecordSamples = Field(default_factory=RecordSamples)  # record findings and fixes
     report_path: str | None = None
     overhead_ms_p50: float | None = None
 
@@ -334,11 +361,14 @@ __all__ = [
     "CostBreakdown",
     "ErrorInfo",
     "Finding",
+    "FindingSample",
     "FindingScope",
     "Fix",
+    "FixSample",
     "GuardLabel",
     "GuardResult",
     "Record",
+    "RecordSamples",
     "ResourceType",
     "Run",
     "RunCounts",

@@ -88,6 +88,7 @@ def test_run_json_shape() -> None:
         "waste",
         "verdict",
         "findings",
+        "samples",
         "report_path",
         "overhead_ms_p50",
     }

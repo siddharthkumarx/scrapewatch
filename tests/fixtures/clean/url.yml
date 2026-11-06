@@ -1,0 +1,51 @@
+# Golden cases for the url normalizer (docs/architecture.md 10.5).
+cases:
+  # --- architecture table 10.5 ---
+  - {input: "HTTPS://Books.ToScrape.com:443/a/../b/?utm_source=x&b=2&a=1", options: {}, expect: {value: "https://books.toscrape.com/b/?a=1&b=2", changed: true}}
+  - {input: "/catalogue/x.html", options: {base: "https://books.toscrape.com/index.html"}, expect: {value: "https://books.toscrape.com/catalogue/x.html", changed: true}}
+  - {input: "/catalogue/x.html", options: {}, expect: {flag: relative}}
+  - {input: "javascript:void(0)", options: {}, expect: {flag: not_http}}
+  - {input: "mailto:", options: {}, expect: {flag: not_http}}
+  - {input: "https://example.com/ü", options: {}, expect: {value: "https://example.com/%C3%BC", changed: true}}
+  # --- hosts, ports and paths ---
+  - {input: "https://books.toscrape.com/catalogue/page-2.html", options: {}, expect: {}}
+  - {input: "https://münchen.example/stadt", options: {}, expect: {value: "https://xn--mnchen-3ya.example/stadt", changed: true}}
+  - {input: "https://Bücher.Example/", options: {}, expect: {value: "https://xn--bcher-kva.example/", changed: true}}
+  - {input: "http://quotes.toscrape.com:80/page/2/", options: {}, expect: {value: "http://quotes.toscrape.com/page/2/", changed: true}}
+  - {input: "http://quotes.toscrape.com:8080/", options: {}, expect: {}}
+  - {input: "https://example.com", options: {}, expect: {value: "https://example.com/", changed: true}}
+  - {input: "https://example.com./a", options: {}, expect: {value: "https://example.com/a", changed: true}}
+  - {input: "https://example.com/a/./b/../c", options: {}, expect: {value: "https://example.com/a/c", changed: true}}
+  - {input: "https://example.com/a/b/..", options: {}, expect: {value: "https://example.com/a/", changed: true}}
+  - {input: "https://example.com/a//b", options: {}, expect: {}}
+  - {input: "https://example.com/a%7eb%2fc", options: {}, expect: {value: "https://example.com/a~b%2Fc", changed: true}}
+  - {input: "https://example.com/a b", options: {}, expect: {value: "https://example.com/a%20b", changed: true}}
+  - {input: "https://example.com/100%", options: {}, expect: {value: "https://example.com/100%25", changed: true}}
+  - {input: "  https://example.com/x  ", options: {}, expect: {value: "https://example.com/x", changed: true}}
+  - {input: "https://example.com/x#reviews", options: {}, expect: {value: "https://example.com/x", changed: true}}
+  - {input: "https://example.com/x#reviews", options: {keep_fragment: true}, expect: {}}
+  - {input: "https://ex.com:99999/", options: {}, expect: {flag: invalid}}
+  - {input: "https:///x", options: {}, expect: {flag: invalid}}
+  - {input: "ftp://example.com/file", options: {}, expect: {flag: not_http}}
+  - {input: "tel:+15550100", options: {}, expect: {flag: not_http}}
+  - {input: "//cdn.example.com/a.png", options: {base: "https://example.com/"}, expect: {value: "https://cdn.example.com/a.png", changed: true}}
+  - {input: "//cdn.example.com/a.png", options: {}, expect: {flag: relative}}
+  - {input: "page-3.html", options: {base: "https://books.toscrape.com/catalogue/page-2.html"}, expect: {value: "https://books.toscrape.com/catalogue/page-3.html", changed: true}}
+  - {input: 42, options: {}, expect: {flag: invalid}}
+  # --- query: tracking-parameter globs, sorting ---
+  - {input: "https://example.com/x?utm_source=a&utm_medium=b&utm_campaign=c&id=4", options: {}, expect: {value: "https://example.com/x?id=4", changed: true}}
+  - {input: "https://example.com/x?UTM_Source=a&gclid=1&fbclid=2&msclkid=3&mc_cid=4&mc_eid=5&ref=6&_ga=7", options: {}, expect: {value: "https://example.com/x", changed: true}}
+  - {input: "https://example.com/x?ref=6&referrer=9", options: {}, expect: {value: "https://example.com/x?referrer=9", changed: true}}
+  - {input: "https://example.com/x?session=1&sort=asc", options: {drop_params: ["sess*"]}, expect: {value: "https://example.com/x?sort=asc", changed: true}}
+  - {input: "https://example.com/x?utm_source=a", options: {drop_params: []}, expect: {}}
+  - {input: "https://example.com/x?b=2&a=1&b=1", options: {}, expect: {value: "https://example.com/x?a=1&b=2&b=1", changed: true}}
+  - {input: "https://example.com/x?b=2&a=1", options: {sort_query: false}, expect: {}}
+  - {input: "https://example.com/x?q=caf%c3%a9&&x=", options: {}, expect: {value: "https://example.com/x?q=caf%C3%A9&x=", changed: true}}
+  - {input: "https://example.com/x?q=a+b", options: {}, expect: {}}
+  # --- trailing slash ---
+  - {input: "https://example.com/shop/", options: {trailing_slash: strip}, expect: {value: "https://example.com/shop", changed: true}}
+  - {input: "https://example.com/", options: {trailing_slash: strip}, expect: {}}
+  - {input: "https://example.com/shop", options: {trailing_slash: add}, expect: {value: "https://example.com/shop/", changed: true}}
+  - {input: "https://example.com/shop/item.html", options: {trailing_slash: add}, expect: {}}
+  - {input: "https://example.com/a/b/.", options: {}, expect: {value: "https://example.com/a/b/", changed: true}}
+  - {input: "https://User@Example.com/x", options: {}, expect: {value: "https://User@example.com/x", changed: true}}

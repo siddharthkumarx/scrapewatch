@@ -19,6 +19,8 @@ class CleanOutcome(BaseModel):
     flag: str | None = None  # finding check id suffix, e.g. "ambiguous_separator"
     flag_message: str | None = None
     extra: dict[str, Any] = Field(default_factory=dict)  # e.g. {"currency": "EUR"} for price
+    note: str | None = None  # info finding suffix that goes with a fix, e.g. "relative"
+    note_message: str | None = None
 
 
 Normalizer = Callable[[Any, Mapping[str, Any]], CleanOutcome]
@@ -81,8 +83,6 @@ def run_normalizers(
         fn = NORMALIZERS.get(name, passthrough)
         try:
             outcome = fn(out.value, options)
-        except NotImplementedError:  # normalizers still to be built (items 10 and 11)
-            continue
         except Exception as exc:
             outcome = CleanOutcome(
                 value=out.value, flag="error", flag_message=f"{type(exc).__name__}: {exc}"
@@ -103,6 +103,19 @@ def run_normalizers(
                 )
             )
             break
+        if outcome.note:
+            out.findings.append(
+                Finding(
+                    run_id=run_id,
+                    scope=FindingScope.RECORD,
+                    ref=record_id,
+                    check=f"clean.{name}.{outcome.note}",
+                    severity=Severity.INFO,
+                    field=field,
+                    message=outcome.note_message or f"{field}: {name} {outcome.note}",
+                    observed=out.value,
+                )
+            )
         if outcome.changed:
             out.fixes.append(
                 Fix(field=field, normalizer=name, before=out.value, after=outcome.value)

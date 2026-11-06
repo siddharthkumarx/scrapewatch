@@ -15,8 +15,18 @@ from typing import Any
 from scrapewatch.checks.rules import DataRules
 from scrapewatch.history.baselines import Baseline
 from scrapewatch.history.stats import TOP_VALUES, StatsAccumulator, value_hash
-from scrapewatch.models import Finding, FindingScope, Record, Severity
+from scrapewatch.models import (
+    Finding,
+    FindingSample,
+    FindingScope,
+    FixSample,
+    Record,
+    RecordSamples,
+    Severity,
+)
+from scrapewatch.redact import redact_url
 
+EXAMPLE_TEXT_MAX = 200  # characters kept of one example string
 PSI_FLOOR = 0.005  # 0.5% floor on both shares, so empty bins do not give infinite PSI
 
 
@@ -28,6 +38,59 @@ def psi(actual_shares: list[float], baseline_shares: list[float]) -> float:
         b = max(b, PSI_FLOOR)
         total += (a - b) * math.log(a / b)
     return total
+
+
+def example_value(value: Any) -> Any:
+    """A value as the report may show it: URLs redacted, long text cut, containers summarised."""
+    if isinstance(value, str):
+        if value.startswith(("http://", "https://", "//")):
+            value = redact_url(value)
+        return value if len(value) <= EXAMPLE_TEXT_MAX else value[: EXAMPLE_TEXT_MAX - 1] + "…"
+    if isinstance(value, (dict, list)):
+        text = repr(value)
+        return text if len(text) <= EXAMPLE_TEXT_MAX else text[: EXAMPLE_TEXT_MAX - 1] + "…"
+    return value
+
+
+class SampleKeeper:
+    """Counts record findings and fixes by kind and keeps the first few examples of each."""
+
+    def __init__(self, examples: int = 3) -> None:
+        """Keep at most ``examples`` values per kind (0 keeps counts only)."""
+        self.examples = examples
+        self.findings: dict[tuple[str, str | None, Severity], FindingSample] = {}
+        self.fixes: dict[tuple[str, str], FixSample] = {}
+
+    def add(self, record: Record) -> None:
+        """Account the findings and fixes of one record."""
+        for f in record.findings:
+            key = (f.check, f.field, f.severity)
+            sample = self.findings.get(key)
+            if sample is None:
+                sample = FindingSample(check=f.check, field=f.field, severity=f.severity)
+                self.findings[key] = sample
+            sample.count += 1
+            if len(sample.examples) < self.examples:
+                sample.examples.append(example_value(f.observed))
+        for fix in record.fixes:
+            fkey = (fix.normalizer, fix.field)
+            fs = self.fixes.get(fkey)
+            if fs is None:
+                fs = self.fixes[fkey] = FixSample(normalizer=fix.normalizer, field=fix.field)
+            fs.count += 1
+            if len(fs.examples) < self.examples:
+                fs.examples.append(
+                    {"before": example_value(fix.before), "after": example_value(fix.after)}
+                )
+
+    def result(self) -> RecordSamples:
+        """Samples ordered by severity (hold first), then count."""
+        rank = {Severity.HOLD: 0, Severity.WARN: 1, Severity.INFO: 2}
+        findings = sorted(
+            self.findings.values(), key=lambda s: (rank[s.severity], -s.count, s.check)
+        )
+        fixes = sorted(self.fixes.values(), key=lambda s: (-s.count, s.normalizer, s.field))
+        return RecordSamples(findings=findings, fixes=fixes)
 
 
 def bin_shares(values: list[float], edges: list[float]) -> list[float]:
@@ -57,10 +120,12 @@ class BatchStats:
         self.currency_checked = 0
         self.currency_mismatches = 0
         self.currency_examples: list[Any] = []
+        self.samples = SampleKeeper(rules.examples if rules is not None else 3)
 
     def add(self, record: Record) -> None:
         """Account one checked record."""
         self.records += 1
+        self.samples.add(record)
         if record.usable:
             self.usable += 1
         checks = {f.check for f in record.findings}

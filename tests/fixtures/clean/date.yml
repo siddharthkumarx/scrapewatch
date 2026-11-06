@@ -1,0 +1,72 @@
+# Golden cases for the date normalizer (docs/architecture.md 10.3). Same format as price.yml,
+# plus an optional expect.note (an info finding that goes with a fix).
+cases:
+  # --- architecture table 10.3 ---
+  - {input: "2026-11-05T14:12:03+01:00", options: {}, expect: {value: "2026-11-05T13:12:03Z", changed: true}}
+  - {input: "2026-11-05T14:12:03Z", options: {}, expect: {}}
+  - {input: "2026-11-05 14:12", options: {assume_tz: Europe/Berlin}, expect: {value: "2026-11-05T13:12:00Z", changed: true}}
+  - {input: "2026-11-05 14:12", options: {}, expect: {flag: naive}}
+  - {input: "2026-11-05", options: {output: date}, expect: {}}
+  - {input: "2026/11/05", options: {output: date}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "Nov 5, 2026", options: {}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "05/11/2026", options: {day_first: true}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "05/11/2026", options: {}, expect: {flag: ambiguous_order}}
+  - {input: "13/11/2026", options: {}, expect: {value: "2026-11-13", changed: true}}
+  - {input: "2 days ago", options: {reference_time: "2026-11-05T12:00:00Z"}, expect: {value: "2026-11-03T12:00:00Z", changed: true, note: relative}}
+  - {input: "2 days ago", options: {}, expect: {flag: relative}}
+  - {input: "Tue, 05 Nov 2026 14:12:03 GMT", options: {}, expect: {value: "2026-11-05T14:12:03Z", changed: true}}
+  - {input: "14:12 EST", options: {}, expect: {flag: ambiguous_zone}}
+  # --- time zones across DST (Europe/Berlin: CEST until 2026-10-25 03:00, then CET) ---
+  - {input: "2026-10-24 12:00", options: {assume_tz: Europe/Berlin}, expect: {value: "2026-10-24T10:00:00Z", changed: true}}
+  - {input: "2026-10-26 12:00", options: {assume_tz: Europe/Berlin}, expect: {value: "2026-10-26T11:00:00Z", changed: true}}
+  - {input: "2026-10-25 02:30", options: {assume_tz: Europe/Berlin}, expect: {flag: ambiguous_time}}
+  - {input: "2026-03-29 02:30", options: {assume_tz: Europe/Berlin}, expect: {flag: nonexistent_time}}
+  - {input: "2026-03-29 03:30", options: {assume_tz: Europe/Berlin}, expect: {value: "2026-03-29T01:30:00Z", changed: true}}
+  - {input: "2026-07-01 12:00", options: {assume_tz: America/New_York}, expect: {value: "2026-07-01T16:00:00Z", changed: true}}
+  - {input: "2026-12-01 12:00", options: {assume_tz: America/New_York}, expect: {value: "2026-12-01T17:00:00Z", changed: true}}
+  - {input: "2026-11-01 01:30", options: {assume_tz: America/New_York}, expect: {flag: ambiguous_time}}
+  - {input: "2026-11-05 14:12", options: {assume_tz: UTC}, expect: {value: "2026-11-05T14:12:00Z", changed: true}}
+  - {input: "2026-11-05", options: {output: datetime, assume_tz: Asia/Tokyo}, expect: {value: "2026-11-04T15:00:00Z", changed: true}}
+  - {input: "2026-11-05T00:30:00+09:00", options: {output: date}, expect: {value: "2026-11-04", changed: true}}
+  # --- epoch seconds and milliseconds ---
+  - {input: "1762351923", options: {}, expect: {value: "2025-11-05T14:12:03Z", changed: true}}
+  - {input: "1762351923000", options: {}, expect: {value: "2025-11-05T14:12:03Z", changed: true}}
+  - {input: 1762351923, options: {}, expect: {value: "2025-11-05T14:12:03Z", changed: true}}
+  - {input: 1762351923412, options: {}, expect: {value: "2025-11-05T14:12:03.412Z", changed: true}}
+  - {input: "176235192", options: {}, expect: {flag: unparseable}}
+  # --- other supported shapes ---
+  - {input: "2026-11-05T14:12:03.412Z", options: {}, expect: {}}
+  - {input: "2026-11-05T14:12:03.412000Z", options: {}, expect: {value: "2026-11-05T14:12:03.412Z", changed: true}}
+  - {input: "2026-11-05T14:12:03-0500", options: {}, expect: {value: "2026-11-05T19:12:03Z", changed: true}}
+  - {input: "2026-11-05T14:12:03+05:30", options: {}, expect: {value: "2026-11-05T08:42:03Z", changed: true}}
+  - {input: "2026-11-05T14:12:03 UTC", options: {}, expect: {value: "2026-11-05T14:12:03Z", changed: true}}
+  - {input: "Tue, 05 Nov 2026 14:12:03 +0100", options: {}, expect: {value: "2026-11-05T13:12:03Z", changed: true}}
+  - {input: "Tue, 05 Nov 2026 14:12:03 EST", options: {}, expect: {flag: ambiguous_zone}}
+  - {input: "05.11.2026", options: {}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "5.11.2026 14:12", options: {assume_tz: Europe/Berlin}, expect: {value: "2026-11-05T13:12:00Z", changed: true}}
+  - {input: "11/05/2026", options: {day_first: false}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "11/13/2026", options: {}, expect: {value: "2026-11-13", changed: true}}
+  - {input: "05/05/2026", options: {}, expect: {value: "2026-05-05", changed: true}}
+  - {input: "05-11-2026", options: {day_first: true}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "November 5, 2026", options: {}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "5 November 2026", options: {}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "5th Nov 2026", options: {}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "Thursday, November 5, 2026", options: {}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "Sept. 30, 2026", options: {}, expect: {value: "2026-09-30", changed: true}}
+  - {input: "Nov 5, 2026 2:12 PM", options: {assume_tz: UTC}, expect: {value: "2026-11-05T14:12:00Z", changed: true}}
+  - {input: "Nov 5, 2026 2:12 PM", options: {}, expect: {flag: naive}}
+  - {input: "  2026-11-05  ", options: {}, expect: {value: "2026-11-05", changed: true}}
+  - {input: "November 5", options: {}, expect: {flag: no_year}}
+  - {input: "05/11/26", options: {day_first: true}, expect: {flag: two_digit_year}}
+  - {input: "2026-02-30", options: {}, expect: {flag: invalid}}
+  - {input: "31/02/2026", options: {}, expect: {flag: invalid}}
+  - {input: "yesterday", options: {reference_time: "2026-11-05T12:00:00Z"}, expect: {value: "2026-11-04", changed: true, note: relative}}
+  - {input: "an hour ago", options: {reference_time: "2026-11-05T12:00:00+01:00"}, expect: {value: "2026-11-05T10:00:00Z", changed: true, note: relative}}
+  - {input: "3 weeks ago", options: {reference_time: "2026-11-05T12:00:00Z", output: date}, expect: {value: "2026-10-15", changed: true, note: relative}}
+  - {input: "1 month ago", options: {reference_time: "2026-11-05T12:00:00Z"}, expect: {flag: relative}}
+  - {input: "soon", options: {}, expect: {flag: unparseable}}
+  - {input: 2026, options: {}, expect: {flag: unparseable}}
+  - {input: "Nov 5, 2026 13:12 PM", options: {assume_tz: UTC}, expect: {flag: invalid}}
+  - {input: "2026-11-05T25:00:00Z", options: {}, expect: {flag: invalid}}
+  - {input: "Tue, 31 Feb 2026 14:12:03 GMT", options: {}, expect: {flag: invalid}}
+  - {input: "2026-11-05T14:12:03.412345Z", options: {}, expect: {}}

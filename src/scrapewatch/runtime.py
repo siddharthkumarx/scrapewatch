@@ -235,6 +235,7 @@ class Watch:
             if self.data_rules is not None:
                 self.checker = RecordChecker(self.data_rules)
                 self._batch.rules = self.data_rules
+                self._batch.samples.examples = self.data_rules.examples
         except Exception:
             self.checks_failed = True
             raise
@@ -582,6 +583,7 @@ class Watch:
     def _finish_verdict(self, *, crashed: bool) -> None:
         """Batch checks against the baseline, then the verdict. Fails closed (hold)."""
         try:
+            self.run.samples = self._batch.samples.result()
             rules = self.data_rules
             failed = self.checks_failed or (self.history_failed and rules is not None)
             baseline = Baseline()

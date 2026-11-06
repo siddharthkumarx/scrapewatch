@@ -1,0 +1,37 @@
+# Data rules for the end-to-end cleaning golden (records_messy.jsonl -> records_clean.jsonl).
+schema_version: 1
+name: clean
+key: [url]
+fields:
+  title:
+    type: string
+    required: true
+    clean: [strip_tags, html_entities, mojibake, whitespace]
+  price:
+    type: number
+    required: true
+    min: 0
+    clean: [price]
+    clean_options: {locale: auto}
+  currency:
+    type: string
+    allowed: [GBP, USD, EUR]
+  stock:
+    type: integer
+    clean: [number]
+  rating:
+    type: number
+    clean: [number]
+  url:
+    type: url
+    required: true
+    clean: [url]
+    clean_options: {base: "https://books.toscrape.com/catalogue/"}
+  published:
+    type: date
+    clean: [date]
+    clean_options: {day_first: true, output: date}
+  updated_at:
+    type: datetime
+    clean: [date]
+    clean_options: {assume_tz: Europe/London, reference_time: "2026-11-05T12:00:00Z"}

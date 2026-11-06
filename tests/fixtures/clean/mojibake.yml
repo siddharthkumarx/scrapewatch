@@ -1,0 +1,16 @@
+# Golden cases for the mojibake normalizer (docs/architecture.md 10.4).
+cases:
+  - {input: "CafÃ©", options: {}, expect: {value: "Café", changed: true}}
+  - {input: "Ã", options: {}, expect: {flag: undecidable}}
+  - {input: "naïve", options: {}, expect: {}}
+  - {input: "donâ€™t", options: {}, expect: {value: "don’t", changed: true}}
+  - {input: "â€œQuotedâ€\u009d", options: {}, expect: {value: "“Quoted”", changed: true}}
+  - {input: "Ã‰cole", options: {}, expect: {value: "École", changed: true}}
+  - {input: "MÃ¼nchen", options: {}, expect: {value: "München", changed: true}}
+  - {input: "CafÃƒÂ©", options: {}, expect: {value: "Café", changed: true}}
+  - {input: "Âge d'or", options: {}, expect: {}}
+  - {input: "São Paulo", options: {}, expect: {}}
+  - {input: "price Â£10", options: {}, expect: {value: "price £10", changed: true}}
+  - {input: "ends with â€", options: {}, expect: {flag: undecidable}}
+  - {input: 7, options: {}, expect: {}}
+  - {input: "CafÃ© à€€", options: {}, expect: {value: "Café à€€", changed: true}}

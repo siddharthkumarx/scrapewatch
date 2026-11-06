@@ -1,0 +1,15 @@
+# Golden cases for the strip_tags normalizer (docs/architecture.md 10.4).
+cases:
+  - {input: "<b>Bold</b> text", options: {}, expect: {value: "Bold text", changed: true}}
+  - {input: "plain text", options: {}, expect: {}}
+  - {input: "a < b and c > d", options: {}, expect: {}}
+  - {input: "<p>one</p><p>two</p>", options: {}, expect: {value: "one two", changed: true}}
+  - {input: "line<br/>break", options: {}, expect: {value: "line break", changed: true}}
+  - {input: "<span class=\"price\">£51.77</span>", options: {}, expect: {value: "£51.77", changed: true}}
+  - {input: "x<script>alert(1)</script>y", options: {}, expect: {value: "xy", changed: true}}
+  - {input: "<style>.a{}</style>Title", options: {}, expect: {value: "Title", changed: true}}
+  - {input: "a<!-- note -->b", options: {}, expect: {value: "ab", changed: true}}
+  - {input: "<<b>i>x", options: {}, expect: {value: "x", changed: true}}
+  - {input: "<!DOCTYPE html>Hi", options: {}, expect: {value: "Hi", changed: true}}
+  - {input: "Tom &amp; <i>Jerry</i>", options: {}, expect: {value: "Tom &amp; Jerry", changed: true}}
+  - {input: null, options: {}, expect: {}}

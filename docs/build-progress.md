@@ -207,7 +207,7 @@ v0.2 or later.
 
 ### 11. Cleaning: date, text, url, dedupe key; pipeline wiring `[v0.1]`
 
-- [ ] Scope: A§10.3 to 10.6; `clean_options` plumbing from rules; fix counts into
+- [x] Scope: A§10.3 to 10.6; `clean_options` plumbing from rules; fix counts into
   `RunCounts.fixes_by_normalizer` and `flags`; three examples per finding kept for the
   report (A§16, `examples` option).
 - Files: `clean/date.py`, `clean/text.py`, `clean/url.py`, `clean/dedupe.py`, `tests/clean/`.
@@ -218,6 +218,10 @@ v0.2 or later.
   idempotence; `tests/fixtures/clean/records_messy.jsonl` → `records_clean.jsonl` end to end
   through `check_record` with the expected `fixes` lists.
 - Done when: pass, coverage ≥ 76.
+- Notes: goldens per normalizer (date 65, url 45, whitespace 10, html_entities 9, strip_tags 13, mojibake 14 cases);
+  `records_messy.jsonl` → `records_clean.jsonl` (8 records). The examples live on the Run as
+  `samples` (A§2.4), accumulated by `BatchStats`, so nothing keeps records. The pipeline's
+  `NotImplementedError` passthrough and the `text` stub are gone.
 
 ### 12. File readers and `scrapewatch check` with exit codes and `--promote-to` `[v0.1]`
 
@@ -433,8 +437,8 @@ v0.2 or later.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 11** (cleaning: date, text, url, dedupe; pipeline
-wiring). M1 (items 1 to 9b) and item 10 are done and green on GitHub (ci.yml and full.yml).
+Next item: **docs/build-progress.md item 12** (file readers and `scrapewatch check`). M1
+(items 1 to 9b), items 10 and 11 are done and green on GitHub (ci.yml and full.yml).
 
 Notes for the next session:
 
@@ -448,17 +452,14 @@ Notes for the next session:
   (`checks/batch.py`) accumulates counts, field stats, value hashes and currency mismatches.
   `finish()` order: flush, aggregate (workers), cost, status, verdict (fails closed), overhead,
   store, prune, close.
-- Normalizers: `clean/price.py` and `number.py` are done (shared parsing in `_numeric.py`,
-  currency table in `_currency.py`); `date.py` and `url.py` are still stubs that raise
-  `NotImplementedError`; `clean/pipeline.run_normalizers` treats that as a passthrough. Remove
-  that `except NotImplementedError` once items 10 and 11 are done. `clean/text.py` registers a
-  stub named `text`; item 11 replaces it with `whitespace`, `html_entities`, `strip_tags` and
-  `mojibake` (the names in `checks/rules.KNOWN_NORMALIZERS`). `clean/dedupe.dedupe_key` is done.
+- Normalizers: all done (items 10 and 11). Shared number parsing in `clean/_numeric.py`,
+  currency table in `clean/_currency.py`. The pipeline passes the field type as the reserved
+  option `_field_type`; a normalizer's `note` becomes an info finding. Record finding and fix
+  examples are on `Run.samples` (A§2.4), filled by `checks/batch.SampleKeeper`.
 - A normalizer's `extra` (the currency of a price) fills an empty field with a Fix, and a
   conflicting non-empty value gives a `clean.<name>.extra_conflict` info finding that
   `batch.currency` counts.
-- Still open for later items: keep three examples per finding (`DataRules.examples`, item 11);
-  report `gate.recovered` actions as findings and `verify_live` warnings in the CLI (item 12);
+- Still open for later items: report `gate.recovered` actions as findings and `verify_live` warnings in the CLI (item 12);
   reconcile `report_dir` with the report path in architecture 12.1 (item 13); write
   `tests/perf/test_overhead.py` (architecture 15) before item 24 (only the 64 KiB classify
   budget is tested so far, in `tests/guard/test_classify.py`).

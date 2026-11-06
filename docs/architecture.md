@@ -221,7 +221,11 @@ is a dotted id from a fixed vocabulary (section 8.4). `rule_id` is set for guard
 ```
 
 `findings` on the Run holds batch- and run-scope findings only; record findings stay on
-records (and in history as counts plus a sample).
+records (and in history as counts plus a sample). `samples` (added in item 11) is that sample:
+`{"findings": [{check, field, severity, count, examples}], "fixes": [{normalizer, field,
+count, examples: [{before, after}]}]}`, ordered hold, warn, info, then by count. At most
+`examples` (rules.yml, default 3) values are kept per kind; strings longer than 200 characters
+are cut and URLs are redacted (section 16). The report renders it without the records.
 
 ### 2.5 Verdict
 
@@ -914,6 +918,17 @@ Supported inputs: ISO 8601 (with offset, Z, or naive), RFC 2822, `YYYY-MM-DD`, `
 and three-letter), Unix epoch seconds and milliseconds (10 or 13 digits). Output is ISO 8601
 in UTC with a `Z` suffix. No dateutil dependency; the parser is a fixed set of regexes.
 
+Details fixed while building (item 11): `output: null` (the default) keeps dates as dates and
+datetimes as datetimes; `output: datetime` turns a date into local midnight in `assume_tz`.
+`DD.MM.YYYY` is always day first; `05/05/2026` needs no `day_first`. Further flags:
+`no_year` (`November 5`), `two_digit_year` (`05/11/26`), `invalid` (`2026-02-30`, `13:12 PM`),
+`unparseable`, and `nonexistent_time` / `ambiguous_time` for local times skipped or repeated by
+a DST change in `assume_tz` (`2026-03-29 02:30` and `2026-10-25 02:30` in Europe/Berlin).
+Relative dates support seconds to weeks, `today` and `yesterday`; months and years have no
+fixed length and stay flagged `relative`. Python `date`/`datetime` values and integer epochs
+are accepted as well as strings. Only `Z`, `UTC`, `GMT`, `UT` and numeric offsets count as
+zones.
+
 ### 10.4 whitespace, html_entities, mojibake, strip_tags (text.py)
 
 | Normalizer | Input | Output | |
@@ -924,6 +939,14 @@ in UTC with a `Z` suffix. No dateutil dependency; the parser is a fixed set of r
 | mojibake | `"CafÃ©"` | `"Café"` | fix when latin-1/cp1252 → utf-8 round-trip succeeds and reduces the count of mojibake markers (`Ã`, `â€`, `Â`) |
 | mojibake | `"Ã"` alone | unchanged | flag `undecidable` |
 | mojibake | `"naïve"` (valid) | unchanged | no fix |
+
+Details fixed while building (item 11): whitespace removes zero-width space, word joiner, BOM
+and soft hyphen but keeps zero-width (non-)joiners, which some scripts and emoji need.
+html_entities unescapes until stable (double escaping is undone; more than four levels flag
+`undecidable`). strip_tags drops comments and `script`/`style`/`template` content, turns
+block tags into a space and never touches `a < b`. mojibake repairs each cp1252-spelled UTF-8
+sequence (up to three rounds for double encoding) and only acts when a marker is followed by
+a continuation character or the end of the text, so `Âge` is left alone.
 
 ### 10.5 url
 
@@ -938,6 +961,13 @@ _ga]`, `keep_fragment: false`, `sort_query: true`, `trailing_slash: keep|add|str
 | `"javascript:void(0)"` / `"mailto:"` | unchanged | flag `not_http` |
 | `"https://example.com/ü"` | `"https://example.com/%C3%BC"` | fix (percent-encoding normalised, host IDNA) |
 
+Details fixed while building (item 11): dot segments are removed as in RFC 3986 5.2.4 (empty
+segments such as `a//b` stay), an empty path becomes `/`, a trailing dot on the host goes,
+userinfo is kept (redaction is not cleaning's job), drop-param globs match case-insensitively,
+sorting is by key and stable for repeated keys, `+` in the query is kept as written, and
+`trailing_slash: add` skips paths whose last segment has a dot. Other schemes flag `not_http`;
+a bad port or a missing host flags `invalid`.
+
 ### 10.6 dedupe (dedupe_key)
 
 Not a field normalizer: `clean/dedupe.py::dedupe_key(record, key_fields)` builds
@@ -951,6 +981,10 @@ information the field type keeps (a price string's currency goes to `extra`, whi
 writes into the `currency` field when that field is empty); and it can be explained in one
 sentence in the report. Everything else is a flag. Normalizers never: guess locale from the
 first value seen, guess the year, invent a currency, or coerce `None`.
+
+A normalizer may also return a `note` with a fix: an info finding `clean.<name>.<note>` that
+explains how the value was read (only `clean.date.relative` so far). Info findings do not
+count as flags.
 
 ---
 
