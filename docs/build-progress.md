@@ -468,6 +468,8 @@ Notes for the next session:
   reconcile `report_dir` with the report path in architecture 12.1 (item 13); write
   `tests/perf/test_overhead.py` (architecture 15) before item 24 (only the 64 KiB classify
   budget is tested so far, in `tests/guard/test_classify.py`).
+- Tests that need an extra are marked `extras` and carry the extra's name in their id; the
+  extras jobs of full.yml run `-m "extras and not live" -k <extra>` without coverage.
 - full.yml installs Chromium only once `tests/integrations/` exists; from item 16 on the
   extras jobs take several minutes.
 

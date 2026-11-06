@@ -53,7 +53,8 @@ def _run(args: list[str]) -> Any:
     return CliRunner().invoke(main, args, catch_exceptions=False)
 
 
-def test_three_formats_give_identical_runs(tmp_path: Path) -> None:
+@pytest.mark.extras  # the Parquet leg runs where pyarrow is installed (full.yml extras job)
+def test_csv_jsonl_parquet_give_identical_runs(tmp_path: Path) -> None:
     rows = _rows()
     paths = [_write_jsonl(tmp_path / "b.jsonl", rows), _write_csv(tmp_path / "b.csv", rows)]
     try:

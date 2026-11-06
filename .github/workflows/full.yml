@@ -63,9 +63,11 @@ jobs:
       - if: steps.tests.outputs.present == 'true' && (matrix.extra == 'playwright' || matrix.extra == 'crawlee')
         timeout-minutes: 10
         run: uv run playwright install --with-deps chromium
-      - name: Integration tests
-        if: steps.tests.outputs.present == 'true'
-        run: uv run pytest -m "not live" tests/integrations -k ${{ matrix.extra }} || [ $? -eq 5 ]
+      # Every test marked "extras" whose id names this extra (tests/integrations/ and others,
+      # such as the Parquet reader tests). A subset cannot meet the coverage floor, so
+      # coverage is off here; exit code 5 (no tests selected) is fine.
+      - name: Tests that need this extra
+        run: uv run pytest -m "extras and not live" -k ${{ matrix.extra }} --no-cov || [ $? -eq 5 ]
 
   gitleaks:
     runs-on: ubuntu-latest
