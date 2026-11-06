@@ -803,9 +803,13 @@ actions of the last recovery are on `gate.recovered` for the caller to report as
 `gate.recovered` findings.
 
 Crash safety: at every step the live path is either the previous complete file or the new
-complete file. Directory outputs (many files per run) are a later item: same journal, but the
-swap is `rename(live, prev)`, `rename(staging, live)`, `rmtree(prev)`, with recovery for each
-step. Cross-filesystem outputs raise `GateError` at `stage()` time.
+complete file. Directory outputs (many files per run) use `DirectoryPublishGate` (item 9b):
+the same journal, with the swap `rename(live, prev)`, `rename(staging, live)`, pointer,
+`rmtree(prev)`, where `prev` is `<output>.scrapewatch/prev/<name>`. The pointer's hash is a
+tree hash (sorted relative paths and file hashes). Recovery reads the state on disk: if the
+live directory already has the new tree hash the promotion is completed (pointer written,
+`prev` removed); otherwise `prev` is renamed back when the live directory is missing, and the
+promotion is rolled back. Cross-filesystem outputs raise `GateError` at `stage()` time.
 
 The gate fails closed: a missing verdict, an unreadable pointer, a lock that cannot be taken,
 or a checks engine exception all mean "do not promote".

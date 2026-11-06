@@ -395,3 +395,135 @@ class PublishGate:
             for old in runs[self.keep_good :]:
                 if old.name != keep_current:
                     shutil.rmtree(old, ignore_errors=True)
+
+
+def sha256_tree(root: Path) -> tuple[str, int]:
+    """Hash of a directory (sorted relative paths and file hashes) and its total size."""
+    h = hashlib.sha256()
+    total = 0
+    for path in sorted(p for p in root.rglob("*") if p.is_file()):
+        rel = path.relative_to(root).as_posix()
+        h.update(rel.encode("utf-8") + b"\0" + sha256_file(path).encode() + b"\n")
+        total += path.stat().st_size
+    return h.hexdigest(), total
+
+
+class DirectoryPublishGate(PublishGate):
+    """Guards an output directory (many files per run) with a journaled rename swap.
+
+    Promotion: copy staging to ``good/``, then ``rename(live, prev)``,
+    ``rename(staging, live)``, update the pointer and ``rmtree(prev)``. Recovery looks at the
+    state on disk: if the live directory already holds the new tree the promotion is
+    completed; otherwise the previous directory is put back and the promotion rolled back.
+    """
+
+    @property
+    def prev_path(self) -> Path:
+        """Where the previous live directory waits during the swap."""
+        return self.state_dir / "prev" / self.output.name
+
+    def staging_path(self, run_id: str) -> Path:
+        """The staging directory a run writes its files into."""
+        return self.state_dir / "staging" / run_id / self.output.name
+
+    @contextmanager
+    def stage(self, run_id: str) -> Iterator[Path]:
+        """Yield a staging directory (created); same rules as :meth:`PublishGate.stage`."""
+        with super().stage(run_id) as path:
+            path.mkdir(parents=True, exist_ok=True)
+            yield path
+
+    def promote(self, run_id: str, verdict: Verdict | None) -> bool:
+        """Swap the staging directory in; True when promoted."""
+        if not isinstance(verdict, Verdict):
+            self.hold(run_id, Verdict(status=VerdictStatus.HOLD, reasons=["no verdict"]))
+            return False
+        if verdict.status == VerdictStatus.HOLD or (
+            verdict.status == VerdictStatus.WARN and not self.promote_on_warn
+        ):
+            self.hold(run_id, verdict)
+            return False
+        self.acquire()
+        try:
+            staging = self.staging_path(run_id)
+            if not staging.is_dir():
+                raise GateError(f"nothing staged for run {run_id} at {staging}")
+            self.last_good()
+            for f in staging.rglob("*"):
+                if f.is_file():
+                    _fsync_file(f)
+            digest, size = sha256_tree(staging)
+            journal = {
+                "run_id": run_id,
+                "sha256": digest,
+                "size": size,
+                "verdict": verdict.status.value,
+                "started_at": _now(),
+            }
+
+            def step(name: str) -> None:
+                _write_durable(self.journal_path, json.dumps({**journal, "step": name}).encode())
+
+            step("copy")
+            good = self._run_path("good", run_id)
+            if good.exists():
+                shutil.rmtree(good)
+            shutil.copytree(staging, good)
+            step("move_live_to_prev")
+            if self.prev_path.exists():
+                shutil.rmtree(self.prev_path)
+            self.prev_path.parent.mkdir(parents=True, exist_ok=True)
+            if self.output.exists():
+                os.replace(self.output, self.prev_path)
+            step("move_staging_to_live")
+            os.replace(staging, self.output)
+            _fsync_dir(self.output.parent)
+            step("pointer")
+            self._write_pointer(run_id, digest, size, verdict.status)
+            step("remove_prev")
+            shutil.rmtree(self.prev_path, ignore_errors=True)
+            self.journal_path.unlink()
+            shutil.rmtree(staging.parent, ignore_errors=True)
+            self._prune()
+            return True
+        finally:
+            self.release()
+
+    def verify_live(self) -> bool:
+        """True when the live directory's tree hash matches the pointer."""
+        pointer = self.last_good()
+        if pointer is None or not self.output.is_dir():
+            return False
+        return sha256_tree(self.output)[0] == pointer.sha256
+
+    def recover(self) -> list[str]:
+        """Complete or roll back an interrupted swap from the state on disk."""
+        self.recovered = []
+        if not self.journal_path.exists():
+            return []
+        try:
+            journal = json.loads(self.journal_path.read_text(encoding="utf-8"))
+            run_id = str(journal["run_id"])
+            digest = str(journal["sha256"])
+            size = int(journal["size"])
+            status = VerdictStatus(journal.get("verdict", VerdictStatus.PASS.value))
+        except (OSError, ValueError, KeyError, TypeError):
+            journal, run_id = {}, ""
+            digest, size, status = "", 0, VerdictStatus.PASS
+        if run_id and self.output.is_dir() and sha256_tree(self.output)[0] == digest:
+            self._write_pointer(run_id, digest, size, status)
+            shutil.rmtree(self.prev_path, ignore_errors=True)
+            shutil.rmtree(self.staging_path(run_id).parent, ignore_errors=True)
+            self.recovered.append(f"completed the promotion of run {run_id}")
+        else:
+            if not self.output.exists() and self.prev_path.exists():
+                os.replace(self.prev_path, self.output)
+                self.recovered.append("restored the previous live directory")
+            if run_id:
+                shutil.rmtree(self._run_path("good", run_id).parent, ignore_errors=True)
+            self.recovered.append(
+                f"rolled back the interrupted promotion of run {run_id or '(unknown)'}; "
+                "live directory unchanged"
+            )
+        self.journal_path.unlink()
+        return self.recovered

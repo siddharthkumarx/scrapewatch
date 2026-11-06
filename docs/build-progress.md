@@ -182,7 +182,7 @@ v0.2 or later.
 
 ### 9b. Publish gate for directory outputs
 
-- [ ] Scope: rename-swap with journal and recovery for a directory of files.
+- [x] Scope: rename-swap with journal and recovery for a directory of files.
 - Acceptance: same crash matrix as item 9 for the three steps.
 - Done when: pass.
 
