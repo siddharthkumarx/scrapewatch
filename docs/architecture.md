@@ -1236,8 +1236,21 @@ Report: .scrapewatch/reports/books/2026-11-05T14-12-00_9a1b.html
 
 Webhook payload is the `AlertPayload` model (section `alerts/base.py`):
 `{schema_version, run_id, name, verdict, reasons, records, usable_records, blocked_share_pct,
-cost_total, cost_currency, cost_per_usable_record, report_path, started_at, finished_at}`.
+cost_total, cost_currency, cost_per_usable_record, cost_per_1000_usable_records, report_path,
+started_at, finished_at}`.
 Delivery failures are logged, counted in `monitor_errors`, and never raise out of `finish()`.
+
+Details fixed while building (item 15): the third message line ends with the headline cost of
+section 11.2 ("$1.05 per 1,000 usable records" when the cost per usable record is below
+0.01). Telegram sends the four lines with the first in bold (HTML escaped, link previews
+off); Slack sends a header block and a mrkdwn section plus the plain text as fallback. Errors
+never contain a URL (the Telegram token is part of its URL). `finish()` sends alerts after
+the run is stored and stores the run again when a delivery failed, so the stored
+`monitor_errors` is right. `alerts.channels: []` means every channel whose variables are
+set; a listed channel without its variables reports "not configured". `scrapewatch alert
+test [--channel C]` sends a payload named `scrapewatch-test` regardless of `alerts.on` and
+exits 1 when nothing is configured or any delivery failed. Goldens:
+`tests/fixtures/alerts/{payload,slack,telegram}.json`.
 
 ---
 

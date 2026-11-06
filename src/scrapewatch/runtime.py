@@ -23,12 +23,14 @@ from typing import Any, TypeVar
 from urllib.parse import urlsplit
 
 from scrapewatch._version import __version__
+from scrapewatch.alerts.base import send_alerts
 from scrapewatch.checks.batch import BatchStats, batch_findings
 from scrapewatch.checks.engine import RecordChecker
 from scrapewatch.checks.rules import DataRules, VerdictThresholds, load_data_rules
 from scrapewatch.checks.verdict import compute_verdict
 from scrapewatch.config import Settings, config_hash, load_settings
 from scrapewatch.cost.meter import CostMeter
+from scrapewatch.errors import AlertError
 from scrapewatch.guard.classify import classify_features
 from scrapewatch.guard.features import extract_features
 from scrapewatch.guard.rules import GuardRuleSet, bundled_rules, load_rules
@@ -541,6 +543,7 @@ class Watch:
         self._step("overhead", self._finish_overhead)
         self._step("report", self._finish_report)
         self._step("store", self._finish_store)
+        self._step("alerts", self._finish_alerts)
         self._step("prune", self._finish_prune)
         self._step("close history", self._close_store)
         return self.run
@@ -641,6 +644,16 @@ class Watch:
         write_html(html_path, html)
         self.run.report_path = str(html_path)
         write_summary(self.run, json_path)
+
+    def _finish_alerts(self) -> None:
+        """Send alerts when the verdict is in ``alerts.on``; failures are counted, not raised."""
+        a = self.settings.alerts
+        results = send_alerts(self.run, on=list(a.on), channels=list(a.channels) or None)
+        failed = {name: why for name, why in results.items() if why != "ok"}
+        for name, why in failed.items():
+            self._monitor_error(f"alert {name}", AlertError(why))
+        if failed and self.store is not None:
+            self._store_call("finish_run", self.run)  # keep the stored count of errors right
 
     def _finish_overhead(self) -> None:
         if self._overhead_ms:

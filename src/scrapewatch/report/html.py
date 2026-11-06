@@ -78,7 +78,7 @@ def _money(x: float | None, currency: str) -> str:
         return f"{sym}0"
     if 0 < abs(x) < 0.0001:
         return f"&lt; {sym}0.0001"
-    if abs(x) >= 1:
+    if abs(x) >= 0.1:
         return f"{sym}{x:,.2f}"
     return f"{sym}{x:.4f}" if abs(x) >= 0.01 else f"{sym}{x:.6f}".rstrip("0")
 

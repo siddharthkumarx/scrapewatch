@@ -1,0 +1,19 @@
+{
+  "blocks": [
+    {
+      "text": {
+        "text": "scrapewatch · books · HOLD",
+        "type": "plain_text"
+      },
+      "type": "header"
+    },
+    {
+      "text": {
+        "text": "Blocked share 23.4% is above 20%. Row count 412 is 58% below baseline 980.\nRecords 412 (usable 390) · cost $0.41 · $1.05 per 1,000 usable records\nReport: .scrapewatch/reports/books/2026-11-05T14-12-00_9a1b2c3d.html",
+        "type": "mrkdwn"
+      },
+      "type": "section"
+    }
+  ],
+  "text": "scrapewatch · books · HOLD\nBlocked share 23.4% is above 20%. Row count 412 is 58% below baseline 980.\nRecords 412 (usable 390) · cost $0.41 · $1.05 per 1,000 usable records\nReport: .scrapewatch/reports/books/2026-11-05T14-12-00_9a1b2c3d.html"
+}

@@ -209,7 +209,7 @@ def test_larger_costs_headline_per_record() -> None:
     run.cost.per_usable_record, run.cost.per_1000_usable_records = 0.25, None
     run.cost.per_record, run.cost.per_1000_records = 0.2, None
     html = render_html(run)
-    assert '<div class="v">$0.2500</div><div class="k">per usable record</div>' in html
+    assert '<div class="v">$0.25</div><div class="k">per usable record</div>' in html
     assert "Cost per usable record" in html
     assert "per 1,000" not in html
 

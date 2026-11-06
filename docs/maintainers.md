@@ -115,8 +115,8 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 15** (alerts; M3 starts). M1 and M2 (items 1 to 14)
-are done and green on GitHub (ci.yml and full.yml); the M2 matrix is logged.
+Next item: **docs/build-progress.md item 16** (httpx integration). M1, M2 (items 1 to 14),
+the post-M2 report fixes and item 15 are done and green on GitHub (ci.yml and full.yml).
 
 Notes for the next session:
 
@@ -129,7 +129,7 @@ Notes for the next session:
   each hook fails open (counted in `monitor_errors`). Records are never kept: `BatchStats`
   (`checks/batch.py`) accumulates counts, field stats, value hashes and currency mismatches.
   `finish()` order: flush, aggregate (workers), cost, status, verdict (fails closed), overhead,
-  store, prune, close.
+  report (HTML and summary.json), store, alerts, prune, close.
 - Normalizers: all done (items 10 and 11). Shared number parsing in `clean/_numeric.py`,
   currency table in `clean/_currency.py`. The pipeline passes the field type as the reserved
   option `_field_type`; a normalizer's `note` becomes an info finding. Record finding and fix

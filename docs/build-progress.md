@@ -285,7 +285,7 @@ v0.2 or later.
 
 ### 15. Alerts `[v0.1]`
 
-- [ ] Scope: A§13.4: payload, four channels on the standard library, `send_alerts`, env
+- [x] Scope: A§13.4: payload, four channels on the standard library, `send_alerts`, env
   override, HMAC signature, `alert test` command, wiring into `finish()` (guarded).
 - Files: `alerts/*.py`, `tests/alerts/`.
 - Acceptance: a local `http.server` thread receives the webhook JSON and the signature
@@ -293,6 +293,8 @@ v0.2 or later.
   using a fake `urlopen`; email uses a fake SMTP class and attaches the report when small;
   delivery failure → counted, not raised; `on` filtering.
 - Done when: pass, coverage ≥ 83.
+- Notes: the payload gained `cost_per_1000_usable_records` and the message uses the headline
+  cost (A§11.2). Money in alerts and the report shows two decimals from 0.10 up.
 
 ### 16. httpx integration and `watch()` end to end `[v0.1]`
 
@@ -453,8 +455,8 @@ v0.2 or later.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 15** (alerts; M3 starts). M1 and M2 (items 1 to 14)
-are done and green on GitHub (ci.yml and full.yml); the M2 matrix is logged.
+Next item: **docs/build-progress.md item 16** (httpx integration). M1, M2 (items 1 to 14),
+the post-M2 report fixes and item 15 are done and green on GitHub (ci.yml and full.yml).
 
 Notes for the next session:
 
@@ -467,7 +469,7 @@ Notes for the next session:
   each hook fails open (counted in `monitor_errors`). Records are never kept: `BatchStats`
   (`checks/batch.py`) accumulates counts, field stats, value hashes and currency mismatches.
   `finish()` order: flush, aggregate (workers), cost, status, verdict (fails closed), overhead,
-  store, prune, close.
+  report (HTML and summary.json), store, alerts, prune, close.
 - Normalizers: all done (items 10 and 11). Shared number parsing in `clean/_numeric.py`,
   currency table in `clean/_currency.py`. The pipeline passes the field type as the reserved
   option `_field_type`; a normalizer's `note` becomes an info finding. Record finding and fix

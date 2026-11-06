@@ -462,9 +462,31 @@ def alert() -> None:
 
 @alert.command("test")
 @click.option("--channel", default=None)
-def alert_test(channel: str | None) -> None:
-    """Send a test alert to configured channels."""
-    raise NotImplementedError("build-progress item 15")
+def alert_test(channel: str | None) -> int:
+    """Send a test alert to configured channels (or only --channel). Exit 1 if any failed."""
+    import os
+    from datetime import datetime, timezone
+
+    from scrapewatch.alerts.base import CHANNEL_ORDER, AlertPayload, deliver
+
+    payload = AlertPayload(
+        run_id="test",
+        name="scrapewatch-test",
+        verdict="warn",
+        reasons=["This is a test alert from `scrapewatch alert test`; nothing is wrong."],
+        started_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    )
+    results = deliver(payload, channels_wanted=[channel] if channel else None, env=os.environ)
+    if not results:
+        click.echo(
+            "no alert channel is configured; set the environment variables of one of: "
+            + ", ".join(CHANNEL_ORDER)
+            + " (docs/architecture.md 13.4)"
+        )
+        return 1
+    for name, outcome in results.items():
+        click.echo(f"{name}: {outcome}")
+    return 0 if all(v == "ok" for v in results.values()) else 1
 
 
 @main.command()
