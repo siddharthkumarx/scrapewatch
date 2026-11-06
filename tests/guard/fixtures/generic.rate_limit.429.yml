@@ -1,0 +1,9 @@
+rule: generic.rate_limit.429
+expect: {label: rate_limit, vendor: null, rule_id: generic.rate_limit.429}
+features:
+  status: 429
+  headers: {content-type: text/plain, retry-after: "30"}
+  content_type: text/plain
+  body_bytes: 17
+  text_length: 17
+  text_density: 1.0

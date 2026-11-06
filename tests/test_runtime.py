@@ -48,7 +48,7 @@ def test_record_response_builds_redacted_event() -> None:
     assert "body" not in ev.model_dump()
     c = w.run.counts
     assert (c.responses, c.document_responses, c.wire_bytes) == (1, 1, 50)
-    assert c.by_label == {"ok": 1}
+    assert c.by_label == {"empty": 1}  # a 106-byte HTML page is an empty shell
     assert c.by_status == {"200": 1}
 
 

@@ -1,0 +1,11 @@
+# Synthetic features shaped like a quotes.toscrape.com page (no page content).
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html; charset=utf-8, server: gunicorn}
+  content_type: text/html
+  title: "Quotes to Scrape"
+  request_url: https://quotes.toscrape.com/page/2/
+  body_bytes: 11053
+  text_length: 3120
+  text_density: 0.28

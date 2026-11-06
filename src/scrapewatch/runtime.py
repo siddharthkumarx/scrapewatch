@@ -25,11 +25,16 @@ from urllib.parse import urlsplit
 from scrapewatch._version import __version__
 from scrapewatch.config import Settings, config_hash, load_settings
 from scrapewatch.cost.meter import CostMeter
+from scrapewatch.guard.classify import classify_features
+from scrapewatch.guard.features import extract_features
+from scrapewatch.guard.rules import GuardRuleSet, bundled_rules, load_rules
 from scrapewatch.history.stats import StatsAccumulator, value_hash
 from scrapewatch.history.store import HistoryStore, open_store
 from scrapewatch.models import (
     BytesSource,
     ErrorInfo,
+    Finding,
+    FindingScope,
     GuardLabel,
     GuardResult,
     Record,
@@ -149,6 +154,9 @@ class Watch:
         self._stats = StatsAccumulator()
         self._value_hashes: dict[str, str] = {}
         self.meter = CostMeter(settings.cost)
+        self.guard_rules: GuardRuleSet | None = None
+        self._finding_queue: list[Finding] = []
+        self._response_hooks.append(("guard", _guard_hook))
         self._response_hooks.append(("cost", _cost_hook))
 
     # --- lifecycle ----------------------------------------------------------------------
@@ -160,6 +168,7 @@ class Watch:
             self._started = True
             self.run.started_at = datetime.now(tz=timezone.utc)
             self.run.status = RunStatus.RUNNING
+        self._step("load guard rules", self._load_guard_rules)
         if self._step("open history", self._open_store) and self.store is not None:
             self._step("start run", lambda: self._store_call("start_run", self.run))
 
@@ -183,8 +192,19 @@ class Watch:
         w.attached = True
         with w._lock:
             w._started = True
+        w._step("load guard rules", w._load_guard_rules)
         w._step("open history", w._open_store)
         return w
+
+    def _load_guard_rules(self) -> None:
+        g = self.settings.guard
+        if not g.enabled:
+            return
+        if g.rules_path is None and not g.extra_rules:
+            self.guard_rules = bundled_rules()
+        else:
+            self.guard_rules = load_rules(g.rules_path, extra=list(g.extra_rules))
+        self.run.rules_version = self.guard_rules.rules_version
 
     def _open_store(self) -> None:
         try:
@@ -312,6 +332,12 @@ class Watch:
         with self._lock:
             self._count_response(event)
             self._queue.append(event)
+            finding = _guard_finding(event)
+            if finding is not None:
+                sev = finding.severity.value
+                fc = self.run.counts.findings_by_severity
+                fc[sev] = fc.get(sev, 0) + 1
+                self._finding_queue.append(finding)
             due = len(self._queue) >= FLUSH_EVERY_EVENTS or (
                 time.monotonic() - self._last_flush >= FLUSH_EVERY_SECONDS
             )
@@ -376,11 +402,14 @@ class Watch:
         """Write queued events in one batch; returns how many were flushed (0 on failure)."""
         with self._lock:
             batch, self._queue = self._queue, []
+            findings, self._finding_queue = self._finding_queue, []
             self._last_flush = time.monotonic()
         if not batch:
             return 0
         try:
             written = self._write_events(batch)
+            if findings and self.store is not None and self.settings.store_events:
+                self._store_call("write_findings", findings)
         except Exception as exc:
             self._monitor_error("flush", exc)
             return 0
@@ -490,6 +519,58 @@ class Watch:
     def report_path(self) -> Path | None:
         """Path of the HTML report written by ``finish``, if any."""
         return Path(self.run.report_path) if self.run.report_path else None
+
+
+_LABEL_WORDS = {
+    GuardLabel.BLOCK: "Blocked",
+    GuardLabel.CHALLENGE: "Challenge page",
+    GuardLabel.CAPTCHA: "CAPTCHA page",
+    GuardLabel.CONSENT: "Consent wall",
+    GuardLabel.LOGIN: "Login wall",
+    GuardLabel.RATE_LIMIT: "Rate limited",
+    GuardLabel.EMPTY: "Empty page",
+    GuardLabel.REDIRECT: "Redirected away",
+    GuardLabel.ERROR_PAGE: "Error page",
+    GuardLabel.ERROR: "Request failed",
+    GuardLabel.UNKNOWN: "Unreadable response",
+}
+
+
+def _guard_hook(w: Watch, event: ResponseEvent, ctx: ResponseContext) -> None:
+    rules = w.guard_rules
+    if rules is None or (event.error is not None and event.status is None):
+        return
+    baseline = ctx.meta.get("baseline_p50_bytes")
+    features = extract_features(
+        status=event.status,
+        headers=ctx.raw_headers,
+        body=ctx.body,
+        request_url=ctx.raw_url,
+        final_url=ctx.raw_final_url,
+        window_bytes=w.settings.guard.body_window_bytes,
+        baseline_p50_bytes=baseline if isinstance(baseline, int) else None,
+        markers=rules.markers(),
+        transport_error=event.error is not None,
+    )
+    event.guard = classify_features(features, rules)
+
+
+def _guard_finding(event: ResponseEvent) -> Finding | None:
+    """A response-scope ``guard.<label>`` finding (info) for every non-ok label."""
+    label = event.guard.label
+    if label == GuardLabel.OK:
+        return None
+    vendor = f" ({event.guard.vendor})" if event.guard.vendor else ""
+    return Finding(
+        run_id=event.run_id,
+        scope=FindingScope.RESPONSE,
+        ref=event.event_id,
+        check=f"guard.{label.value}",
+        severity=Severity.INFO,
+        message=f"{_LABEL_WORDS.get(label, label.value)}{vendor}: {event.url}",
+        observed=event.status,
+        rule_id=event.guard.rule_id,
+    )
 
 
 def _cost_hook(w: Watch, event: ResponseEvent, _ctx: ResponseContext) -> None:

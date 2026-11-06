@@ -4,4 +4,25 @@
 # Detection only: these rules say WHAT answered, never how to get past it.
 schema_version: 1
 rules_version: "2026.11.0"
-rules: []   # filled in build-progress item 5
+rules:
+  - id: generic.rate_limit.429
+    label: rate_limit
+    confidence: 0.9
+    since: "2026.11.0"
+    notes: "HTTP 429 Too Many Requests."
+    any:
+      - all:
+          - status: [429]
+
+  - id: generic.empty.tiny
+    label: empty
+    confidence: 0.6
+    since: "2026.11.0"
+    notes: "An HTML document under 2,048 bytes with under 200 characters of visible text."
+    any:
+      - all:
+          - status: [200]
+          - content_type: "text/html"
+          - size_below: 2048
+          - text_length_below: 200
+          - has_captcha_widget: false

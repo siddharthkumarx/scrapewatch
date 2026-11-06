@@ -1,0 +1,11 @@
+# A tiny page that carries a captcha widget is not an empty shell.
+rule: generic.empty.tiny
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html}
+  content_type: text/html
+  body_bytes: 900
+  text_length: 40
+  text_density: 0.04
+  has_captcha_widget: true

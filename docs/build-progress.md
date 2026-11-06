@@ -83,7 +83,7 @@ v0.2 or later.
 
 ### 4. Guard: features, rules loader, classifier, fixture runner `[v0.1]`
 
-- [ ] Scope: `extract_features` (title, text density, markers, password form, captcha
+- [x] Scope: `extract_features` (title, text density, markers, password form, captcha
   widgets, content-type handling, decoding with fallback), `load_rules` (merge, duplicate
   ids, regex compile and boundedness check), `classify_features` (precedence A§6.3,
   signals text), `classify`, `rule_fixture_paths`, `tests/guard/test_rules.py` (parametrised

@@ -462,16 +462,24 @@ the only view of a response the rules get, and it is also the fixture format.
 | `content_type` | header, lower-case, parameters stripped | |
 | `title` | first `<title>` in the body window, whitespace collapsed, max 200 chars | |
 | `body_bytes` | decoded length | |
-| `text_length` | visible text chars in the window (tags, scripts, styles removed) | |
+| `text_length` | visible text chars in the window (tags, comments, `script`, `style`, `template` and `title` elements removed, whitespace collapsed) | |
 | `text_density` | `text_length / min(body_bytes, window)` | 0.0 to 1.0 |
 | `markers` | lower-case marker strings from the rules file found in the window | only markers that matched |
 | `has_form_password` | `<input type="password"` in window | login walls |
 | `has_captcha_widget` | known widget markers (`g-recaptcha`, `h-captcha`, `cf-turnstile`) | |
 | `baseline_p50_bytes` | history size baseline for domain + path pattern | empty shell |
 | `body_window` | first `body_window_bytes` decoded, in memory only | never stored |
+| `decode_error` | the window could not be decoded (declared charset, UTF-8 and cp1252 all failed, or NUL bytes) | label `unknown` when no rule matches |
+| `transport_error` | no response (timeout, DNS, TLS, reset) | label `error` when no rule matches |
 
 The window is the first 64 KiB by default. Non-HTML content types (JSON, images) skip text
-analysis; the guard still applies status and header rules.
+analysis; the guard still applies status and header rules. `extract_features(..., markers=...)` takes the rule set's
+`body_marker` strings (default: the bundled rules). A fixture may carry a `body_window` of at
+most 200 synthetic characters so `body_regex` rules can be tested; it never holds a page.
+
+Regex boundedness (loader): a rule regex must compile, be at most 300 characters, and contain
+no quantified group that itself contains a quantifier (`(.*)+`, `(a+)*`) and no adjacent
+unbounded wildcards (`.*.*`).
 
 ### 6.2 Rules file format
 

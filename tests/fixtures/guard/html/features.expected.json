@@ -1,0 +1,199 @@
+{
+ "markers": [
+  "please confirm you are a person",
+  "we value your privacy",
+  "cookie preferences",
+  "sign in to continue",
+  "not-present-anywhere"
+ ],
+ "cases": {
+  "product.html": {
+   "input": {
+    "status": 200,
+    "headers": {
+     "Content-Type": "text/html; charset=utf-8",
+     "Server": "nginx",
+     "Set-Cookie": "sid=abc; HttpOnly"
+    },
+    "url": "https://books.example/item/1"
+   },
+   "expected": {
+    "status": 200,
+    "headers": {
+     "content-type": "text/html; charset=utf-8",
+     "server": "nginx"
+    },
+    "cookie_names": [
+     "sid"
+    ],
+    "final_url": null,
+    "request_url": "https://books.example/item/1",
+    "content_type": "text/html",
+    "title": "A Quiet Garden & Other Stories | Example Books",
+    "body_bytes": 779,
+    "text_length": 311,
+    "text_density": 0.39923,
+    "markers": [],
+    "has_form_password": false,
+    "has_captcha_widget": false,
+    "baseline_p50_bytes": null,
+    "decode_error": false,
+    "transport_error": false
+   }
+  },
+  "interstitial.html": {
+   "input": {
+    "status": 403,
+    "headers": {
+     "Content-Type": "text/html"
+    },
+    "url": "https://books.example/item/2"
+   },
+   "expected": {
+    "status": 403,
+    "headers": {
+     "content-type": "text/html"
+    },
+    "cookie_names": [],
+    "final_url": null,
+    "request_url": "https://books.example/item/2",
+    "content_type": "text/html",
+    "title": "One moment please",
+    "body_bytes": 307,
+    "text_length": 44,
+    "text_density": 0.143322,
+    "markers": [
+     "please confirm you are a person"
+    ],
+    "has_form_password": false,
+    "has_captcha_widget": true,
+    "baseline_p50_bytes": null,
+    "decode_error": false,
+    "transport_error": false
+   }
+  },
+  "login.html": {
+   "input": {
+    "status": 200,
+    "headers": {
+     "Content-Type": "text/html"
+    },
+    "url": "https://shop.example/cart",
+    "final_url": "https://shop.example/account/login?next=/cart"
+   },
+   "expected": {
+    "status": 200,
+    "headers": {
+     "content-type": "text/html"
+    },
+    "cookie_names": [],
+    "final_url": "https://shop.example/account/login?next=/cart",
+    "request_url": "https://shop.example/cart",
+    "content_type": "text/html",
+    "title": "Sign in - Example Shop",
+    "body_bytes": 305,
+    "text_length": 42,
+    "text_density": 0.137705,
+    "markers": [
+     "sign in to continue"
+    ],
+    "has_form_password": true,
+    "has_captcha_widget": false,
+    "baseline_p50_bytes": null,
+    "decode_error": false,
+    "transport_error": false
+   }
+  },
+  "consent.html": {
+   "input": {
+    "status": 200,
+    "headers": {
+     "content-type": "text/html; charset=UTF-8"
+    },
+    "url": "https://news.example/"
+   },
+   "expected": {
+    "status": 200,
+    "headers": {
+     "content-type": "text/html; charset=UTF-8"
+    },
+    "cookie_names": [],
+    "final_url": null,
+    "request_url": "https://news.example/",
+    "content_type": "text/html",
+    "title": "Example News",
+    "body_bytes": 243,
+    "text_length": 95,
+    "text_density": 0.390947,
+    "markers": [
+     "cookie preferences",
+     "we value your privacy"
+    ],
+    "has_form_password": false,
+    "has_captcha_widget": false,
+    "baseline_p50_bytes": null,
+    "decode_error": false,
+    "transport_error": false
+   }
+  },
+  "tiny.html": {
+   "input": {
+    "status": 200,
+    "headers": {
+     "Content-Type": "text/html"
+    },
+    "url": "https://shop.example/p/3",
+    "baseline_p50_bytes": 48000
+   },
+   "expected": {
+    "status": 200,
+    "headers": {
+     "content-type": "text/html"
+    },
+    "cookie_names": [],
+    "final_url": null,
+    "request_url": "https://shop.example/p/3",
+    "content_type": "text/html",
+    "title": "Shop",
+    "body_bytes": 110,
+    "text_length": 0,
+    "text_density": 0.0,
+    "markers": [],
+    "has_form_password": false,
+    "has_captcha_widget": false,
+    "baseline_p50_bytes": 48000,
+    "decode_error": false,
+    "transport_error": false
+   }
+  },
+  "latin1.html": {
+   "input": {
+    "status": 200,
+    "headers": {
+     "Content-Type": "text/html; charset=windows-1252"
+    },
+    "url": "https://cafe.example/menu"
+   },
+   "expected": {
+    "status": 200,
+    "headers": {
+     "content-type": "text/html; charset=windows-1252"
+    },
+    "cookie_names": [],
+    "final_url": null,
+    "request_url": "https://cafe.example/menu",
+    "content_type": "text/html",
+    "title": "Caf\u00e9 cr\u00e8me \u2013 menu",
+    "body_bytes": 98,
+    "text_length": 19,
+    "text_density": 0.193878,
+    "markers": [],
+    "has_form_password": false,
+    "has_captcha_widget": false,
+    "baseline_p50_bytes": null,
+    "decode_error": false,
+    "transport_error": false
+   }
+  }
+ }
+}
