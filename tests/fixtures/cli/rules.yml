@@ -1,0 +1,12 @@
+# Rules for the CLI check tests: 50 books with prices as text (CSV-style strings).
+schema_version: 1
+name: books
+key: [url]
+fields:
+  title: {type: string, required: true, min_length: 1, clean: [whitespace]}
+  price: {type: number, required: true, min: 0, max: 1000, clean: [price], severity: hold}
+  currency: {type: string, allowed: [GBP]}
+  stock: {type: integer, clean: [number]}
+  url: {type: url, required: true, clean: [url]}
+batch:
+  duplicates_warn_pct: 1

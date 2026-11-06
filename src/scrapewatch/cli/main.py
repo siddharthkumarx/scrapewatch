@@ -2,17 +2,91 @@
 
 from __future__ import annotations
 
+import json
+import shutil
+import sys
+from pathlib import Path
+from typing import Any, NoReturn
+
 import click
 
 from scrapewatch._version import __version__
+from scrapewatch.errors import ScrapewatchError
+from scrapewatch.models import Finding, FindingScope, Run, Severity, VerdictStatus
 
 EXIT_PASS = 0
 EXIT_WARN = 1
 EXIT_HOLD = 2
 EXIT_ERROR = 3
+EXIT_BY_VERDICT = {
+    VerdictStatus.PASS: EXIT_PASS,
+    VerdictStatus.WARN: EXIT_WARN,
+    VerdictStatus.HOLD: EXIT_HOLD,
+}
 
 
-@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+class _Group(click.Group):
+    """A group whose usage errors exit 3, not click's 2 (2 means hold here)."""
+
+    def main(self, *args: Any, **kwargs: Any) -> Any:
+        """Run the command; map click's own errors to exit 3."""
+        kwargs["standalone_mode"] = False
+        try:
+            code = super().main(*args, **kwargs)
+        except click.ClickException as exc:
+            exc.show()
+            sys.exit(EXIT_ERROR)
+        except click.Abort:
+            click.echo("Aborted.", err=True)
+            sys.exit(EXIT_ERROR)
+        sys.exit(code if isinstance(code, int) else EXIT_PASS)
+
+
+def _fail(message: str) -> NoReturn:
+    click.echo(f"error: {message}", err=True)
+    sys.exit(EXIT_ERROR)
+
+
+def _write_json(path: str | Path, run: Run) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_name(target.name + ".tmp")
+    tmp.write_text(json.dumps(run.model_dump(mode="json"), indent=2) + "\n", encoding="utf-8")
+    tmp.replace(target)
+
+
+def _gate(run: Run, source: Path, live: Path, *, promote_on_warn: bool) -> str:
+    """Stage a copy of the checked file and promote it on the verdict; returns a status line."""
+    from scrapewatch.gate import PublishGate
+
+    gate = PublishGate(live, promote_on_warn=promote_on_warn)
+    warning = ""
+    if gate.last_good() is not None and not gate.verify_live():
+        warning = f"\nwarning: {live} differs from the last promoted file (edited by hand?)"
+    with gate.stage(run.run_id) as staging:
+        shutil.copyfile(source, staging)
+    for action in gate.recovered:
+        run.findings.append(
+            Finding(
+                run_id=run.run_id,
+                scope=FindingScope.RUN,
+                check="gate.recovered",
+                severity=Severity.INFO,
+                message=f"The publish gate recovered an interrupted promotion: {action}",
+            )
+        )
+    if gate.promote(run.run_id, run.verdict):
+        return f"live: promoted to {live}{warning}"
+    good = gate.last_good()
+    if good is None:
+        return f"live: held; nothing was promoted to {live} yet{warning}"
+    return (
+        f"live: held; last good run {good.run_id[:8]} from {good.promoted_at} "
+        f"is still live at {live}{warning}"
+    )
+
+
+@click.group(cls=_Group, context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(__version__, prog_name="scrapewatch")
 def main() -> None:
     """Health and cost monitor for any web scraper."""
@@ -29,6 +103,9 @@ def main() -> None:
     "--promote-to", default=None, type=click.Path(dir_okay=False), help="Publish-gate live path."
 )
 @click.option("--format", "fmt", default=None, type=click.Choice(["csv", "jsonl", "parquet"]))
+@click.option(
+    "--hold-on-warn", is_flag=True, help="With --promote-to: promote only on pass, not on warn."
+)
 def check(
     path: str,
     rules_path: str,
@@ -38,9 +115,33 @@ def check(
     json_path: str | None,
     promote_to: str | None,
     fmt: str | None,
-) -> None:
+    hold_on_warn: bool,
+) -> int:
     """Check a CSV/JSONL/Parquet file. Exit 0 pass, 1 warn, 2 hold, 3 error."""
-    raise NotImplementedError("build-progress item 12")
+    from scrapewatch.checks.engine import check as run_check
+
+    try:
+        run = run_check(path, rules=rules_path, history=history_path, name=name, fmt=fmt)
+        gate_line = None
+        if promote_to is not None:
+            gate_line = _gate(run, Path(path), Path(promote_to), promote_on_warn=not hold_on_warn)
+        files = []
+        if json_path is not None:
+            _write_json(json_path, run)
+            files.append(f"summary: {json_path}")
+        if report_path is not None:
+            # The HTML report comes with build item 13; until then the summary is written.
+            summary = Path(report_path).with_suffix(".json")
+            _write_json(summary, run)
+            files.append(f"summary: {summary} (the HTML report is not built yet)")
+    except ScrapewatchError as exc:
+        _fail(str(exc))
+    except OSError as exc:
+        _fail(f"{type(exc).__name__}: {exc}")
+    from scrapewatch.cli._output import check_summary
+
+    click.echo(check_summary(run, gate_line=gate_line, files=files))
+    return EXIT_BY_VERDICT[run.verdict.status]
 
 
 @main.group()

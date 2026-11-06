@@ -225,7 +225,7 @@ v0.2 or later.
 
 ### 12. File readers and `scrapewatch check` with exit codes and `--promote-to` `[v0.1]`
 
-- [ ] Scope: `io/readers.py` (CSV with `csv.DictReader`, JSONL, Parquet via pyarrow extra with
+- [x] Scope: `io/readers.py` (CSV with `csv.DictReader`, JSONL, Parquet via pyarrow extra with
   a clear error when missing), `checks.engine.check`, the `check` CLI command printing the
   text summary and exiting 0/1/2/3, `--promote-to` through `PublishGate` (stage = copy of the
   input, promote on verdict), `--json`, `--report` (report placeholder until item 13 writes
@@ -238,6 +238,11 @@ v0.2 or later.
   with a hold keeping the previous live file; CSV strings typed by normalizers; a 100k-row
   JSONL streams under 200 MB RSS (measured with `resource` on Linux, skipped elsewhere).
 - Done when: pass, coverage ≥ 78.
+- Notes: `check()` streams through `check_records(keep_records=False)` and stores the run in
+  history; 100k JSONL rows peak at about 110 MiB RSS and take about 14 s locally (the test
+  asserts < 200 MiB in a fresh process). `--report` writes the summary JSON beside the given
+  path until item 13 renders HTML. Added `--hold-on-warn`. `tests/io/` has no `__init__.py`
+  on purpose (it would shadow the standard library `io`).
 
 ### 13. JSON summary and HTML report `[v0.1]`
 
@@ -437,8 +442,8 @@ v0.2 or later.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 12** (file readers and `scrapewatch check`). M1
-(items 1 to 9b), items 10 and 11 are done and green on GitHub (ci.yml and full.yml).
+Next item: **docs/build-progress.md item 13** (JSON summary and HTML report). M1 (items 1 to
+9b) and items 10 to 12 are done and green on GitHub (ci.yml and full.yml).
 
 Notes for the next session:
 
@@ -459,7 +464,7 @@ Notes for the next session:
 - A normalizer's `extra` (the currency of a price) fills an empty field with a Fix, and a
   conflicting non-empty value gives a `clean.<name>.extra_conflict` info finding that
   `batch.currency` counts.
-- Still open for later items: report `gate.recovered` actions as findings and `verify_live` warnings in the CLI (item 12);
+- Still open for later items: replace the `--report` placeholder in `cli/main.py` and
   reconcile `report_dir` with the report path in architecture 12.1 (item 13); write
   `tests/perf/test_overhead.py` (architecture 15) before item 24 (only the 64 KiB classify
   budget is tested so far, in `tests/guard/test_classify.py`).

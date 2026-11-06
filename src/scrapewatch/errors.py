@@ -29,5 +29,9 @@ class CheckError(ScrapewatchError):
     """The checks engine could not run; the verdict is hold (fail closed)."""
 
 
+class ReadError(ScrapewatchError):
+    """An input file could not be read (missing, wrong format, malformed line)."""
+
+
 class AlertError(ScrapewatchError):
     """An alert could not be delivered. Counted, never fatal."""

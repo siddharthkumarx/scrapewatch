@@ -294,6 +294,16 @@ def check(path, *, rules, history=None, name=None, fmt=None) -> Run
 What the CLI runs: read CSV/JSONL/Parquet, clean and check every row, compare with history,
 return the Run with its verdict.
 
+Details fixed while building (item 12): rows are streamed (`check_records(...,
+keep_records=False)`), so memory does not grow with the file beyond the per-run statistics.
+`history=None` means `history.path` from the environment or `.scrapewatch`; the run is stored
+there (field stats, value hashes, findings, summary) like a `watch()` run. A history that
+cannot be opened or read holds the run (fail closed) instead of raising. The name defaults
+to the rules' `name`, else the file stem. Readers (`io/readers.py`): CSV via `csv.DictReader`
+with an empty cell read as `None`; JSONL one object per line (a `.json` file holding one
+array also works); Parquet through pyarrow in batches; `.gz` files are decompressed. Bad
+rules raise `RulesError`, an unreadable file `ReadError` (both exit 3 in the CLI).
+
 ### 3.3 PublishGate
 
 ```python
@@ -1154,7 +1164,7 @@ and returned by `scrapewatch history show`.
 
 | Command | Purpose | Exit |
 |---|---|---|
-| `scrapewatch check PATH --rules rules.yml [--history DIR] [--name N] [--report F] [--json F] [--promote-to LIVE] [--format csv|jsonl|parquet]` | check a file; optional publish gate | 0 pass, 1 warn, 2 hold, 3 error |
+| `scrapewatch check PATH --rules rules.yml [--history DIR] [--name N] [--report F] [--json F] [--promote-to LIVE [--hold-on-warn]] [--format csv|jsonl|parquet]` | check a file; optional publish gate (stage a copy of PATH, promote on the verdict) | 0 pass, 1 warn, 2 hold, 3 error |
 | `scrapewatch guard classify FILE [--status N] [--url U]` | classify a saved response | 0; prints label, vendor, rule, signals |
 | `scrapewatch guard features FILE [--status N] [--url U]` | print fixture-safe features (YAML) | 0 |
 | `scrapewatch rules test [PATH]` | run every guard fixture | 0 ok, 1 failures |
@@ -1167,7 +1177,9 @@ and returned by `scrapewatch history show`.
 | `scrapewatch --version` | | 0 |
 
 Exit 3 means the tool itself failed (bad arguments, unreadable file, rules error); CI should
-treat it like hold. `check` prints a one-screen text summary (verdict, reasons, counts, cost)
+treat it like hold. Click's own usage errors exit 3 as well, not click's default 2. With
+`--promote-to`, actions of a gate recovery are added to the Run as `gate.recovered` (info)
+findings, and a live file that no longer matches the last-good pointer prints a warning. `check` prints a one-screen text summary (verdict, reasons, counts, cost)
 and the report path.
 
 ### 13.4 Alerts

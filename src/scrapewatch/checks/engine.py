@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable, Mapping
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -12,14 +12,21 @@ from urllib.parse import urlsplit
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel, ConfigDict, Field
 
+from scrapewatch._version import __version__
 from scrapewatch.checks.batch import BatchStats, batch_findings
 from scrapewatch.checks.expr import compile_expr, evaluate
-from scrapewatch.checks.rules import DataRules, FieldRule
+from scrapewatch.checks.rules import DataRules, FieldRule, load_data_rules
 from scrapewatch.checks.verdict import compute_verdict
 from scrapewatch.clean import dedupe_key
 from scrapewatch.clean.pipeline import run_normalizers
-from scrapewatch.history.baselines import Baseline
-from scrapewatch.models import Finding, FindingScope, Fix, Record, Run, Severity
+from scrapewatch.config import config_hash, load_settings
+from scrapewatch.errors import ReadError
+from scrapewatch.history.baselines import Baseline, compute_baseline
+from scrapewatch.history.store import HistoryStore, open_store
+from scrapewatch.io.readers import read_records
+from scrapewatch.models import Finding, FindingScope, Fix, Record, Run, RunStatus, Severity
+
+PRUNE_EVERY_RUNS = 20  # same cadence as Watch.finish (architecture 12.4)
 
 
 class CheckResult(BaseModel):
@@ -355,60 +362,75 @@ def check_records(
     *,
     baseline: Baseline | None = None,
     run: Run | None = None,
+    keep_records: bool = True,
+    failure: str | None = None,
+    batch: BatchStats | None = None,
 ) -> CheckResult:
     """Check an iterable of items end to end (records, batch findings, verdict).
 
     The verdict fails closed: if anything raises while checking, the run is held with the
-    reason, and the records checked so far are returned.
+    reason, and the records checked so far are returned. ``keep_records=False`` streams: the
+    result holds no records, only the run with its counts and samples. ``failure`` is the
+    reason of an earlier failure (history unreadable): the run is held with it. A
+    :class:`ReadError` from the items (an unreadable input file) is raised, not held. Pass
+    ``batch`` to keep the accumulated statistics (field stats, value hashes) for storing.
     """
     run = run or Run(name=rules.name)
     baseline = baseline or Baseline()
     checker = RecordChecker(rules)
-    batch = BatchStats(rules)
+    batch = batch if batch is not None else BatchStats(rules)
     records: list[Record] = []
     findings: list[Finding] = []
-    failed = False
+    reasons = [failure] if failure else []
     try:
         for item in items:
             rec = checker.check(item, run_id=run.run_id)
-            records.append(rec)
+            if keep_records:
+                records.append(rec)
             batch.add(rec)
         findings = batch_findings(batch, rules, baseline, run_id=run.run_id)
+    except ReadError:
+        raise
     except Exception as exc:
-        failed = True
+        reasons.append(f"{type(exc).__name__}: {exc}")
+    for reason in reasons:
         findings.append(
             Finding(
                 run_id=run.run_id,
                 scope=FindingScope.RUN,
                 check="run.checks_failed",
                 severity=Severity.HOLD,
-                message=f"The checks failed: {type(exc).__name__}: {exc}",
+                message=f"The checks failed: {reason}",
             )
         )
-    fill_record_counts(run, batch, records)
+    fill_record_counts(run, batch)
     run.findings = [*run.findings, *findings]
-    run.verdict = compute_verdict(run, findings, rules.verdict, checks_failed=failed)
+    run.verdict = compute_verdict(run, findings, rules.verdict, checks_failed=bool(reasons))
     run.verdict.baseline_runs = list(baseline.run_ids)
     return CheckResult(records=records, batch_findings=findings, run=run)
 
 
-def fill_record_counts(run: Run, batch: BatchStats, records: Iterable[Record]) -> None:
-    """Record counters on the Run from a batch (findings and fixes from the records)."""
+def fill_record_counts(run: Run, batch: BatchStats) -> None:
+    """Record counters and samples on the Run from a batch."""
     c = run.counts
-    run.samples = batch.samples.result()
+    samples = batch.samples.result()
+    run.samples = samples
     c.records = batch.records
     c.usable_records = batch.usable
     c.duplicates = batch.duplicates
     c.schema_invalid = batch.schema_invalid
-    for rec in records:
-        for f in rec.findings:
-            c.findings_by_severity[f.severity.value] = (
-                c.findings_by_severity.get(f.severity.value, 0) + 1
-            )
-            if f.check.startswith("clean.") and f.severity != Severity.INFO:
-                c.flags += 1
-        for fix in rec.fixes:
-            c.fixes_by_normalizer[fix.normalizer] = c.fixes_by_normalizer.get(fix.normalizer, 0) + 1
+    c.findings_by_severity = {}
+    c.fixes_by_normalizer = {}
+    c.flags = 0
+    for f in samples.findings:
+        sev = f.severity.value
+        c.findings_by_severity[sev] = c.findings_by_severity.get(sev, 0) + f.count
+        if f.check.startswith("clean.") and f.severity != Severity.INFO:
+            c.flags += f.count
+    for fx in sorted(batch.samples.fixes.values(), key=lambda x: (x.normalizer, x.field)):
+        c.fixes_by_normalizer[fx.normalizer] = (
+            c.fixes_by_normalizer.get(fx.normalizer, 0) + fx.count
+        )
 
 
 def check(
@@ -419,5 +441,59 @@ def check(
     name: str | None = None,
     fmt: str | None = None,
 ) -> Run:
-    """Check a CSV, JSONL or Parquet file. This is what ``scrapewatch check`` calls."""
-    raise NotImplementedError("build-progress item 12")
+    """Check a CSV, JSONL or Parquet file. This is what ``scrapewatch check`` calls.
+
+    Rows are streamed: cleaned and checked one at a time, compared with the history of runs
+    of the same name (``history`` directory, default ``history.path`` from the environment or
+    ``.scrapewatch``), and stored there. Raises :class:`RulesError` for bad rules and
+    :class:`ReadError` for an unreadable file; history problems hold the run (fail closed).
+    """
+    data_rules = rules if isinstance(rules, DataRules) else load_data_rules(rules)
+    settings = load_settings()
+    if history is not None:
+        settings.history.path = Path(history)
+    source = Path(path)
+    run = Run(
+        name=name or (data_rules.name if data_rules.name != "default" else source.stem),
+        integration="cli",
+        scrapewatch_version=__version__,
+        config_hash=config_hash(settings),
+    )
+    rows = read_records(source, fmt)  # format and path errors surface before any history work
+    store: HistoryStore | None = None
+    baseline = Baseline()
+    failure: str | None = None
+    try:
+        store = open_store(settings.history.path)
+        baseline = compute_baseline(store, run.name, n=settings.history.baseline_runs)
+        store.start_run(run)
+    except Exception as exc:  # fail closed: the run cannot be compared, so it is held
+        failure = f"history at {settings.history.path} is not usable ({exc})"
+        if store is not None:
+            store.close()
+            store = None
+    batch = BatchStats(data_rules)
+    try:
+        check_records(
+            rows,
+            data_rules,
+            baseline=baseline,
+            run=run,
+            keep_records=False,
+            failure=failure,
+            batch=batch,
+        )
+        run.status = RunStatus.FINISHED
+        run.finished_at = datetime.now(timezone.utc)
+        if store is not None:
+            store.write_field_stats(run.run_id, batch.stats.result())
+            store.write_value_hashes(run.run_id, batch.value_hashes)
+            store.write_findings(run.findings)
+            store.finish_run(run)
+            h = settings.history
+            if store.run_count() % PRUNE_EVERY_RUNS == 0:
+                store.prune(keep_runs=h.keep_runs, keep_event_days=h.keep_event_days)
+        return run
+    finally:
+        if store is not None:
+            store.close()

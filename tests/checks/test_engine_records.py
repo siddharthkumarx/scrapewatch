@@ -168,3 +168,18 @@ def test_extra_conflict_is_reported() -> None:
         assert f.message == "currency is 'GBP' but price '$5' says 'USD'"
     finally:
         del NORMALIZERS["test_conflict"]
+
+
+def test_field_types_on_odd_values() -> None:
+    from datetime import date, datetime
+
+    rules = DataRules.model_validate(
+        {"fields": {"u": {"type": "url"}, "d": {"type": "date"}, "t": {"type": "datetime"}}}
+    )
+    checker = RecordChecker(rules)
+    ok = checker.check(
+        {"u": "https://a.example/", "d": date(2026, 11, 5), "t": datetime(2026, 1, 1)}, run_id="r"
+    )
+    assert ok.findings == []
+    bad = checker.check({"u": "http://[::1", "d": "2026-02-30", "t": 5}, run_id="r")
+    assert sorted(f.field or "" for f in bad.findings if f.check == "field.type") == ["d", "t", "u"]

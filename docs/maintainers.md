@@ -115,8 +115,8 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 12** (file readers and `scrapewatch check`). M1
-(items 1 to 9b), items 10 and 11 are done and green on GitHub (ci.yml and full.yml).
+Next item: **docs/build-progress.md item 13** (JSON summary and HTML report). M1 (items 1 to
+9b) and items 10 to 12 are done and green on GitHub (ci.yml and full.yml).
 
 Notes for the next session:
 
@@ -137,7 +137,7 @@ Notes for the next session:
 - A normalizer's `extra` (the currency of a price) fills an empty field with a Fix, and a
   conflicting non-empty value gives a `clean.<name>.extra_conflict` info finding that
   `batch.currency` counts.
-- Still open for later items: report `gate.recovered` actions as findings and `verify_live` warnings in the CLI (item 12);
+- Still open for later items: replace the `--report` placeholder in `cli/main.py` and
   reconcile `report_dir` with the report path in architecture 12.1 (item 13); write
   `tests/perf/test_overhead.py` (architecture 15) before item 24 (only the 64 KiB classify
   budget is tested so far, in `tests/guard/test_classify.py`).
