@@ -68,8 +68,9 @@ uv python install 3.10 3.11 3.12 3.13
 for v in 3.10 3.11 3.12 3.13; do
   uv sync --python $v --group dev --all-extras && uv run --python $v pytest -m "not live" || echo "FAILED $v"
 done
-uv run pip-audit --strict
-gitleaks detect --source . --no-banner   # install: https://github.com/gitleaks/gitleaks/releases
+uv export --no-emit-project --all-extras --group dev --no-hashes -q > /tmp/requirements.txt
+uv run pip-audit --strict --disable-pip --no-deps -r /tmp/requirements.txt
+gitleaks git --no-banner .   # install: https://github.com/gitleaks/gitleaks/releases
 
 # a live check (the sandbox cannot reach most sites; run it through GitHub Actions)
 #   1. edit checks/request.yml: enabled: true, unique id, question, commands, artifacts

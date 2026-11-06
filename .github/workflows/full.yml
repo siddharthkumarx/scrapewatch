@@ -52,10 +52,14 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: "pyproject.toml"
-      - run: uv sync --python 3.12 --group dev --extra ${{ matrix.extra }}
+      # crawlee's browser crawler needs the playwright extra as well
+      - run: uv sync --python 3.12 --group dev --extra ${{ matrix.extra }} ${{ matrix.extra == 'crawlee' && '--extra playwright' || '' }}
       - if: matrix.extra == 'playwright' || matrix.extra == 'crawlee'
         run: uv run playwright install --with-deps chromium
-      - run: uv run pytest -m "not live" tests/integrations -k ${{ matrix.extra }} || [ $? -eq 5 ]
+      - name: Integration tests
+        run: |
+          if [ ! -d tests/integrations ]; then echo "no integration tests yet"; exit 0; fi
+          uv run pytest -m "not live" tests/integrations -k ${{ matrix.extra }} || [ $? -eq 5 ]
 
   gitleaks:
     runs-on: ubuntu-latest
@@ -64,9 +68,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The CLI scans the whole history; the action scans a push range, which fails on a
+      # first push because the root commit has no parent.
+      - name: Scan the whole history
+        run: |
+          v=8.24.3
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${v}/gitleaks_${v}_linux_x64.tar.gz" | tar -xz -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git --redact --verbose --no-banner .
 
   pip-audit:
     runs-on: ubuntu-latest
@@ -74,5 +82,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - run: uv sync --python 3.12 --group dev --all-extras
-      - run: uv run pip-audit --strict
+      - run: uv sync --python 3.12 --group dev
+      # Audit the locked dependencies; the project itself is not on PyPI yet.
+      - name: Audit locked dependencies
+        run: |
+          uv export --no-emit-project --all-extras --group dev --no-hashes -q > "$RUNNER_TEMP/requirements.txt"
+          uv run pip-audit --strict --disable-pip --no-deps -r "$RUNNER_TEMP/requirements.txt"
