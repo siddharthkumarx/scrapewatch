@@ -491,3 +491,4 @@ gitleaks and pip-audit result). Example:
 | Date | Milestone | Commit | 3.10 | 3.11 | 3.12 | 3.13 | gitleaks | pip-audit | Notes |
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-11-06 | M1 (after item 8) | afc6548 | 590 passed | 590 passed | 590 passed | 590 passed | full.yml run 42228291643 green (gitleaks job; the binary could not be fetched in the sandbox) | no known vulnerabilities (locked deps, all extras) | ci.yml and full.yml green on afc6548 |
+| 2026-11-06 | M2 (after item 14) | 6e17034 | green in full.yml | green in full.yml | 1022 passed, 1 skipped (local; coverage 98.6%) | green in full.yml | full.yml run 42268117357 green (gitleaks job) | full.yml run 42268117357 green (pip-audit job, locked deps, all extras) | ci.yml run 42268117699 and full.yml run 42268117357 green on 6e17034; extras jobs now run the Parquet tests |
