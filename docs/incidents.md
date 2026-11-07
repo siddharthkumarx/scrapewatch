@@ -26,8 +26,8 @@ file becomes public.
 - Symptom: Playwright loads of the three Shopify home pages had non-ok document labels:
   `empty` (an ad-tech pixel frame and a consent frame under 2,048 bytes), `redirect` (Shop
   Pay's login-callback frame, matched by the login path rule), `error` (a payment frame that
-  failed) and, on one store's main page, `captcha` (marker `h-captcha` with 229 characters of
-  visible text).
+  failed) and, on one store's main page, `captcha` (marker `h-captcha` with little visible
+  text).
 - Cause: two gaps. (1) Playwright reports an iframe's navigation with resource type
   `document`, so frames were judged and counted as pages. (2) The shop page has more than
   64 KiB of inline script and style in `<head>`; the guard's window ended there (inside an

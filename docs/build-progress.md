@@ -470,7 +470,7 @@ v0.2 or later.
 
 ### 24. Benchmark run and docs/benchmarks.md `[v0.1]`
 
-- [ ] Scope: `benchmarks/run_benchmark.py` executed through the checks workflow against
+- [x] Scope: `benchmarks/run_benchmark.py` executed through the checks workflow against
   books.toscrape.com, quotes.toscrape.com/js/, webscraper.io/test-sites/e-commerce/static,
   scrapethissite.com and two or three independent Shopify stores named in the request:
   (a) bytes before vs after the waste cutter for the Playwright targets; (b) guard results
@@ -482,6 +482,16 @@ v0.2 or later.
 - Acceptance: docs/benchmarks.md contains no number without a result path; the request file
   is back to `enabled: false`.
 - Done when: committed. **M4 ends: full local matrix, log it.**
+- Notes: done. Run `checks/results/2026-11-07-benchmark/` (request 21fd5a6), written up in
+  docs/benchmarks.md. Shopify stores chosen at run time: www.beardbrand.com,
+  www.kettleandfire.com, www.partakefoods.com (small catalogues, public `products.json`,
+  robots.txt checked). A local trial first found guard false positives (iframes judged as
+  pages; a page whose 64 KiB window held only script read as a captcha), fixed in 4e576b3 and
+  logged in docs/incidents.md; the committed run has every document `ok`. Before the run,
+  `tests/perf/test_overhead.py` was added and the hot paths brought near budget (aef0f0f);
+  on the runner the 64 KiB guard path is p50 1.536 ms against 1.5 ms (2% over, limit 4.5 ms).
+  The blocker's per-run byte estimate ranged from 0.49 to 4.6 times the measured saving;
+  benchmarks.md says so.
 
 ## v0.1 release
 
@@ -521,9 +531,11 @@ v0.2 or later.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 24** (benchmark run and docs/benchmarks.md; write
-`tests/perf/test_overhead.py` first). Items 1 to 23 are done; M3 is logged (matrix after item 19). Check that
-ci.yml and full.yml are green on the last commit of main before starting.
+Next item: **docs/build-progress.md item 25** (packaging and release workflow, publishing off).
+Items 1 to 24 are done and M4 is logged; stop before item 26 (the owner sends the README rules).
+Open: A§11.3 mentions `scrapewatch check --events`, which the CLI does not have (item 23 notes);
+the 64 KiB guard path is 2% over its p50 budget on the runner (docs/benchmarks.md, section d).
+Check that ci.yml and full.yml are green on the last commit of main before starting.
 
 Notes for the next session:
 

@@ -25,7 +25,8 @@ uv.lock.bak
 scrapewatch-report*.html
 scrapewatch-summary*.json
 
-# Examples output
+# Examples and benchmark output (results are committed only under checks/results/)
+benchmarks/output/
 examples/**/output/
 examples/**/*.jsonl
 examples/**/*.csv

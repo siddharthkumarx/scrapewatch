@@ -115,9 +115,11 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 24** (benchmark run and docs/benchmarks.md; write
-`tests/perf/test_overhead.py` first). Items 1 to 23 are done; M3 is logged (matrix after item 19). Check that
-ci.yml and full.yml are green on the last commit of main before starting.
+Next item: **docs/build-progress.md item 25** (packaging and release workflow, publishing off).
+Items 1 to 24 are done and M4 is logged; stop before item 26 (the owner sends the README rules).
+Open: A§11.3 mentions `scrapewatch check --events`, which the CLI does not have (item 23 notes);
+the 64 KiB guard path is 2% over its p50 budget on the runner (docs/benchmarks.md, section d).
+Check that ci.yml and full.yml are green on the last commit of main before starting.
 
 Notes for the next session:
 

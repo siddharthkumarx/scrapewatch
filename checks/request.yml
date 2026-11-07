@@ -1,5 +1,5 @@
 # Live-check request. Pushing a change to this file runs .github/workflows/checks.yml, which
-# commits results to checks/results/<id>/ on the same branch. Set enabled: true only when the
+# commits results to checks/results/<id>/ on the same branch. Set enabled: false only when the
 # run answers a question; set it back to false in the next commit that touches this file.
 enabled: true
 id: 2026-11-07-benchmark
