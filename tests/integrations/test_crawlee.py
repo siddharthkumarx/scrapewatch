@@ -137,8 +137,9 @@ def test_playwright_crawler(monkeypatch: pytest.MonkeyPatch) -> None:
 
     w, events = _watch(monkeypatch)
     options = pw_site.launch_options()
-    if hasattr(os, "geteuid") and os.geteuid() == 0:  # Chromium's sandbox cannot run as root
-        options["chromium_sandbox"] = False
+    # Crawlee turns Chromium's sandbox on; it cannot start as root or on runners that block
+    # user namespaces (GitHub's Ubuntu images). Plain Playwright leaves it off by default.
+    options["chromium_sandbox"] = False
     crawler = PlaywrightCrawler(
         browser_launch_options=options or None,
         storage_client=MemoryStorageClient(),

@@ -117,8 +117,10 @@ does not depend on it.
 
 Next item: **docs/build-progress.md item 21** (waste cutter: Playwright route blocker and
 compression headers). Items 1 to 20 are done; M3 is logged (matrix after item 19). Item 20
-(42db60c) turned CI red on mypy; the fix 5ef8db3 is pushed: first confirm its ci.yml and
-full.yml runs are green (the crawlee extras job must pass too), then start item 21.
+(42db60c) turned CI red twice (mypy without extras; Chromium's sandbox in Crawlee's
+crawler on GitHub runners), both logged in docs/incidents.md. The last fix is the commit
+after a73d22a: first confirm its ci.yml and full.yml runs are green (the crawlee extras job
+must pass), then start item 21.
 
 Plan for item 21 (worked out, not committed):
 

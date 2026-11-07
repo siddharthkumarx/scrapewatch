@@ -20,6 +20,18 @@ file becomes public.
 
 ## Entries
 
+## 2026-11-07 — Crawlee's Playwright crawler could not start Chromium on CI
+
+- Item: build-progress item 20 (CI)
+- Symptom: the crawlee extras job of full.yml run 42364705224 failed
+  `test_playwright_crawler` with no events; the log shows Chromium's "No usable sandbox!".
+- Cause: Crawlee launches Chromium with its sandbox on (plain Playwright leaves it off), and
+  GitHub's Ubuntu runners block the unprivileged user namespaces it needs. The test turned the
+  sandbox off only when running as root, which covered the local sandbox but not CI.
+- Fix: the test always passes `chromium_sandbox=False`.
+- Prevention: none possible locally (the container runs as root); the extras job is the check.
+- Minutes spent (Actions): one full.yml run.
+
 ## 2026-11-07 — mypy red on CI after the Crawlee adapter
 
 - Item: build-progress item 20 (CI)
