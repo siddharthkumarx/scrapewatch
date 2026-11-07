@@ -1,0 +1,12 @@
+# Sample settings (docs/architecture.md section 5). The cost model is an example, not a quote.
+name: books
+rules: rules.yml
+history:
+  path: .scrapewatch
+cost:
+  currency: USD
+  default_proxy: direct
+  proxies:
+    direct: {per_gb: 0}
+    datacenter: {per_gb: 0.8}
+    residential: {per_gb: 8.0}

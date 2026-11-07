@@ -298,7 +298,7 @@ v0.2 or later.
 
 ### 16. httpx integration and `watch()` end to end `[v0.1]`
 
-- [ ] Scope: `integrations/httpx.py` sync and async hooks: request hook stamps start time and
+- [x] Scope: `integrations/httpx.py` sync and async hooks: request hook stamps start time and
   attempt from `request.extensions`, response hook records after body read (wrap `read`
   / `aread` for streaming), `num_bytes_downloaded`, redirects via `response.history`,
   transport errors through a transport wrapper or documented `try/except` helper
@@ -309,7 +309,16 @@ v0.2 or later.
   compressed length plus header estimate and `bytes_source == "measured"`; a hook that is
   monkeypatched to raise does not break the request; async variant same assertions;
   five-minute example from A§3.1 runs against MockTransport.
-- Done when: pass; `examples/httpx_books/` draft exists (finalised in item 23).
+- Done when: pass; `examples/httpx_books/` draft exists (finalised in item 23); coverage ≥ 84.
+- Notes: the response hook wraps that response's `read`/`close` (`aread`/`aclose`) and
+  records once the body is read or the response closed, so streaming is covered. A followed
+  redirect chain is one event (first URL, final URL, bytes of every hop); a 3xx that is not
+  followed is its own event. Per-request options ride in `extensions={"scrapewatch": {...}}`.
+  A response a transport built already read (`httpx.Response(content=...)`) has no stream
+  count, so its Content-Length is used and labelled `content_length`. `Watch.monitor_error`
+  is new and public: integration hooks report their own failures through it (A§3.1, A§14).
+  An error while reading a body is recorded with its status; interrupts and cancellation are
+  not recorded. The draft example has an offline test against a mock books site.
 
 ### 17. requests adapter `[v0.1]`
 

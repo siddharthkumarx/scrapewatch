@@ -671,6 +671,14 @@ class Watch:
         return True
 
     # --- helpers ------------------------------------------------------------------------
+    def monitor_error(self, where: str, exc: BaseException) -> None:
+        """Count a failure inside an integration hook (fail open, architecture 14).
+
+        Increments ``counts.monitor_errors`` and logs once per (where, exception type) per
+        minute.
+        """
+        self._monitor_error(where, exc)
+
     def _monitor_error(self, where: str, exc: BaseException) -> None:
         with self._lock:
             self.run.counts.monitor_errors += 1

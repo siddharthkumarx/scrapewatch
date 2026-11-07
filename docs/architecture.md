@@ -267,6 +267,7 @@ class Watch:
     def finish(self, *, crashed: bool = False) -> Run
     verdict: Verdict                      # property
     def report_path(self) -> Path | None
+    def monitor_error(self, where, exc) -> None   # integrations count their own failures
 ```
 
 Five-minute path with httpx:
@@ -286,6 +287,28 @@ print(w.verdict.status, w.report_path())
 
 On exit `finish()` runs (with `crashed=True` if an exception is propagating; the exception is
 re-raised). Monitoring errors never raise; they are counted.
+
+httpx details (fixed in item 16, `integrations/httpx.py`): `hooks(w, proxy=...)` and
+`async_hooks(w, proxy=...)` return the `event_hooks` mapping; `hooks()` sets the run's
+`integration` to `httpx` unless `watch()` was given another name. The response hook runs
+before httpx reads the body, so it wraps that response's `read`/`close` (`aread`/`aclose`)
+and records when the body has been read or the response is closed (streaming). A followed
+redirect chain is one event: `url` is the first request, `final_url` the last, and the bytes
+of every hop in `response.history` are included; a 3xx that is not followed is its own event.
+Per-request options go in `extensions={"scrapewatch": {...}}` with the keys `proxy`,
+`attempt`, `retry_times`, `request_key` and `resource_type`. Transport errors never reach a
+response hook, so the scraper records them in its `except` block:
+
+```python
+try:
+    r = client.get(url)
+except httpx.RequestError as exc:
+    sw_httpx.record_error(w, exc)   # request defaults to exc.request; never raises
+```
+
+An error while a body is being read is recorded by the hooks (with the status) and a later
+`record_error` for the same request is ignored. Interrupts and task cancellation are not
+recorded.
 
 ### 3.2 check()
 
@@ -1050,7 +1073,7 @@ both per-1,000 fields (null when the per-record cost is 0.01 or more), and
 
 | Integration | `wire_bytes` | `bytes_source` | Known limits |
 |---|---|---|---|
-| httpx | `response.num_bytes_downloaded` after the body is read, plus header estimate | measured | Hook runs on the response event before the body is read for streaming responses; the integration wraps `response.read()`/`aread()` or records on `close` to get the final count. HTTP/2 framing and TLS bytes are not included. |
+| httpx | `response.num_bytes_downloaded` after the body is read, plus header estimate, summed over the redirect hops | measured (content_length for a response a transport built already read, such as `httpx.Response(content=...)` in a mock transport: no stream count exists, so Content-Length is used) | Hook runs on the response event before the body is read; the integration wraps `response.read()`/`aread()` and `close()`/`aclose()` to get the final count (verified in `tests/integrations/test_httpx.py` with gzip bodies). A streamed response closed early counts the bytes read so far. HTTP/2 framing and TLS bytes are not included. |
 | requests | `Content-Length` when present (compressed body) plus header estimate; else `len(response.content)` | content_length / decoded | Chunked, compressed responses without Content-Length are over-estimated (decoded size). The report marks such events. A future urllib3 wrapper could count raw bytes. |
 | Playwright | `request.sizes()` → `responseBodySize + responseHeadersSize` (encoded) | measured | Responses served from the browser cache or a service worker report 0 or cached sizes; events carry `cache.unchanged` when `from_cache`-like signals are available. Aborted routes record 0 bytes and an estimate in `bytes_saved_estimate` (median size of that resource type seen earlier in the run, else a fixed table: image 45 KiB, font 60 KiB, media 500 KiB, script 80 KiB, stylesheet 30 KiB). |
 | Scrapy | middleware at priority 900 sees `len(response.body)` before `HttpCompressionMiddleware` (590) decodes it, plus header estimate | measured | Must be verified in the integration test with a gzip fixture served through the full middleware chain; if Scrapy's ordering changes, fall back to Content-Length and label accordingly. |
@@ -1258,10 +1281,11 @@ exits 1 when nothing is configured or any delivery failed. Goldens:
 
 Monitoring fails open:
 
-- Every integration hook and every `Watch.record_*` method is wrapped by `_guarded()`: it
-  catches `Exception`, increments `counts.monitor_errors`, logs once per (module, exception
-  type) at WARNING with a rate limit of one line per minute, and returns None. The scraper's
-  request, response or item is returned unchanged.
+- Every `Watch.record_*` method is wrapped by `_guarded()`: it catches `Exception`,
+  increments `counts.monitor_errors`, logs once per (module, exception type) at WARNING with a
+  rate limit of one line per minute, and returns None. Integration hooks catch their own
+  exceptions the same way and report them through `Watch.monitor_error(where, exc)`. The
+  scraper's request, response or item is returned unchanged.
 - Hooks do no network I/O and no blocking disk I/O: history writes are batched in memory and
   flushed in one transaction every 200 events or 2 seconds from the calling thread, with the
   flush itself guarded. Alerts and report rendering run only in `finish()`.

@@ -1,0 +1,9 @@
+# Data rules for the books example (docs/architecture.md section 7).
+schema_version: 1
+name: books
+key: [url]
+fields:
+  title: {type: string, required: true, min_length: 1, clean: [whitespace, html_entities]}
+  price: {type: number, required: true, min: 0, max: 1000, clean: [price], severity: hold}
+  currency: {type: string, allowed: [GBP]}
+  url: {type: url, required: true, clean: [url]}
