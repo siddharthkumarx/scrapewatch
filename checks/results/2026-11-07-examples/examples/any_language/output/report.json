@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "run_id": "f5016c490e044c13aee60708759c2c55",
+  "name": "books-shell",
+  "started_at": "2026-11-07T15:38:19.583430Z",
+  "finished_at": "2026-11-07T15:38:19.594878Z",
+  "status": "finished",
+  "integration": "cli",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": null,
+  "config_hash": "e26338",
+  "counts": {
+    "responses": 0,
+    "document_responses": 0,
+    "bad_documents": 0,
+    "by_label": {},
+    "by_status": {},
+    "retries": 0,
+    "records": 60,
+    "usable_records": 60,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {},
+    "fixes_by_normalizer": {
+      "html_entities": 7,
+      "price": 120
+    },
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 0,
+    "by_domain": {},
+    "by_bytes_source": {},
+    "events_stored": 0,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 0.0,
+    "by_domain": {},
+    "by_proxy": {},
+    "by_resource_type": {},
+    "browser_minutes": 0.0,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 0,
+    "per_usable_record": null,
+    "per_record": null,
+    "per_1000_usable_records": null,
+    "per_1000_records": null
+  },
+  "waste": {
+    "bytes_by_resource_type": {},
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 0,
+    "failed_bytes": 0,
+    "failed_cost": 0.0,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 0,
+    "blockable_bytes": 0,
+    "blockable_cost": 0.0,
+    "total_waste_cost": 0.0,
+    "blocked_requests": 0,
+    "bytes_saved_estimate": 0,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 1,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [
+    {
+      "finding_id": "ef1c9aea8b8743a5ab70173f6d4ec5a6",
+      "run_id": "f5016c490e044c13aee60708759c2c55",
+      "scope": "batch",
+      "ref": null,
+      "check": "batch.baseline",
+      "severity": "info",
+      "field": null,
+      "message": "No baseline yet: 0 of 3 passing runs. History comparisons start once there are enough.",
+      "observed": 0,
+      "expected": 3,
+      "rule_id": null
+    }
+  ],
+  "samples": {
+    "findings": [],
+    "fixes": [
+      {
+        "normalizer": "price",
+        "field": "currency",
+        "count": 60,
+        "examples": [
+          {
+            "before": null,
+            "after": "GBP"
+          },
+          {
+            "before": null,
+            "after": "GBP"
+          },
+          {
+            "before": null,
+            "after": "GBP"
+          }
+        ]
+      },
+      {
+        "normalizer": "price",
+        "field": "price",
+        "count": 60,
+        "examples": [
+          {
+            "before": "£51.77",
+            "after": 51.77
+          },
+          {
+            "before": "£53.74",
+            "after": 53.74
+          },
+          {
+            "before": "£50.10",
+            "after": 50.1
+          }
+        ]
+      },
+      {
+        "normalizer": "html_entities",
+        "field": "title",
+        "count": 7,
+        "examples": [
+          {
+            "before": "Shakespeare&#39;s Sonnets",
+            "after": "Shakespeare's Sonnets"
+          },
+          {
+            "before": "Scott Pilgrim&#39;s Precious Little Life (Scott Pilgrim #1)",
+            "after": "Scott Pilgrim's Precious Little Life (Scott Pilgrim #1)"
+          },
+          {
+            "before": "It&#39;s Only the Himalayas",
+            "after": "It's Only the Himalayas"
+          }
+        ]
+      }
+    ]
+  },
+  "report_path": "output/report.html",
+  "overhead_ms_p50": null,
+  "overhead_ms_p95": null
+}

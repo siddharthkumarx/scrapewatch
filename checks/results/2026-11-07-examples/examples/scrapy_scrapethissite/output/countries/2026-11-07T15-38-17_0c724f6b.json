@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "run_id": "0c724f6b5fc54d9aa5a7910cbc8d80f7",
+  "name": "countries",
+  "started_at": "2026-11-07T15:38:17.456575Z",
+  "finished_at": "2026-11-07T15:38:18.198954Z",
+  "status": "finished",
+  "integration": "scrapy",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": "2026.11.0",
+  "config_hash": "3b15fa",
+  "counts": {
+    "responses": 2,
+    "document_responses": 2,
+    "bad_documents": 0,
+    "by_label": {
+      "ok": 2
+    },
+    "by_status": {
+      "200": 2
+    },
+    "retries": 0,
+    "records": 250,
+    "usable_records": 250,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {},
+    "fixes_by_normalizer": {
+      "number": 500
+    },
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 14053,
+    "by_domain": {
+      "www.scrapethissite.com": 2
+    },
+    "by_bytes_source": {
+      "measured": 2
+    },
+    "events_stored": 2,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 0.0,
+    "by_domain": {
+      "www.scrapethissite.com": 0.0
+    },
+    "by_proxy": {
+      "direct": 0.0
+    },
+    "by_resource_type": {
+      "document": 0.0
+    },
+    "browser_minutes": 0.0,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 250,
+    "per_usable_record": 0.0,
+    "per_record": 0.0,
+    "per_1000_usable_records": 0.0,
+    "per_1000_records": 0.0
+  },
+  "waste": {
+    "bytes_by_resource_type": {
+      "document": 14053
+    },
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 0,
+    "failed_bytes": 0,
+    "failed_cost": 0.0,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 0,
+    "blockable_bytes": 0,
+    "blockable_cost": 0.0,
+    "total_waste_cost": 0.0,
+    "blocked_requests": 0,
+    "bytes_saved_estimate": 0,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 1,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [
+    {
+      "finding_id": "a945523a661b47edb10bf8c5fecd4674",
+      "run_id": "0c724f6b5fc54d9aa5a7910cbc8d80f7",
+      "scope": "batch",
+      "ref": null,
+      "check": "batch.baseline",
+      "severity": "info",
+      "field": null,
+      "message": "No baseline yet: 0 of 3 passing runs. History comparisons start once there are enough.",
+      "observed": 0,
+      "expected": 3,
+      "rule_id": null
+    }
+  ],
+  "samples": {
+    "findings": [],
+    "fixes": [
+      {
+        "normalizer": "number",
+        "field": "area_km2",
+        "count": 250,
+        "examples": [
+          {
+            "before": "468.0",
+            "after": 468.0
+          },
+          {
+            "before": "82880.0",
+            "after": 82880.0
+          },
+          {
+            "before": "647500.0",
+            "after": 647500.0
+          }
+        ]
+      },
+      {
+        "normalizer": "number",
+        "field": "population",
+        "count": 250,
+        "examples": [
+          {
+            "before": "84000",
+            "after": 84000
+          },
+          {
+            "before": "4975593",
+            "after": 4975593
+          },
+          {
+            "before": "29121286",
+            "after": 29121286
+          }
+        ]
+      }
+    ]
+  },
+  "report_path": "output/countries/2026-11-07T15-38-17_0c724f6b.html",
+  "overhead_ms_p50": 0.1258,
+  "overhead_ms_p95": 0.1674
+}
