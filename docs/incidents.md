@@ -20,6 +20,19 @@ file becomes public.
 
 ## Entries
 
+## 2026-11-07 — The benchmark request was not turned off and ran again
+
+- Item: build-progress item 24 (checks workflow)
+- Symptom: checks.yml run 42390064177 on 3c56f40 ran the whole benchmark again and failed at
+  "Commit results" (`rejected ... fetch first`), because 4a04868 had reached main meanwhile.
+  Nothing was committed; the results of run 42389357861 (55243c9) are unchanged.
+- Cause: the edit meant to set `enabled: false` replaced the first `enabled: true` in the file,
+  which was in the header comment, so 3c56f40 left the request enabled and garbled the comment.
+- Fix: the next commit sets `enabled: false` on the setting line and restores the comment.
+- Prevention: edit the `enabled:` line itself (a whole-line match), and read the file back
+  before pushing a change to checks/request.yml.
+- Minutes spent (Actions): one checks.yml run (about 6 minutes).
+
 ## 2026-11-07 — Benchmark found guard false positives on shop pages
 
 - Item: build-progress item 24 (benchmark), found in a local trial run before the committed one
