@@ -39,7 +39,7 @@ requests = ["requests>=2.28"]
 httpx = ["httpx>=0.24,<1"]
 playwright = ["playwright>=1.40"]
 scrapy = ["scrapy>=2.11"]
-crawlee = ["crawlee>=1.0,<2"]
+crawlee = ["crawlee[beautifulsoup,httpx]>=1.0,<2"]
 parquet = ["pyarrow>=15"]
 all = ["scrapewatch[requests,httpx,playwright,scrapy,crawlee,parquet]"]
 
@@ -129,5 +129,5 @@ source = ["scrapewatch"]
 
 [tool.coverage.report]
 # Stubs raise NotImplementedError; the builder raises this as items land.
-fail_under = 87
+fail_under = 88
 exclude_lines = ["pragma: no cover", "raise NotImplementedError", "if TYPE_CHECKING:"]

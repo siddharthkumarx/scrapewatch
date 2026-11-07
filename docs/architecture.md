@@ -420,9 +420,18 @@ Crawlee for Python:
 
 ```python
 from scrapewatch.integrations import crawlee as sw_crawlee
-crawler = BeautifulSoupCrawler()
-sw_crawlee.attach(crawler, w)
+crawler = BeautifulSoupCrawler(http_client=sw_crawlee.http_client(w, proxy="datacenter"))
+sw_crawlee.attach(crawler, w)        # checks the wiring (raises TypeError if it cannot measure)
+
+crawler = PlaywrightCrawler()
+sw_crawlee.attach(crawler, w, proxy="browser-pool")   # Playwright listeners on every page
 ```
+
+HTTP crawlers need `http_client(w)`: Crawlee's `HttpxHttpClient` carrying the httpx hooks
+(any `event_hooks` you pass are kept, yours first). The `crawlee` extra is
+`crawlee[beautifulsoup,httpx]`; the Playwright crawler also needs `crawlee[playwright]`
+dependencies (the `playwright` extra plus what `crawlee[httpx]` already brings). Decision:
+D20.
 
 Any language (CLI):
 
@@ -1109,7 +1118,7 @@ both per-1,000 fields (null when the per-record cost is 0.01 or more), and
 | requests | urllib3's `HTTPResponse.tell()` once the body is read (compressed bytes off the socket); for chunked bodies, where `tell()` stays 0, the raw chunk payload urllib3 passes to its decoder; plus header estimate | measured (content_length, then decoded, only when neither count exists) | Verified in `tests/integrations/test_requests.py` against a local gzip server with Content-Length, close-delimited and chunked bodies, on urllib3 2.x and 1.26. Chunk-size lines are not counted. The chunked count wraps urllib3's private `_decode` on each response; if it is missing, the labelled fallbacks apply. Retries inside urllib3 (`max_retries`) are not seen. Each redirect hop is an event; the response after a redirect has the first URL as `url` and its own as `final_url`. |
 | Playwright | `request.sizes()` at `requestfinished` → `responseBodySize + responseHeadersSize` (encoded) | measured (verified in `tests/integrations/test_playwright.py`: a gzip image counts its encoded size) | Responses served from the browser cache or a service worker report 0 or cached sizes; events carry `cache.unchanged` when `from_cache`-like signals are available. Aborted routes record 0 bytes and an estimate in `bytes_saved_estimate` (median size of that resource type seen earlier in the run, else a fixed table: image 45 KiB, font 60 KiB, media 500 KiB, script 80 KiB, stylesheet 30 KiB). |
 | Scrapy | middleware at priority 900 sees `len(response.body)` before `HttpCompressionMiddleware` (590) decodes it, plus header estimate; 0 for responses flagged `cached` | measured | Verified in `tests/integrations/test_scrapy.py` by a real crawl through the full chain (Scrapy 2.19): the body at 900 equals the gzip bytes the server sent, the spider gets the decoded page. If Scrapy's ordering changes, that test fails; fall back to Content-Length then. The guard gets a window the middleware decodes itself (gzip, deflate, br; at most `guard.body_window_bytes` of output, the full size from the gzip trailer), so a compression bomb costs nothing. |
-| Crawlee | httpx-based crawlers: as httpx; Playwright crawler: as Playwright | as above | Depends on hook access to the response object. |
+| Crawlee | HTTP crawlers: as httpx, through `sw_crawlee.http_client(w)`; Playwright crawler: as Playwright, per page | measured | Verified in `tests/integrations/test_crawlee.py` (Crawlee 1.11, gzip pages, BeautifulSoupCrawler and PlaywrightCrawler). An HTTP crawler on Crawlee's default client (impit) cannot be measured, so `attach()` refuses it. |
 | CLI (`check`) | no responses; cost is reported only if a `--events events.jsonl` file is supplied | n/a | |
 
 Header estimate = Σ (len(name) + len(value) + 4) + 2 over response headers, which is close

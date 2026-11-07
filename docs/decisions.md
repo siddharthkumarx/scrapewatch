@@ -130,6 +130,13 @@ is uniform regardless of which tool wrote a commit.
 and exposes pre/post navigation hooks. If those hooks give access to the response object and
 byte counts, the integration is a thin adapter over the httpx and Playwright ones. If not, the
 item is dropped rather than shipped half-working; the build plan says how to decide.
+Outcome (item 20, Crawlee 1.11): the navigation hooks give Crawlee's own response object,
+which has no byte counts, and the default HTTP client (impit) exposes none either. Crawlee's
+`HttpxHttpClient` passes `event_hooks` to its httpx-compatible client, and scrapewatch's httpx
+hooks measure compressed bytes there unchanged. So HTTP crawlers are supported through
+`sw_crawlee.http_client(w)`, and `attach()` refuses an HTTP crawler built without it rather
+than guess; `PlaywrightCrawler` gets the Playwright listeners on every page through a
+pre-navigation hook. `AdaptivePlaywrightCrawler` is not supported.
 
 **D21. Practice sites only in examples, fixtures and benchmarks.** books.toscrape.com,
 quotes.toscrape.com, webscraper.io test sites, scrapethissite.com, a few independent Shopify

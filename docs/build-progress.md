@@ -385,14 +385,21 @@ v0.2 or later.
 
 ### 20. Crawlee for Python
 
-- [ ] Scope: decide first (D20): read Crawlee's hook API for the installed version; if
+- [x] Scope: decide first (D20): read Crawlee's hook API for the installed version; if
   `pre_navigation_hook`/`post_navigation` give the response and byte counts for the httpx
   crawlers and the page for Playwright, implement `attach()` as an adapter over items 16/18;
   otherwise write the finding in docs/decisions.md and leave the stub with a clear
   `NotImplementedError` message. Not in v0.1.
 - Acceptance: BeautifulSoupCrawler against a local server records events; Playwright
   crawler reuses item 18 tests.
-- Done when: either path done and documented.
+- Done when: either path done and documented; coverage ≥ 88.
+- Notes: adapter path taken (D20 outcome). Crawlee 1.11's hooks give no byte counts, but its
+  `HttpxHttpClient` takes `event_hooks` and the item 16 hooks work on its httpx-compatible
+  client unchanged (gzip page: 112 compressed bytes measured for 5,455 decoded), so
+  `http_client(w)` builds that client and `attach()` validates HTTP crawlers; the Playwright
+  crawler gets `attach_async` on each page in a pre-navigation hook. The extra became
+  `crawlee[beautifulsoup,httpx]`. Locally Chromium's sandbox cannot run as root, so the test
+  turns it off only when running as root.
 
 ## M4 — waste cutter, examples, benchmarks
 
