@@ -80,8 +80,9 @@ author knows which lever to pull.
 
 **D10. Wire bytes, honestly labelled.** Each event says how its byte count was obtained
 (`measured`, `content_length`, `decoded`, `unknown`). Where a client cannot expose compressed
-bytes (requests without Content-Length), the report says the figure is an estimate rather than
-pretending to precision.
+bytes, the report says the figure is an estimate rather than pretending to precision. (Build
+item 17 found that requests can be measured: urllib3's `tell()` covers bodies with a length
+and the decoder input covers chunked ones, so the estimates are now only fallbacks.)
 
 **D11. One static HTML report per run.** Clients open it from an email attachment or a shared
 drive, so it must be one file with inline CSS and SVG and no network access. The JSON summary

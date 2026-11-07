@@ -364,8 +364,14 @@ requests:
 import requests
 from scrapewatch.integrations import requests as sw_requests
 session = requests.Session()
-sw_requests.mount(session, w, proxy="residential-a")
+sw_requests.mount(session, w, proxy="residential-a")   # or session.mount(prefix, sw_requests.adapter(w, ...))
 ```
+
+The adapter reads the body inside `send` for non-streamed requests (requests reads it right
+after anyway) and records connection errors before re-raising them. With `stream=True` it
+records when `iter_content` is exhausted or the response is closed; the guard sees the body
+only if it fit in `guard.body_window_bytes`, otherwise it judges status and headers only
+(`body_seen`, section 6.1).
 
 Playwright (sync):
 
@@ -1078,7 +1084,7 @@ both per-1,000 fields (null when the per-record cost is 0.01 or more), and
 | Integration | `wire_bytes` | `bytes_source` | Known limits |
 |---|---|---|---|
 | httpx | `response.num_bytes_downloaded` after the body is read, plus header estimate, summed over the redirect hops | measured (content_length for a response a transport built already read, such as `httpx.Response(content=...)` in a mock transport: no stream count exists, so Content-Length is used) | Hook runs on the response event before the body is read; the integration wraps `response.read()`/`aread()` and `close()`/`aclose()` to get the final count (verified in `tests/integrations/test_httpx.py` with gzip bodies). A streamed response closed early counts the bytes read so far. HTTP/2 framing and TLS bytes are not included. |
-| requests | `Content-Length` when present (compressed body) plus header estimate; else `len(response.content)` | content_length / decoded | Chunked, compressed responses without Content-Length are over-estimated (decoded size). The report marks such events. A future urllib3 wrapper could count raw bytes. |
+| requests | urllib3's `HTTPResponse.tell()` once the body is read (compressed bytes off the socket); for chunked bodies, where `tell()` stays 0, the raw chunk payload urllib3 passes to its decoder; plus header estimate | measured (content_length, then decoded, only when neither count exists) | Verified in `tests/integrations/test_requests.py` against a local gzip server with Content-Length, close-delimited and chunked bodies, on urllib3 2.x and 1.26. Chunk-size lines are not counted. The chunked count wraps urllib3's private `_decode` on each response; if it is missing, the labelled fallbacks apply. Retries inside urllib3 (`max_retries`) are not seen. Each redirect hop is an event; the response after a redirect has the first URL as `url` and its own as `final_url`. |
 | Playwright | `request.sizes()` → `responseBodySize + responseHeadersSize` (encoded) | measured | Responses served from the browser cache or a service worker report 0 or cached sizes; events carry `cache.unchanged` when `from_cache`-like signals are available. Aborted routes record 0 bytes and an estimate in `bytes_saved_estimate` (median size of that resource type seen earlier in the run, else a fixed table: image 45 KiB, font 60 KiB, media 500 KiB, script 80 KiB, stylesheet 30 KiB). |
 | Scrapy | middleware at priority 900 sees `len(response.body)` before `HttpCompressionMiddleware` (590) decodes it, plus header estimate | measured | Must be verified in the integration test with a gzip fixture served through the full middleware chain; if Scrapy's ordering changes, fall back to Content-Length and label accordingly. |
 | Crawlee | httpx-based crawlers: as httpx; Playwright crawler: as Playwright | as above | Depends on hook access to the response object. |

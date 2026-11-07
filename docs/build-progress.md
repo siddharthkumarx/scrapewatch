@@ -322,13 +322,23 @@ v0.2 or later.
 
 ### 17. requests adapter `[v0.1]`
 
-- [ ] Scope: `HTTPAdapter` subclass recording in `build_response` and `send` (errors),
+- [x] Scope: `HTTPAdapter` subclass recording in `build_response` and `send` (errors),
   Content-Length vs decoded labelling, `mount()`.
 - Files: `integrations/requests.py`, `tests/integrations/test_requests.py`.
 - Acceptance: with a local `http.server` serving gzip with and without Content-Length,
   `bytes_source` is `content_length` and `decoded` respectively; connection error recorded
   as `error` label; adapter failure does not break the request.
-- Done when: pass.
+- Done when: pass; coverage ≥ 85.
+- Notes: the acceptance changed for the better. Measured first (risk 1): against the local
+  gzip server, urllib3's `tell()` returned the compressed size (111 bytes for a 22,026-byte
+  page in the probe; `test_urllib3_tell_evidence` keeps the proof) for Content-Length and
+  close-delimited bodies, but 0 for chunked ones. The adapter therefore also counts the raw
+  chunk payload at urllib3's decoder, so all three framings are `measured`, streamed or not,
+  on urllib3 2.8 and 1.26.20 (both run locally). `content_length` and `decoded` remain as
+  labelled fallbacks when no count exists (tested by disabling both counts). Redirect hops
+  are separate events, linked so the response after a redirect gets `final_url` and
+  redirect rules apply. Streamed bodies larger than the guard window are judged by status
+  and headers only (`body_seen`).
 
 ### 18. Playwright hooks `[v0.1]`
 
