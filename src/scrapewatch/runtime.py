@@ -671,6 +671,18 @@ class Watch:
         return True
 
     # --- helpers ------------------------------------------------------------------------
+    def add_browser_seconds(self, seconds: float, *, domain: str | None = None) -> None:
+        """Account browser time for the cost model (architecture 11.2); never raises.
+
+        Time given with a ``domain`` is charged to it; other time is spread over domains by
+        their share of document responses.
+        """
+        try:
+            with self._lock:
+                self.meter.add_browser_seconds(float(seconds), domain=domain)
+        except Exception as exc:
+            self._monitor_error("add_browser_seconds", exc)
+
     def monitor_error(self, where: str, exc: BaseException) -> None:
         """Count a failure inside an integration hook (fail open, architecture 14).
 

@@ -342,7 +342,7 @@ v0.2 or later.
 
 ### 18. Playwright hooks `[v0.1]`
 
-- [ ] Scope: `attach` / `attach_async` on context or page: `response` and `requestfailed`
+- [x] Scope: `attach` / `attach_async` on context or page: `response` and `requestfailed`
   listeners, `request.sizes()`, resource type mapping, document vs sub-resource, redirect
   chains, browser time accounting (`add_browser_seconds` from context open to close).
 - Files: `integrations/playwright.py`, `tests/integrations/test_playwright.py` (marked
@@ -352,7 +352,15 @@ v0.2 or later.
   resource types and measured bytes; a failed request becomes an `error` event; listener
   exceptions are swallowed and counted.
 - Done when: pass locally with Chromium (pre-installed in the sandbox) and in the `extras`
-  job.
+  job; coverage ≥ 86.
+- Notes: listens on `requestfinished` instead of `response` so `request.sizes()` is final
+  (A§3.5). `Watch.add_browser_seconds` is new and public. Locally the locked Playwright
+  (1.64.1) wants a newer browser build than the sandbox has: run the tests with
+  `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium` (the tests pass it as `executable_path`; CI
+  installs its own browser and never skips). Coverage does not trace code run inside
+  Playwright's sync dispatcher (greenlets); the tests still exercise it. For item 21: a route
+  the waste cutter aborts fires `requestfailed`, so the blocker must mark its own aborts and
+  the listener must count them as blocked, not as error events.
 
 ### 19. Scrapy extension, downloader middleware, item pipeline `[v0.1]`
 

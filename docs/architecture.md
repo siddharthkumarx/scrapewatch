@@ -270,6 +270,7 @@ class Watch:
     def finish(self, *, crashed: bool = False) -> Run
     verdict: Verdict                      # property
     def report_path(self) -> Path | None
+    def add_browser_seconds(self, seconds, *, domain=None) -> None   # browser time (11.2)
     def monitor_error(self, where, exc) -> None   # integrations count their own failures
 ```
 
@@ -382,6 +383,14 @@ context = browser.new_context()
 sw_pw.attach(context, w, proxy="browser-pool")
 install_route_blocker(context, w)          # opt-in waste cutter
 ```
+
+Fixed in item 18: the listeners are `requestfinished` (not `response`, so `request.sizes()`
+is final), `requestfailed` (an `error` event with Playwright's failure text, type
+`RequestFailedError`) and `close` (browser time from `attach` to the close of the context or
+page, through `Watch.add_browser_seconds`). Each redirect hop is an event; the response after
+a redirect carries the chain's first URL as `url` and its own as `final_url`. The guard reads
+the body and `all_headers()` (cookie names included) of documents only; sub-resources are
+judged by status and headers (`body_seen`, section 6.1). `xhr` and `fetch` map to `xhr`.
 
 Scrapy (settings.py):
 
@@ -1085,7 +1094,7 @@ both per-1,000 fields (null when the per-record cost is 0.01 or more), and
 |---|---|---|---|
 | httpx | `response.num_bytes_downloaded` after the body is read, plus header estimate, summed over the redirect hops | measured (content_length for a response a transport built already read, such as `httpx.Response(content=...)` in a mock transport: no stream count exists, so Content-Length is used) | Hook runs on the response event before the body is read; the integration wraps `response.read()`/`aread()` and `close()`/`aclose()` to get the final count (verified in `tests/integrations/test_httpx.py` with gzip bodies). A streamed response closed early counts the bytes read so far. HTTP/2 framing and TLS bytes are not included. |
 | requests | urllib3's `HTTPResponse.tell()` once the body is read (compressed bytes off the socket); for chunked bodies, where `tell()` stays 0, the raw chunk payload urllib3 passes to its decoder; plus header estimate | measured (content_length, then decoded, only when neither count exists) | Verified in `tests/integrations/test_requests.py` against a local gzip server with Content-Length, close-delimited and chunked bodies, on urllib3 2.x and 1.26. Chunk-size lines are not counted. The chunked count wraps urllib3's private `_decode` on each response; if it is missing, the labelled fallbacks apply. Retries inside urllib3 (`max_retries`) are not seen. Each redirect hop is an event; the response after a redirect has the first URL as `url` and its own as `final_url`. |
-| Playwright | `request.sizes()` → `responseBodySize + responseHeadersSize` (encoded) | measured | Responses served from the browser cache or a service worker report 0 or cached sizes; events carry `cache.unchanged` when `from_cache`-like signals are available. Aborted routes record 0 bytes and an estimate in `bytes_saved_estimate` (median size of that resource type seen earlier in the run, else a fixed table: image 45 KiB, font 60 KiB, media 500 KiB, script 80 KiB, stylesheet 30 KiB). |
+| Playwright | `request.sizes()` at `requestfinished` → `responseBodySize + responseHeadersSize` (encoded) | measured (verified in `tests/integrations/test_playwright.py`: a gzip image counts its encoded size) | Responses served from the browser cache or a service worker report 0 or cached sizes; events carry `cache.unchanged` when `from_cache`-like signals are available. Aborted routes record 0 bytes and an estimate in `bytes_saved_estimate` (median size of that resource type seen earlier in the run, else a fixed table: image 45 KiB, font 60 KiB, media 500 KiB, script 80 KiB, stylesheet 30 KiB). |
 | Scrapy | middleware at priority 900 sees `len(response.body)` before `HttpCompressionMiddleware` (590) decodes it, plus header estimate | measured | Must be verified in the integration test with a gzip fixture served through the full middleware chain; if Scrapy's ordering changes, fall back to Content-Length and label accordingly. |
 | Crawlee | httpx-based crawlers: as httpx; Playwright crawler: as Playwright | as above | Depends on hook access to the response object. |
 | CLI (`check`) | no responses; cost is reported only if a `--events events.jsonl` file is supplied | n/a | |
