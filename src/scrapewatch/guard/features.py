@@ -56,6 +56,9 @@ class Features(BaseModel):
     # In-memory only; never written to history. Fixtures may hold at most
     # MARKER_SNIPPET_MAX synthetic characters here, for body_regex rules.
     body_window: str | None = None
+    # In-memory only: the markers searched for in the window (found ones are in ``markers``),
+    # so the classifier never scans the window again for them. None for fixtures.
+    scanned_markers: frozenset[str] | None = Field(default=None, exclude=True)
 
 
 def _content_type(headers: Mapping[str, str]) -> str | None:
@@ -96,7 +99,9 @@ def visible_text(window: str) -> str:
     """Text a reader would see: comments, scripts, styles and tags removed, spaces collapsed."""
     text = _INVISIBLE_RE.sub(" ", window)
     text = _TAG_RE.sub(" ", text)
-    return _SPACE_RE.sub(" ", html.unescape(text)).strip()
+    # str.split() splits on the same Unicode whitespace as \s+ and is far faster than a
+    # regex substitution on a 64 KiB body (thousands of matches).
+    return " ".join(html.unescape(text).split())
 
 
 def extract_features(
@@ -161,11 +166,14 @@ def extract_features(
         feats.title = title[:TITLE_MAX]
     feats.text_length = len(visible_text(window))
     feats.text_density = min(1.0, feats.text_length / raw_len) if raw_len else 0.0
-    if markers is None:
-        markers = bundled_markers()
-    feats.markers = sorted({mk for mk in markers if mk and mk in lower})
+    scanned = frozenset(bundled_markers() if markers is None else markers)
+    feats.scanned_markers = scanned
+    feats.markers = sorted({mk for mk in scanned if mk and mk in lower})
     feats.has_form_password = bool(_PASSWORD_RE.search(window))
-    feats.has_captcha_widget = any(w in lower for w in CAPTCHA_WIDGET_MARKERS)
+    found = set(feats.markers)
+    feats.has_captcha_widget = any(
+        w in found if w in scanned else w in lower for w in CAPTCHA_WIDGET_MARKERS
+    )
     return feats
 
 

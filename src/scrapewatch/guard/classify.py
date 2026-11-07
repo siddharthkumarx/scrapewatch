@@ -47,7 +47,10 @@ def _signal(sig: Signal, f: Features, rules: GuardRuleSet, lower_window: str | N
         return None  # the body was never read: no evidence either way
     if sig.body_marker is not None:
         marker = sig.body_marker.lower()
-        found = marker in f.markers or (lower_window is not None and marker in lower_window)
+        searched = f.scanned_markers is not None and marker in f.scanned_markers
+        found = marker in f.markers or (
+            not searched and lower_window is not None and marker in lower_window
+        )
         return f"marker {marker}" if found else None
     if sig.body_regex is not None:
         hit = f.body_window is not None and rules.pattern(sig.body_regex).search(f.body_window)

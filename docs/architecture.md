@@ -1413,8 +1413,14 @@ Budget per response on the reference runner (ubuntu-latest, Python 3.12), measur
 | `record_record` with JSON Schema (10 fields) | 0.5 ms | < 1.5 ms |
 | Memory per stored event (in the flush queue) | 2 KiB | queue of 200 < 1 MiB |
 
-The test is marked `perf`, runs in CI, and writes its numbers to the test log; the benchmark
-item copies real numbers into docs/benchmarks.md with the commit they came from. The Run
+The test is marked `perf`, runs in CI, and writes its numbers to the test log (`pytest -s`)
+and, when `SCRAPEWATCH_PERF_OUT` names a file, to that file as JSON; the benchmark item copies
+real numbers into docs/benchmarks.md with the commit they came from. Two implementation
+choices keep the budget (item 24): visible-text whitespace is collapsed with `str.split`
+rather than a regex substitution, and the classifier never rescans the body for a marker
+`extract_features` already searched (`Features.scanned_markers`, in memory only). The flush
+queue holds each event as its `events` row (`history.store.event_row`, JSON included), about a
+quarter of a live pydantic event. The Run
 records `overhead_ms_p50` so a user can see the monitor's cost in their own report.
 
 ---

@@ -140,9 +140,8 @@ Notes for the next session:
 - Guard inputs from integrations: `meta={"body_seen": False}` when the body was never read
   (only status, header, cookie, URL and content-type signals apply); a body may be a prefix
   when `body_bytes` (the full decoded length) is larger (`extract_features(total_bytes=)`).
-- Still open for later items: write `tests/perf/test_overhead.py` (architecture 15) before
-  item 24 (only the 64 KiB classify budget is tested so far, in
-  `tests/guard/test_classify.py`). pytest treats `ResourceWarning` (and unraisable
+- `tests/perf/test_overhead.py` (architecture 15) times the hot paths; set
+  `SCRAPEWATCH_PERF_OUT=<file>` to keep its numbers as JSON. pytest treats `ResourceWarning` (and unraisable
   exceptions) as errors: a dropped `HistoryStore` closes itself when collected, and
   `tests/conftest.py` closes any history a test left open.
 - Tests that need an extra are marked `extras` and carry the extra's name in their id; the

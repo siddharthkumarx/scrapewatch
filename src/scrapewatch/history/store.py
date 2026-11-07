@@ -68,6 +68,34 @@ def _release(conn: sqlite3.Connection, pid: int) -> None:
         conn.close()
 
 
+EventRow = tuple[Any, ...]
+
+
+def event_row(ev: ResponseEvent) -> EventRow:
+    """The ``events`` table row of one event (its JSON included).
+
+    The Watch queues events in this form: a row takes about a quarter of the memory of the
+    live model (architecture 15).
+    """
+    return (
+        ev.event_id,
+        ev.run_id,
+        _iso(ev.ts),
+        ev.domain,
+        path_pattern(ev.url),
+        ev.status,
+        ev.guard.label.value,
+        ev.resource_type.value,
+        ev.proxy,
+        ev.attempt,
+        ev.wire_bytes,
+        ev.body_bytes,
+        ev.cost,
+        int(ev.cache.unchanged),
+        ev.model_dump_json(),
+    )
+
+
 class HistoryStore:
     """One SQLite file (WAL mode). Safe for several worker processes writing one run.
 
@@ -174,28 +202,12 @@ class HistoryStore:
             [self._run_row(run)],
         )
 
-    def write_events(self, events: Iterable[ResponseEvent]) -> int:
-        """Batch-insert events in one transaction; returns the number written."""
-        rows = [
-            (
-                ev.event_id,
-                ev.run_id,
-                _iso(ev.ts),
-                ev.domain,
-                path_pattern(ev.url),
-                ev.status,
-                ev.guard.label.value,
-                ev.resource_type.value,
-                ev.proxy,
-                ev.attempt,
-                ev.wire_bytes,
-                ev.body_bytes,
-                ev.cost,
-                int(ev.cache.unchanged),
-                ev.model_dump_json(),
-            )
-            for ev in events
-        ]
+    def write_events(self, events: Iterable[ResponseEvent | EventRow]) -> int:
+        """Batch-insert events (or rows from :func:`event_row`) in one transaction.
+
+        Returns the number written.
+        """
+        rows = [ev if isinstance(ev, tuple) else event_row(ev) for ev in events]
         if not rows:
             return 0
         self._write("INSERT OR REPLACE INTO events VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)

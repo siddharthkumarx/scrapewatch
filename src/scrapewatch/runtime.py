@@ -35,7 +35,7 @@ from scrapewatch.guard.classify import classify_features
 from scrapewatch.guard.features import extract_features
 from scrapewatch.guard.rules import GuardRuleSet, bundled_rules, load_rules
 from scrapewatch.history.baselines import Baseline, compute_baseline
-from scrapewatch.history.store import HistoryStore, open_store, path_pattern
+from scrapewatch.history.store import EventRow, HistoryStore, event_row, open_store, path_pattern
 from scrapewatch.models import (
     BAD_LABELS,
     BytesSource,
@@ -167,7 +167,7 @@ class Watch:
         self._log = _RateLimitedLog()
         self._started = False
         self._finished = False
-        self._queue: list[ResponseEvent] = []
+        self._queue: list[EventRow] = []  # stored form: far smaller than live events
         self._last_flush = time.monotonic()
         self._overhead_ms: deque[float] = deque(maxlen=_OVERHEAD_SAMPLES)
         self._response_hooks: list[tuple[str, ResponseHook]] = []
@@ -388,7 +388,8 @@ class Watch:
                 event.monitor_error = _describe(name, exc)
         with self._lock:
             self._count_response(event)
-            self._queue.append(event)
+            storing = self.store is not None and self.settings.store_events
+            self._queue.append(event_row(event) if storing else ())  # () is only counted
             finding = _guard_finding(event)
             if finding is not None:
                 sev = finding.severity.value
@@ -540,7 +541,7 @@ class Watch:
         self.run.counts.events_stored = self.flushed_events
         return written
 
-    def _write_events(self, batch: list[ResponseEvent]) -> int:
+    def _write_events(self, batch: list[EventRow]) -> int:
         """Persist a batch. Without a history store (or with store_events off) only counted."""
         if self.store is None or not self.settings.store_events:
             return len(batch)
