@@ -271,6 +271,7 @@ class Watch:
     verdict: Verdict                      # property
     def report_path(self) -> Path | None
     def add_browser_seconds(self, seconds, *, domain=None) -> None   # browser time (11.2)
+    def add_blocked(self, count=1, *, bytes_saved_estimate=0) -> None   # waste cutter (11.3)
     def monitor_error(self, where, exc) -> None   # integrations count their own failures
 ```
 
@@ -391,6 +392,20 @@ page, through `Watch.add_browser_seconds`). Each redirect hop is an event; the r
 a redirect carries the chain's first URL as `url` and its own as `final_url`. The guard reads
 the body and `all_headers()` (cookie names included) of documents only; sub-resources are
 judged by status and headers (`body_seen`, section 6.1). `xhr` and `fetch` map to `xhr`.
+
+Fixed in item 21 (`waste/routes.py`): `install_route_blocker(context_or_page, w, policy)`
+(and `install_route_blocker_async`) routes `**/*`. A navigation request is never blocked; a URL
+matching a `BlockPolicy.allow` pattern is never blocked; otherwise a request is aborted
+(`blockedbyclient`) when its resource type is in `resource_types` (default image, media, font;
+`document` is rejected), its host or a parent domain is in `waste/trackers.txt` with
+`block_trackers`, or its URL matches `block_url_globs`. Patterns are `fnmatch` globs on the
+whole URL. A block is not a response event: `Watch.add_blocked` counts it in
+`waste.blocked_requests` with the estimate of section 11.3 in `waste.bytes_saved_estimate`,
+and `attach()` skips its `requestfailed`. Every other request goes to `route.fallback()`, so
+the user's own routes still run. The handler fails open (the request goes through). Routing
+turns off Playwright's HTTP cache for that context. For HTTP clients,
+`scrapewatch.waste.compression_headers()` returns `Accept-Encoding: gzip, deflate, br`, with
+`br` only when `brotli` or `brotlicffi` is installed (otherwise the client could not decode it).
 
 Scrapy (settings.py):
 

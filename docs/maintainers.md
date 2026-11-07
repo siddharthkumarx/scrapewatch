@@ -115,35 +115,9 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 21** (waste cutter: Playwright route blocker and
-compression headers). Items 1 to 20 are done; M3 is logged (matrix after item 19). Item 20
-(42db60c) turned CI red twice (mypy without extras; Chromium's sandbox in Crawlee's
-crawler on GitHub runners), both logged in docs/incidents.md. The last fix is the commit
-after a73d22a: first confirm its ci.yml and full.yml runs are green (the crawlee extras job
-must pass), then start item 21.
-
-Plan for item 21 (worked out, not committed):
-
-- `Watch.add_blocked(count=1, *, bytes_saved_estimate=0)`: public, takes the lock, calls
-  `meter.add_blocked`, fails open; list it in A§3.1.
-- In `integrations/playwright.py`: a module `ABORTED` WeakSet of requests the blocker aborted
-  (the `requestfailed` listener skips them, so a block is not an error event), and per-Watch
-  recent sizes per resource type (`note_size` in `_Recorder.record`, `median_size` for
-  estimates; deque of 200).
-- `waste/routes.py`: `context.route("**/*", handler)`; never block the document; allow
-  globs (fnmatch on the URL) win; block when the resource type is in `policy.resource_types`,
-  the host is in `waste/trackers.txt` (host or subdomain) with `block_trackers`, or the URL
-  matches `block_url_globs`. Blocked: add to `ABORTED`, `route.abort("blockedbyclient")`,
-  `watch.add_blocked(1, bytes_saved_estimate=median or A§11.3 table)`. Otherwise
-  `route.fallback()` so the user's own routes still run. Handler errors fall back (fail open).
-- `waste/trackers.txt` (about 25 ad and analytics hosts, comment header) and
-  `waste/headers.py::compression_headers()` returning `gzip, deflate, br` only when brotli
-  or brotlicffi is importable (else `gzip, deflate`, so the client can always decode).
-- Tests in `tests/waste/test_routes_playwright.py` (the name must contain `playwright` for the
-  extras job) reusing `tests/integrations/pw_site.py`: 3 images (1 allowlisted), 1 font, 1
-  tracker script on a tracker host (route intercepts it, no network) → 4 aborted, the
-  allowlisted image loads, no error events, `waste.blocked_requests == 4` and the estimate
-  equals the table values; `resource_types: []` blocks only the tracker.
+Next item: **docs/build-progress.md item 22** (waste cutter: conditional-request cache and
+in-run URL dedupe). Items 1 to 21 are done; M3 is logged (matrix after item 19). Check that
+ci.yml and full.yml are green on the last commit of main before starting.
 
 Notes for the next session:
 

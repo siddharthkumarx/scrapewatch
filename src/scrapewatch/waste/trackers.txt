@@ -1,0 +1,36 @@
+# Ad and analytics hosts the route blocker aborts when BlockPolicy.block_trackers is on.
+# One host per line; a host also matches its subdomains. Lines starting with # are comments.
+# Kept short on purpose: these load on many sites and never carry data a scraper needs.
+# Add your own with BlockPolicy.block_url_globs; let one through with BlockPolicy.allow.
+google-analytics.com
+googletagmanager.com
+googlesyndication.com
+googleadservices.com
+doubleclick.net
+adservice.google.com
+connect.facebook.net
+analytics.tiktok.com
+bat.bing.com
+clarity.ms
+static.hotjar.com
+script.hotjar.com
+cdn.segment.com
+api.segment.io
+cdn.mxpnl.com
+api-js.mixpanel.com
+js.hs-analytics.net
+js.hs-scripts.com
+snap.licdn.com
+static.ads-twitter.com
+analytics.twitter.com
+ct.pinterest.com
+s.pinimg.com
+sb.scorecardresearch.com
+cdn.heapanalytics.com
+plausible.io
+stats.wp.com
+amazon-adsystem.com
+taboola.com
+outbrain.com
+criteo.com
+criteo.net

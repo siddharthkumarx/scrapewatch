@@ -683,6 +683,18 @@ class Watch:
         except Exception as exc:
             self._monitor_error("add_browser_seconds", exc)
 
+    def add_blocked(self, count: int = 1, *, bytes_saved_estimate: int = 0) -> None:
+        """Count requests the waste cutter aborted (architecture 11.3); never raises.
+
+        Blocked requests are not response events: they cost nothing and appear only as
+        ``waste.blocked_requests`` and the estimated ``waste.bytes_saved_estimate``.
+        """
+        try:
+            with self._lock:
+                self.meter.add_blocked(int(count), bytes_saved_estimate=int(bytes_saved_estimate))
+        except Exception as exc:
+            self._monitor_error("add_blocked", exc)
+
     def monitor_error(self, where: str, exc: BaseException) -> None:
         """Count a failure inside an integration hook (fail open, architecture 14).
 

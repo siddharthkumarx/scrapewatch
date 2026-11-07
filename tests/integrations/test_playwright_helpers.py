@@ -24,8 +24,8 @@ def test_helpers() -> None:
     assert sw_pw._elapsed_ms(_req("u", timing={"responseEnd": 12})) == 12.0
     assert sw_pw._wire(None) == 0
     assert sw_pw._wire({"responseBodySize": -1, "responseHeadersSize": 100}) == 100
-    assert sw_pw._resource_type(_req("u", resource_type="fetch")) == "xhr"
-    assert sw_pw._resource_type(_req("u", resource_type="websocket")) == "other"
+    assert sw_pw.resource_type_of(_req("u", resource_type="fetch")) == "xhr"
+    assert sw_pw.resource_type_of(_req("u", resource_type="websocket")) == "other"
 
 
 def test_browser_time_counted_once() -> None:

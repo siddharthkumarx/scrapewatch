@@ -1,4 +1,10 @@
-"""A local static site for the Playwright tests: one page with 3 images and 1 font."""
+"""A local static site for the Playwright tests: one page with 3 images and 1 font.
+
+``/waste.html`` is the waste cutter's page: 2 images, 1 font and 1 script on a tracker host
+(the route blocker intercepts it, so it never reaches the network), plus ``/img/keep.png``
+added after the load event (allowlisted in the tests, so its estimate never uses a size seen
+earlier in the run). The data URL icon stops Chromium asking for ``/favicon.ico``.
+"""
 
 from __future__ import annotations
 
@@ -24,6 +30,16 @@ PAGE = (
     "@font-face{font-family:T;src:url(/font.woff2) format('woff2')}body{font-family:T}"
     "</style></head><body>"
     '<img src="/img/a.png"><img src="/img/b.png"><img src="/img/gz.png">'
+    f"{TEXT}</body></html>"
+).encode()
+TRACKER_SCRIPT = "https://static.hotjar.com/c/hotjar-1.js"
+WASTE = (
+    '<!doctype html><html><head><title>Waste</title><link rel="icon" href="data:,"><style>'
+    "@font-face{font-family:T;src:url(/font.woff2) format('woff2')}body{font-family:T}"
+    f'</style><script async src="{TRACKER_SCRIPT}"></script></head><body>'
+    '<img src="/img/a.png"><img src="/img/b.png">'
+    "<script>addEventListener('load',()=>{const i=new Image();i.src='/img/keep.png';"
+    "document.body.appendChild(i)})</script>"
     f"{TEXT}</body></html>"
 ).encode()
 BROKEN = (
@@ -52,9 +68,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/page.html":
             self._send(200, "text/html; charset=utf-8", PAGE, Set_Cookie="sid=1; Path=/")
+        elif path == "/waste.html":
+            self._send(200, "text/html; charset=utf-8", WASTE)
         elif path == "/broken.html":
             self._send(200, "text/html; charset=utf-8", BROKEN)
-        elif path in ("/img/a.png", "/img/b.png"):
+        elif path in ("/img/a.png", "/img/b.png", "/img/keep.png"):
             self._send(200, "image/png", PADDED)
         elif path == "/img/gz.png":
             self._send(200, "image/png", GZ_IMAGE, Content_Encoding="gzip")
