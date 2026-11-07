@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "run_id": "b3c2fa33ba5b47b2ba0bda121a93c2ec",
+  "name": "httpx-scrapethissite.com",
+  "started_at": "2026-11-07T16:04:03.717500Z",
+  "finished_at": "2026-11-07T16:04:04.925200Z",
+  "status": "finished",
+  "integration": "httpx",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": "2026.11.0",
+  "config_hash": "6d64cf",
+  "counts": {
+    "responses": 1,
+    "document_responses": 1,
+    "bad_documents": 0,
+    "by_label": {
+      "ok": 1
+    },
+    "by_status": {
+      "200": 1
+    },
+    "retries": 0,
+    "records": 250,
+    "usable_records": 250,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {},
+    "fixes_by_normalizer": {
+      "number": 500
+    },
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 11905,
+    "by_domain": {
+      "www.scrapethissite.com": 1
+    },
+    "by_bytes_source": {
+      "measured": 1
+    },
+    "events_stored": 1,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 9.524e-06,
+    "by_domain": {
+      "www.scrapethissite.com": 9.524e-06
+    },
+    "by_proxy": {
+      "datacenter": 9.524e-06
+    },
+    "by_resource_type": {
+      "document": 9.524e-06
+    },
+    "browser_minutes": 0.0,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 250,
+    "per_usable_record": 3.8096000000000006e-08,
+    "per_record": 3.8096000000000006e-08,
+    "per_1000_usable_records": 3.8096e-05,
+    "per_1000_records": 3.8096e-05
+  },
+  "waste": {
+    "bytes_by_resource_type": {
+      "document": 11905
+    },
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 0,
+    "failed_bytes": 0,
+    "failed_cost": 0.0,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 0,
+    "blockable_bytes": 0,
+    "blockable_cost": 0.0,
+    "total_waste_cost": 0.0,
+    "blocked_requests": 0,
+    "bytes_saved_estimate": 0,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 1,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [
+    {
+      "finding_id": "18832097611d4633b9e2deb989392998",
+      "run_id": "b3c2fa33ba5b47b2ba0bda121a93c2ec",
+      "scope": "batch",
+      "ref": null,
+      "check": "batch.baseline",
+      "severity": "info",
+      "field": null,
+      "message": "No baseline yet: 0 of 3 passing runs. History comparisons start once there are enough.",
+      "observed": 0,
+      "expected": 3,
+      "rule_id": null
+    }
+  ],
+  "samples": {
+    "findings": [],
+    "fixes": [
+      {
+        "normalizer": "number",
+        "field": "area_km2",
+        "count": 250,
+        "examples": [
+          {
+            "before": "468.0",
+            "after": 468.0
+          },
+          {
+            "before": "82880.0",
+            "after": 82880.0
+          },
+          {
+            "before": "647500.0",
+            "after": 647500.0
+          }
+        ]
+      },
+      {
+        "normalizer": "number",
+        "field": "population",
+        "count": 250,
+        "examples": [
+          {
+            "before": "84000",
+            "after": 84000
+          },
+          {
+            "before": "4975593",
+            "after": 4975593
+          },
+          {
+            "before": "29121286",
+            "after": 29121286
+          }
+        ]
+      }
+    ]
+  },
+  "report_path": "/home/runner/work/scrapewatch/scrapewatch/benchmarks/output/runs/httpx-scrapethissite.com/2026-11-07T16-04-03_b3c2fa33.html",
+  "overhead_ms_p50": 0.1077,
+  "overhead_ms_p95": 0.1274
+}

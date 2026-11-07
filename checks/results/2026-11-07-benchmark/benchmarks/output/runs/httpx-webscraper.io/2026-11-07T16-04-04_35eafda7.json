@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "run_id": "35eafda7f54a47429fe4a4ba1185f117",
+  "name": "httpx-webscraper.io",
+  "started_at": "2026-11-07T16:04:04.931465Z",
+  "finished_at": "2026-11-07T16:04:07.111621Z",
+  "status": "finished",
+  "integration": "httpx",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": "2026.11.0",
+  "config_hash": "2c6131",
+  "counts": {
+    "responses": 3,
+    "document_responses": 3,
+    "bad_documents": 0,
+    "by_label": {
+      "ok": 3
+    },
+    "by_status": {
+      "200": 3
+    },
+    "retries": 0,
+    "records": 18,
+    "usable_records": 18,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {},
+    "fixes_by_normalizer": {
+      "price": 36
+    },
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 27772,
+    "by_domain": {
+      "webscraper.io": 3
+    },
+    "by_bytes_source": {
+      "measured": 3
+    },
+    "events_stored": 3,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 2.2217600000000002e-05,
+    "by_domain": {
+      "webscraper.io": 2.2217600000000002e-05
+    },
+    "by_proxy": {
+      "datacenter": 2.2217600000000002e-05
+    },
+    "by_resource_type": {
+      "document": 2.2217600000000002e-05
+    },
+    "browser_minutes": 0.0,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 18,
+    "per_usable_record": 1.2343111111111112e-06,
+    "per_record": 1.2343111111111112e-06,
+    "per_1000_usable_records": 0.0012343111111111113,
+    "per_1000_records": 0.0012343111111111113
+  },
+  "waste": {
+    "bytes_by_resource_type": {
+      "document": 27772
+    },
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 0,
+    "failed_bytes": 0,
+    "failed_cost": 0.0,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 0,
+    "blockable_bytes": 0,
+    "blockable_cost": 0.0,
+    "total_waste_cost": 0.0,
+    "blocked_requests": 0,
+    "bytes_saved_estimate": 0,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 1,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [
+    {
+      "finding_id": "c9f764cdc9a946a7a00fb985331e9e97",
+      "run_id": "35eafda7f54a47429fe4a4ba1185f117",
+      "scope": "batch",
+      "ref": null,
+      "check": "batch.baseline",
+      "severity": "info",
+      "field": null,
+      "message": "No baseline yet: 0 of 3 passing runs. History comparisons start once there are enough.",
+      "observed": 0,
+      "expected": 3,
+      "rule_id": null
+    }
+  ],
+  "samples": {
+    "findings": [],
+    "fixes": [
+      {
+        "normalizer": "price",
+        "field": "currency",
+        "count": 18,
+        "examples": [
+          {
+            "before": null,
+            "after": "USD"
+          },
+          {
+            "before": null,
+            "after": "USD"
+          },
+          {
+            "before": null,
+            "after": "USD"
+          }
+        ]
+      },
+      {
+        "normalizer": "price",
+        "field": "price",
+        "count": 18,
+        "examples": [
+          {
+            "before": "$416.99",
+            "after": 416.99
+          },
+          {
+            "before": "$306.99",
+            "after": 306.99
+          },
+          {
+            "before": "$1178.99",
+            "after": 1178.99
+          }
+        ]
+      }
+    ]
+  },
+  "report_path": "/home/runner/work/scrapewatch/scrapewatch/benchmarks/output/runs/httpx-webscraper.io/2026-11-07T16-04-04_35eafda7.html",
+  "overhead_ms_p50": 0.1679,
+  "overhead_ms_p95": 1.5241
+}

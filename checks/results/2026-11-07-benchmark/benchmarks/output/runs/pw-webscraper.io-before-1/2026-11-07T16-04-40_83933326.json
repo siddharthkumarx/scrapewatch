@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "run_id": "8393332665b14c8ab0267c6dca1844eb",
+  "name": "pw-webscraper.io-before-1",
+  "started_at": "2026-11-07T16:04:40.386088Z",
+  "finished_at": "2026-11-07T16:04:41.627474Z",
+  "status": "finished",
+  "integration": "playwright",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": "2026.11.0",
+  "config_hash": "d7fb49",
+  "counts": {
+    "responses": 34,
+    "document_responses": 1,
+    "bad_documents": 0,
+    "by_label": {
+      "ok": 32,
+      "error": 2
+    },
+    "by_status": {
+      "200": 30,
+      "201": 1,
+      "null": 2,
+      "204": 1
+    },
+    "retries": 0,
+    "records": 0,
+    "usable_records": 0,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {
+      "info": 2
+    },
+    "fixes_by_normalizer": {},
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 2208910,
+    "by_domain": {
+      "webscraper.io": 7,
+      "fonts.googleapis.com": 1,
+      "app.termly.io": 8,
+      "fonts.gstatic.com": 7,
+      "www.googletagmanager.com": 3,
+      "www.google-analytics.com": 2,
+      "pagead2.googlesyndication.com": 2,
+      "beacon-v2.helpscout.net": 3,
+      "d3hb14vkzrxvla.cloudfront.net": 1
+    },
+    "by_bytes_source": {
+      "measured": 34
+    },
+    "events_stored": 34,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 0.0017671280000000002,
+    "by_domain": {
+      "webscraper.io": 0.00022215840000000002,
+      "fonts.googleapis.com": 6.128e-07,
+      "app.termly.io": 0.0001346464,
+      "fonts.gstatic.com": 0.0009120168,
+      "www.googletagmanager.com": 0.0004402624,
+      "www.google-analytics.com": 1.71272e-05,
+      "pagead2.googlesyndication.com": 0.0,
+      "beacon-v2.helpscout.net": 3.19296e-05,
+      "d3hb14vkzrxvla.cloudfront.net": 8.3744e-06
+    },
+    "by_proxy": {
+      "datacenter": 0.0017671280000000002
+    },
+    "by_resource_type": {
+      "document": 7.023200000000001e-06,
+      "stylesheet": 3.6168e-05,
+      "image": 1.4594400000000002e-05,
+      "script": 0.0007745232,
+      "font": 0.0009216096000000001,
+      "xhr": 1.3209600000000001e-05
+    },
+    "browser_minutes": 0.02060567431666698,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 0,
+    "per_usable_record": null,
+    "per_record": null,
+    "per_1000_usable_records": null,
+    "per_1000_records": null
+  },
+  "waste": {
+    "bytes_by_resource_type": {
+      "document": 8779,
+      "stylesheet": 45210,
+      "image": 18243,
+      "script": 968154,
+      "font": 1152012,
+      "xhr": 16512
+    },
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 2,
+    "failed_bytes": 0,
+    "failed_cost": 0.0,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 10,
+    "blockable_bytes": 1170255,
+    "blockable_cost": 0.000936204,
+    "total_waste_cost": 0.000936204,
+    "blocked_requests": 0,
+    "bytes_saved_estimate": 0,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 2,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [],
+  "samples": {
+    "findings": [],
+    "fixes": []
+  },
+  "report_path": "/home/runner/work/scrapewatch/scrapewatch/benchmarks/output/runs/pw-webscraper.io-before-1/2026-11-07T16-04-40_83933326.html",
+  "overhead_ms_p50": 0.3847,
+  "overhead_ms_p95": 0.8436
+}

@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "run_id": "783ef34454fc4e4c847a980f406c0fdc",
+  "name": "pw-quotes.toscrape.com-before-1",
+  "started_at": "2026-11-07T16:04:26.973737Z",
+  "finished_at": "2026-11-07T16:04:28.079548Z",
+  "status": "finished",
+  "integration": "playwright",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": "2026.11.0",
+  "config_hash": "5fb340",
+  "counts": {
+    "responses": 7,
+    "document_responses": 1,
+    "bad_documents": 0,
+    "by_label": {
+      "ok": 7
+    },
+    "by_status": {
+      "200": 7
+    },
+    "retries": 0,
+    "records": 0,
+    "usable_records": 0,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {},
+    "fixes_by_normalizer": {},
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 118078,
+    "by_domain": {
+      "quotes.toscrape.com": 4,
+      "fonts.googleapis.com": 1,
+      "fonts.gstatic.com": 2
+    },
+    "by_bytes_source": {
+      "measured": 7
+    },
+    "events_stored": 7,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 9.44624e-05,
+    "by_domain": {
+      "quotes.toscrape.com": 4.61888e-05,
+      "fonts.googleapis.com": 4.608e-07,
+      "fonts.gstatic.com": 4.7812800000000004e-05
+    },
+    "by_proxy": {
+      "datacenter": 9.44624e-05
+    },
+    "by_resource_type": {
+      "document": 1.5160000000000002e-06,
+      "stylesheet": 1.9319999999999998e-05,
+      "script": 2.5813600000000003e-05,
+      "font": 4.7812800000000004e-05
+    },
+    "browser_minutes": 0.018329438999999562,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 0,
+    "per_usable_record": null,
+    "per_record": null,
+    "per_1000_usable_records": null,
+    "per_1000_records": null
+  },
+  "waste": {
+    "bytes_by_resource_type": {
+      "document": 1895,
+      "stylesheet": 24150,
+      "script": 32267,
+      "font": 59766
+    },
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 0,
+    "failed_bytes": 0,
+    "failed_cost": 0.0,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 2,
+    "blockable_bytes": 59766,
+    "blockable_cost": 4.7812800000000004e-05,
+    "total_waste_cost": 4.7812800000000004e-05,
+    "blocked_requests": 0,
+    "bytes_saved_estimate": 0,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 0,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [],
+  "samples": {
+    "findings": [],
+    "fixes": []
+  },
+  "report_path": "/home/runner/work/scrapewatch/scrapewatch/benchmarks/output/runs/pw-quotes.toscrape.com-before-1/2026-11-07T16-04-26_783ef344.html",
+  "overhead_ms_p50": 0.3258,
+  "overhead_ms_p95": 0.8745
+}

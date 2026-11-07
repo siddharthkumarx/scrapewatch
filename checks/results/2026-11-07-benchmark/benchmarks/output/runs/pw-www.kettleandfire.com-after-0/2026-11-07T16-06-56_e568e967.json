@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "run_id": "e568e967f48d4d69a4f41c02de2cae31",
+  "name": "pw-www.kettleandfire.com-after-0",
+  "started_at": "2026-11-07T16:06:56.143937Z",
+  "finished_at": "2026-11-07T16:07:02.968514Z",
+  "status": "finished",
+  "integration": "playwright",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": "2026.11.0",
+  "config_hash": "de5b6a",
+  "counts": {
+    "responses": 256,
+    "document_responses": 1,
+    "bad_documents": 0,
+    "by_label": {
+      "ok": 254,
+      "error": 1,
+      "redirect": 1
+    },
+    "by_status": {
+      "200": 253,
+      "204": 1,
+      "302": 1,
+      "null": 1
+    },
+    "retries": 0,
+    "records": 0,
+    "usable_records": 0,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {
+      "info": 2
+    },
+    "fixes_by_normalizer": {},
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 2824485,
+    "by_domain": {
+      "apps.bazaarvoice.com": 3,
+      "use.typekit.net": 1,
+      "www.kettleandfire.com": 192,
+      "consent.cookiebot.com": 2,
+      "p.typekit.net": 1,
+      "cdn.shopify.com": 23,
+      "cdnjs.cloudflare.com": 1,
+      "consentcdn.cookiebot.com": 2,
+      "cdn.jsdelivr.net": 2,
+      "fonts.googleapis.com": 5,
+      "cdn.kettleandfire.com": 1,
+      "s3.us-west-2.amazonaws.com": 1,
+      "static.klaviyo.com": 1,
+      "shop.app": 4,
+      "cdn.boostyourstore.com": 1,
+      "api.boostyourstore.com": 3,
+      "otlp-http-production.shopifysvc.com": 7,
+      "cdn-loyalty.yotpo.com": 1,
+      "www.usefomo.com": 1,
+      "cdn-swell-assets.yotpo.com": 2,
+      "maxcdn.bootstrapcdn.com": 1,
+      "extensions.shopifycdn.com": 1
+    },
+    "by_bytes_source": {
+      "measured": 256
+    },
+    "events_stored": 256,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 0.0022595880000000003,
+    "by_domain": {
+      "apps.bazaarvoice.com": 3.2640000000000006e-05,
+      "use.typekit.net": 9.128e-07,
+      "www.kettleandfire.com": 0.001348704,
+      "consent.cookiebot.com": 0.00025725279999999997,
+      "p.typekit.net": 1.3760000000000001e-07,
+      "cdn.shopify.com": 6.960000000000001e-05,
+      "cdnjs.cloudflare.com": 8.368000000000001e-07,
+      "consentcdn.cookiebot.com": 1.388e-06,
+      "cdn.jsdelivr.net": 5.3624000000000005e-06,
+      "fonts.googleapis.com": 1.4416e-06,
+      "cdn.kettleandfire.com": 4.6274400000000005e-05,
+      "s3.us-west-2.amazonaws.com": 1.0552e-06,
+      "static.klaviyo.com": 2.516e-06,
+      "shop.app": 4.0736e-06,
+      "cdn.boostyourstore.com": 0.0001225184,
+      "api.boostyourstore.com": 2.24624e-05,
+      "otlp-http-production.shopifysvc.com": 6.016000000000001e-07,
+      "cdn-loyalty.yotpo.com": 1.0091200000000001e-05,
+      "www.usefomo.com": 1.96304e-05,
+      "cdn-swell-assets.yotpo.com": 0.00017118960000000002,
+      "maxcdn.bootstrapcdn.com": 6.0608000000000005e-06,
+      "extensions.shopifycdn.com": 0.0001348384
+    },
+    "by_proxy": {
+      "datacenter": 0.0022595880000000003
+    },
+    "by_resource_type": {
+      "script": 0.0008767368000000001,
+      "stylesheet": 0.00011230240000000001,
+      "document": 4.28584e-05,
+      "xhr": 3.10344e-05,
+      "other": 0.0011966560000000002
+    },
+    "browser_minutes": 0.11365939778333332,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 0,
+    "per_usable_record": null,
+    "per_record": null,
+    "per_1000_usable_records": null,
+    "per_1000_records": null
+  },
+  "waste": {
+    "bytes_by_resource_type": {
+      "script": 1095921,
+      "stylesheet": 140378,
+      "document": 53573,
+      "xhr": 38793,
+      "other": 1495820
+    },
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 2,
+    "failed_bytes": 1682,
+    "failed_cost": 1.3456e-06,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 0,
+    "blockable_bytes": 0,
+    "blockable_cost": 0.0,
+    "total_waste_cost": 1.3456e-06,
+    "blocked_requests": 58,
+    "bytes_saved_estimate": 2826240,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 2,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [],
+  "samples": {
+    "findings": [],
+    "fixes": []
+  },
+  "report_path": "/home/runner/work/scrapewatch/scrapewatch/benchmarks/output/runs/pw-www.kettleandfire.com-after-0/2026-11-07T16-06-56_e568e967.html",
+  "overhead_ms_p50": 0.4147,
+  "overhead_ms_p95": 0.6065
+}

@@ -1,0 +1,1504 @@
+{
+  "started_at": "2026-11-07T16:04:00.066241+00:00",
+  "commit": "21fd5a6b5caffd69708054f8ec6b268d42bddee1",
+  "python": "3.12.16",
+  "user_agent": "scrapewatch-benchmark/0.1 (+https://github.com/siddharthkumarx/scrapewatch)",
+  "cost_model": {
+    "currency": "USD",
+    "default_proxy": "datacenter",
+    "proxies": {
+      "direct": {
+        "per_gb": 0.0
+      },
+      "datacenter": {
+        "per_gb": 0.8
+      },
+      "residential": {
+        "per_gb": 8.0
+      }
+    },
+    "apis": {},
+    "browser": {
+      "per_minute": 0.0
+    }
+  },
+  "repeats": 3,
+  "httpx": [
+    {
+      "site": "books.toscrape.com",
+      "urls": [
+        "https://books.toscrape.com/catalogue/page-1.html",
+        "https://books.toscrape.com/catalogue/page-2.html",
+        "https://books.toscrape.com/catalogue/page-3.html",
+        "https://books.toscrape.com/catalogue/page-4.html",
+        "https://books.toscrape.com/catalogue/page-5.html"
+      ],
+      "verdict": "pass",
+      "reasons": [],
+      "requests": 5,
+      "wire_bytes": 28607,
+      "body_bytes": 257073,
+      "bytes_source": {
+        "measured": 5
+      },
+      "records": 100,
+      "usable_records": 100,
+      "labels": {
+        "ok": 5
+      },
+      "documents": [
+        {
+          "url": "https://books.toscrape.com/catalogue/page-1.html",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        },
+        {
+          "url": "https://books.toscrape.com/catalogue/page-2.html",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        },
+        {
+          "url": "https://books.toscrape.com/catalogue/page-3.html",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        },
+        {
+          "url": "https://books.toscrape.com/catalogue/page-4.html",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        },
+        {
+          "url": "https://books.toscrape.com/catalogue/page-5.html",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        }
+      ],
+      "cost": {
+        "direct": {
+          "total": 0.0,
+          "per_usable_record": 0.0,
+          "per_1000_usable_records": 0.0
+        },
+        "datacenter": {
+          "total": 2.28856e-05,
+          "per_usable_record": 2.28856e-07,
+          "per_1000_usable_records": 0.000228856
+        },
+        "residential": {
+          "total": 0.000228856,
+          "per_usable_record": 2.2885599999999997e-06,
+          "per_1000_usable_records": 0.00228856
+        }
+      },
+      "summary": "benchmarks/output/runs/httpx-books.toscrape.com/2026-11-07T16-04-00_4e80c4bc.json"
+    },
+    {
+      "site": "scrapethissite.com",
+      "urls": [
+        "https://www.scrapethissite.com/pages/simple/"
+      ],
+      "verdict": "pass",
+      "reasons": [],
+      "requests": 1,
+      "wire_bytes": 11905,
+      "body_bytes": 203361,
+      "bytes_source": {
+        "measured": 1
+      },
+      "records": 250,
+      "usable_records": 250,
+      "labels": {
+        "ok": 1
+      },
+      "documents": [
+        {
+          "url": "https://www.scrapethissite.com/pages/simple/",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        }
+      ],
+      "cost": {
+        "direct": {
+          "total": 0.0,
+          "per_usable_record": 0.0,
+          "per_1000_usable_records": 0.0
+        },
+        "datacenter": {
+          "total": 9.524e-06,
+          "per_usable_record": 3.8096000000000006e-08,
+          "per_1000_usable_records": 3.8096e-05
+        },
+        "residential": {
+          "total": 9.524e-05,
+          "per_usable_record": 3.8096e-07,
+          "per_1000_usable_records": 0.00038096
+        }
+      },
+      "summary": "benchmarks/output/runs/httpx-scrapethissite.com/2026-11-07T16-04-03_b3c2fa33.json"
+    },
+    {
+      "site": "webscraper.io",
+      "urls": [
+        "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=1",
+        "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=2",
+        "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=3"
+      ],
+      "verdict": "pass",
+      "reasons": [],
+      "requests": 3,
+      "wire_bytes": 27772,
+      "body_bytes": 113812,
+      "bytes_source": {
+        "measured": 3
+      },
+      "records": 18,
+      "usable_records": 18,
+      "labels": {
+        "ok": 3
+      },
+      "documents": [
+        {
+          "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=1",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        },
+        {
+          "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=2",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        },
+        {
+          "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=3",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        }
+      ],
+      "cost": {
+        "direct": {
+          "total": 0.0,
+          "per_usable_record": 0.0,
+          "per_1000_usable_records": 0.0
+        },
+        "datacenter": {
+          "total": 2.2217600000000002e-05,
+          "per_usable_record": 1.2343111111111112e-06,
+          "per_1000_usable_records": 0.0012343111111111113
+        },
+        "residential": {
+          "total": 0.00022217599999999998,
+          "per_usable_record": 1.234311111111111e-05,
+          "per_1000_usable_records": 0.012343111111111109
+        }
+      },
+      "summary": "benchmarks/output/runs/httpx-webscraper.io/2026-11-07T16-04-04_35eafda7.json"
+    },
+    {
+      "site": "www.beardbrand.com",
+      "urls": [
+        "https://www.beardbrand.com/products.json?limit=250"
+      ],
+      "verdict": "pass",
+      "reasons": [],
+      "requests": 1,
+      "wire_bytes": 23744,
+      "body_bytes": 236109,
+      "bytes_source": {
+        "measured": 1
+      },
+      "records": 68,
+      "usable_records": 68,
+      "labels": {
+        "ok": 1
+      },
+      "documents": [
+        {
+          "url": "https://www.beardbrand.com/products.json?limit=250",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        }
+      ],
+      "cost": {
+        "direct": {
+          "total": 0.0,
+          "per_usable_record": 0.0,
+          "per_1000_usable_records": 0.0
+        },
+        "datacenter": {
+          "total": 1.89952e-05,
+          "per_usable_record": 2.7934117647058825e-07,
+          "per_1000_usable_records": 0.00027934117647058826
+        },
+        "residential": {
+          "total": 0.000189952,
+          "per_usable_record": 2.7934117647058822e-06,
+          "per_1000_usable_records": 0.0027934117647058824
+        }
+      },
+      "summary": "benchmarks/output/runs/httpx-www.beardbrand.com/2026-11-07T16-04-07_b59b06e6.json"
+    },
+    {
+      "site": "www.kettleandfire.com",
+      "urls": [
+        "https://www.kettleandfire.com/products.json?limit=250"
+      ],
+      "verdict": "pass",
+      "reasons": [],
+      "requests": 1,
+      "wire_bytes": 60137,
+      "body_bytes": 522742,
+      "bytes_source": {
+        "measured": 1
+      },
+      "records": 99,
+      "usable_records": 99,
+      "labels": {
+        "ok": 1
+      },
+      "documents": [
+        {
+          "url": "https://www.kettleandfire.com/products.json?limit=250",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        }
+      ],
+      "cost": {
+        "direct": {
+          "total": 0.0,
+          "per_usable_record": 0.0,
+          "per_1000_usable_records": 0.0
+        },
+        "datacenter": {
+          "total": 4.81096e-05,
+          "per_usable_record": 4.859555555555556e-07,
+          "per_1000_usable_records": 0.0004859555555555556
+        },
+        "residential": {
+          "total": 0.000481096,
+          "per_usable_record": 4.859555555555555e-06,
+          "per_1000_usable_records": 0.004859555555555555
+        }
+      },
+      "summary": "benchmarks/output/runs/httpx-www.kettleandfire.com/2026-11-07T16-04-07_f19458f1.json"
+    },
+    {
+      "site": "www.partakefoods.com",
+      "urls": [
+        "https://www.partakefoods.com/products.json?limit=250"
+      ],
+      "verdict": "pass",
+      "reasons": [],
+      "requests": 1,
+      "wire_bytes": 8561,
+      "body_bytes": 43267,
+      "bytes_source": {
+        "measured": 1
+      },
+      "records": 15,
+      "usable_records": 15,
+      "labels": {
+        "ok": 1
+      },
+      "documents": [
+        {
+          "url": "https://www.partakefoods.com/products.json?limit=250",
+          "status": 200,
+          "label": "ok",
+          "rule_id": null,
+          "signals": []
+        }
+      ],
+      "cost": {
+        "direct": {
+          "total": 0.0,
+          "per_usable_record": 0.0,
+          "per_1000_usable_records": 0.0
+        },
+        "datacenter": {
+          "total": 6.8488e-06,
+          "per_usable_record": 4.5658666666666667e-07,
+          "per_1000_usable_records": 0.0004565866666666667
+        },
+        "residential": {
+          "total": 6.8488e-05,
+          "per_usable_record": 4.565866666666666e-06,
+          "per_1000_usable_records": 0.004565866666666666
+        }
+      },
+      "summary": "benchmarks/output/runs/httpx-www.partakefoods.com/2026-11-07T16-04-08_9da1d0c1.json"
+    }
+  ],
+  "playwright": [
+    {
+      "site": "books.toscrape.com",
+      "url": "https://books.toscrape.com/catalogue/page-1.html",
+      "median_wire_bytes_before": 336944,
+      "median_wire_bytes_after": 111932,
+      "measured_saving_bytes": 225012,
+      "measured_saving_pct": 66.8,
+      "median_blocked_requests": 22,
+      "median_bytes_saved_estimate": 1044480,
+      "median_requests_before": 31,
+      "median_requests_after": 10,
+      "loads": {
+        "before": [
+          {
+            "mode": "before",
+            "requests": 31,
+            "wire_bytes": 336944,
+            "bytes_by_resource_type": {
+              "script": 70666,
+              "document": 5521,
+              "stylesheet": 35724,
+              "image": 181179,
+              "font": 43854
+            },
+            "failed_requests": 1,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 1.08,
+            "documents": [
+              {
+                "url": "https://books.toscrape.com/catalogue/page-1.html",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-books.toscrape.com-before-0/2026-11-07T16-04-10_ec95b513.json"
+          },
+          {
+            "mode": "before",
+            "requests": 31,
+            "wire_bytes": 336924,
+            "bytes_by_resource_type": {
+              "script": 70642,
+              "document": 5521,
+              "stylesheet": 35728,
+              "image": 181179,
+              "font": 43854
+            },
+            "failed_requests": 1,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 1.08,
+            "documents": [
+              {
+                "url": "https://books.toscrape.com/catalogue/page-1.html",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-books.toscrape.com-before-1/2026-11-07T16-04-14_00bb13e2.json"
+          },
+          {
+            "mode": "before",
+            "requests": 31,
+            "wire_bytes": 336968,
+            "bytes_by_resource_type": {
+              "script": 70655,
+              "document": 5543,
+              "stylesheet": 35728,
+              "image": 181188,
+              "font": 43854
+            },
+            "failed_requests": 1,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 1.1,
+            "documents": [
+              {
+                "url": "https://books.toscrape.com/catalogue/page-1.html",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-books.toscrape.com-before-2/2026-11-07T16-04-18_7591a4e7.json"
+          }
+        ],
+        "after": [
+          {
+            "mode": "after",
+            "requests": 10,
+            "wire_bytes": 111932,
+            "bytes_by_resource_type": {
+              "script": 70687,
+              "document": 5521,
+              "stylesheet": 35724
+            },
+            "failed_requests": 1,
+            "blocked_requests": 22,
+            "bytes_saved_estimate": 1044480,
+            "network_idle": true,
+            "seconds": 1.01,
+            "documents": [
+              {
+                "url": "https://books.toscrape.com/catalogue/page-1.html",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-books.toscrape.com-after-0/2026-11-07T16-04-12_98c1082c.json"
+          },
+          {
+            "mode": "after",
+            "requests": 10,
+            "wire_bytes": 111885,
+            "bytes_by_resource_type": {
+              "script": 70642,
+              "document": 5519,
+              "stylesheet": 35724
+            },
+            "failed_requests": 1,
+            "blocked_requests": 22,
+            "bytes_saved_estimate": 1044480,
+            "network_idle": true,
+            "seconds": 1.02,
+            "documents": [
+              {
+                "url": "https://books.toscrape.com/catalogue/page-1.html",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-books.toscrape.com-after-1/2026-11-07T16-04-16_7483c214.json"
+          },
+          {
+            "mode": "after",
+            "requests": 10,
+            "wire_bytes": 111933,
+            "bytes_by_resource_type": {
+              "script": 70655,
+              "document": 5558,
+              "stylesheet": 35720
+            },
+            "failed_requests": 1,
+            "blocked_requests": 22,
+            "bytes_saved_estimate": 1044480,
+            "network_idle": true,
+            "seconds": 1.03,
+            "documents": [
+              {
+                "url": "https://books.toscrape.com/catalogue/page-1.html",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-books.toscrape.com-after-2/2026-11-07T16-04-20_d41b9dec.json"
+          }
+        ]
+      }
+    },
+    {
+      "site": "quotes.toscrape.com",
+      "url": "https://quotes.toscrape.com/js/",
+      "median_wire_bytes_before": 118083,
+      "median_wire_bytes_after": 58284,
+      "measured_saving_bytes": 59799,
+      "measured_saving_pct": 50.6,
+      "median_blocked_requests": 2,
+      "median_bytes_saved_estimate": 122880,
+      "median_requests_before": 7,
+      "median_requests_after": 5,
+      "loads": {
+        "before": [
+          {
+            "mode": "before",
+            "requests": 7,
+            "wire_bytes": 118093,
+            "bytes_by_resource_type": {
+              "document": 1912,
+              "stylesheet": 24159,
+              "script": 32256,
+              "font": 59766
+            },
+            "failed_requests": 0,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 1.23,
+            "documents": [
+              {
+                "url": "https://quotes.toscrape.com/js/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-quotes.toscrape.com-before-0/2026-11-07T16-04-22_d98885d1.json"
+          },
+          {
+            "mode": "before",
+            "requests": 7,
+            "wire_bytes": 118078,
+            "bytes_by_resource_type": {
+              "document": 1895,
+              "stylesheet": 24150,
+              "script": 32267,
+              "font": 59766
+            },
+            "failed_requests": 0,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 1.07,
+            "documents": [
+              {
+                "url": "https://quotes.toscrape.com/js/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-quotes.toscrape.com-before-1/2026-11-07T16-04-26_783ef344.json"
+          },
+          {
+            "mode": "before",
+            "requests": 7,
+            "wire_bytes": 118083,
+            "bytes_by_resource_type": {
+              "document": 1895,
+              "stylesheet": 24113,
+              "script": 32309,
+              "font": 59766
+            },
+            "failed_requests": 0,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 1.07,
+            "documents": [
+              {
+                "url": "https://quotes.toscrape.com/js/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-quotes.toscrape.com-before-2/2026-11-07T16-04-31_2e9d775f.json"
+          }
+        ],
+        "after": [
+          {
+            "mode": "after",
+            "requests": 5,
+            "wire_bytes": 58312,
+            "bytes_by_resource_type": {
+              "document": 1912,
+              "stylesheet": 24159,
+              "script": 32241
+            },
+            "failed_requests": 0,
+            "blocked_requests": 2,
+            "bytes_saved_estimate": 122880,
+            "network_idle": true,
+            "seconds": 1.06,
+            "documents": [
+              {
+                "url": "https://quotes.toscrape.com/js/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-quotes.toscrape.com-after-0/2026-11-07T16-04-24_327b5079.json"
+          },
+          {
+            "mode": "after",
+            "requests": 5,
+            "wire_bytes": 58284,
+            "bytes_by_resource_type": {
+              "document": 1895,
+              "stylesheet": 24142,
+              "script": 32247
+            },
+            "failed_requests": 0,
+            "blocked_requests": 2,
+            "bytes_saved_estimate": 122880,
+            "network_idle": true,
+            "seconds": 1.07,
+            "documents": [
+              {
+                "url": "https://quotes.toscrape.com/js/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-quotes.toscrape.com-after-1/2026-11-07T16-04-29_18d87e8b.json"
+          },
+          {
+            "mode": "after",
+            "requests": 5,
+            "wire_bytes": 58282,
+            "bytes_by_resource_type": {
+              "document": 1895,
+              "stylesheet": 24131,
+              "script": 32256
+            },
+            "failed_requests": 0,
+            "blocked_requests": 2,
+            "bytes_saved_estimate": 122880,
+            "network_idle": true,
+            "seconds": 1.0,
+            "documents": [
+              {
+                "url": "https://quotes.toscrape.com/js/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-quotes.toscrape.com-after-2/2026-11-07T16-04-33_434d61f4.json"
+          }
+        ]
+      }
+    },
+    {
+      "site": "webscraper.io",
+      "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=1",
+      "median_wire_bytes_before": 2208506,
+      "median_wire_bytes_after": 466519,
+      "measured_saving_bytes": 1741987,
+      "measured_saving_pct": 78.9,
+      "median_blocked_requests": 13,
+      "median_bytes_saved_estimate": 846269,
+      "median_requests_before": 34,
+      "median_requests_after": 17,
+      "loads": {
+        "before": [
+          {
+            "mode": "before",
+            "requests": 34,
+            "wire_bytes": 2208441,
+            "bytes_by_resource_type": {
+              "stylesheet": 45193,
+              "document": 8781,
+              "image": 18244,
+              "script": 967737,
+              "font": 1152012,
+              "xhr": 16474
+            },
+            "failed_requests": 2,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 1.53,
+            "documents": [
+              {
+                "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=1",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-webscraper.io-before-0/2026-11-07T16-04-35_a729a90f.json"
+          },
+          {
+            "mode": "before",
+            "requests": 34,
+            "wire_bytes": 2208910,
+            "bytes_by_resource_type": {
+              "document": 8779,
+              "stylesheet": 45210,
+              "image": 18243,
+              "script": 968154,
+              "font": 1152012,
+              "xhr": 16512
+            },
+            "failed_requests": 2,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 1.21,
+            "documents": [
+              {
+                "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=1",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-webscraper.io-before-1/2026-11-07T16-04-40_83933326.json"
+          },
+          {
+            "mode": "before",
+            "requests": 39,
+            "wire_bytes": 2208506,
+            "bytes_by_resource_type": {
+              "document": 8770,
+              "stylesheet": 45192,
+              "image": 18298,
+              "script": 967722,
+              "font": 1152012,
+              "xhr": 16512
+            },
+            "failed_requests": 2,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 1.31,
+            "documents": [
+              {
+                "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=1",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-webscraper.io-before-2/2026-11-07T16-04-44_a50dde7c.json"
+          }
+        ],
+        "after": [
+          {
+            "mode": "after",
+            "requests": 17,
+            "wire_bytes": 466483,
+            "bytes_by_resource_type": {
+              "document": 8772,
+              "stylesheet": 45192,
+              "script": 396007,
+              "xhr": 16512
+            },
+            "failed_requests": 0,
+            "blocked_requests": 13,
+            "bytes_saved_estimate": 846269,
+            "network_idle": true,
+            "seconds": 0.91,
+            "documents": [
+              {
+                "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=1",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-webscraper.io-after-0/2026-11-07T16-04-38_da3d367a.json"
+          },
+          {
+            "mode": "after",
+            "requests": 17,
+            "wire_bytes": 466519,
+            "bytes_by_resource_type": {
+              "document": 8782,
+              "stylesheet": 45215,
+              "script": 396009,
+              "xhr": 16513
+            },
+            "failed_requests": 0,
+            "blocked_requests": 13,
+            "bytes_saved_estimate": 846270,
+            "network_idle": true,
+            "seconds": 0.95,
+            "documents": [
+              {
+                "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=1",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-webscraper.io-after-1/2026-11-07T16-04-42_23ad74de.json"
+          },
+          {
+            "mode": "after",
+            "requests": 17,
+            "wire_bytes": 466919,
+            "bytes_by_resource_type": {
+              "document": 8770,
+              "stylesheet": 45194,
+              "script": 396447,
+              "xhr": 16508
+            },
+            "failed_requests": 0,
+            "blocked_requests": 12,
+            "bytes_saved_estimate": 800409,
+            "network_idle": true,
+            "seconds": 0.97,
+            "documents": [
+              {
+                "url": "https://webscraper.io/test-sites/e-commerce/static/computers/laptops?page=1",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-webscraper.io-after-2/2026-11-07T16-04-46_7ccff90b.json"
+          }
+        ]
+      }
+    },
+    {
+      "site": "www.beardbrand.com",
+      "url": "https://www.beardbrand.com/",
+      "median_wire_bytes_before": 3801066,
+      "median_wire_bytes_after": 2466866,
+      "measured_saving_bytes": 1334200,
+      "measured_saving_pct": 35.1,
+      "median_blocked_requests": 27,
+      "median_bytes_saved_estimate": 1266877,
+      "median_requests_before": 245,
+      "median_requests_after": 218,
+      "loads": {
+        "before": [
+          {
+            "mode": "before",
+            "requests": 245,
+            "wire_bytes": 3802624,
+            "bytes_by_resource_type": {
+              "document": 82151,
+              "stylesheet": 36283,
+              "script": 1330249,
+              "font": 211190,
+              "image": 897118,
+              "other": 1205839,
+              "xhr": 39794
+            },
+            "failed_requests": 6,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": false,
+            "seconds": 19.03,
+            "documents": [
+              {
+                "url": "https://www.beardbrand.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.beardbrand.com-before-0/2026-11-07T16-04-48_5809d021.json"
+          },
+          {
+            "mode": "before",
+            "requests": 245,
+            "wire_bytes": 3791864,
+            "bytes_by_resource_type": {
+              "document": 82148,
+              "stylesheet": 36252,
+              "script": 1324910,
+              "font": 210442,
+              "image": 893529,
+              "other": 1204862,
+              "xhr": 39721
+            },
+            "failed_requests": 6,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": false,
+            "seconds": 19.04,
+            "documents": [
+              {
+                "url": "https://www.beardbrand.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.beardbrand.com-before-1/2026-11-07T16-05-23_d8413b34.json"
+          },
+          {
+            "mode": "before",
+            "requests": 242,
+            "wire_bytes": 3801066,
+            "bytes_by_resource_type": {
+              "stylesheet": 36259,
+              "document": 82151,
+              "script": 1330295,
+              "font": 211177,
+              "image": 895696,
+              "other": 1206026,
+              "xhr": 39462
+            },
+            "failed_requests": 6,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": false,
+            "seconds": 18.98,
+            "documents": [
+              {
+                "url": "https://www.beardbrand.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.beardbrand.com-before-2/2026-11-07T16-06-03_bc125851.json"
+          }
+        ],
+        "after": [
+          {
+            "mode": "after",
+            "requests": 218,
+            "wire_bytes": 2450945,
+            "bytes_by_resource_type": {
+              "document": 82145,
+              "stylesheet": 36287,
+              "script": 1028407,
+              "other": 1263660,
+              "xhr": 40446
+            },
+            "failed_requests": 6,
+            "blocked_requests": 27,
+            "bytes_saved_estimate": 1267233,
+            "network_idle": true,
+            "seconds": 13.06,
+            "documents": [
+              {
+                "url": "https://www.beardbrand.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.beardbrand.com-after-0/2026-11-07T16-05-09_9494e697.json"
+          },
+          {
+            "mode": "after",
+            "requests": 219,
+            "wire_bytes": 2468856,
+            "bytes_by_resource_type": {
+              "document": 82135,
+              "stylesheet": 36255,
+              "script": 1043545,
+              "other": 1266300,
+              "xhr": 40621
+            },
+            "failed_requests": 5,
+            "blocked_requests": 27,
+            "bytes_saved_estimate": 1266877,
+            "network_idle": false,
+            "seconds": 18.91,
+            "documents": [
+              {
+                "url": "https://www.beardbrand.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.beardbrand.com-after-1/2026-11-07T16-05-43_1d998f6a.json"
+          },
+          {
+            "mode": "after",
+            "requests": 217,
+            "wire_bytes": 2466866,
+            "bytes_by_resource_type": {
+              "document": 82145,
+              "stylesheet": 36243,
+              "script": 1042092,
+              "other": 1266295,
+              "xhr": 40091
+            },
+            "failed_requests": 6,
+            "blocked_requests": 27,
+            "bytes_saved_estimate": 1266675,
+            "network_idle": false,
+            "seconds": 18.91,
+            "documents": [
+              {
+                "url": "https://www.beardbrand.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.beardbrand.com-after-2/2026-11-07T16-06-23_5aab52f2.json"
+          }
+        ]
+      }
+    },
+    {
+      "site": "www.kettleandfire.com",
+      "url": "https://www.kettleandfire.com/",
+      "median_wire_bytes_before": 5419195,
+      "median_wire_bytes_after": 2824134,
+      "measured_saving_bytes": 2595061,
+      "measured_saving_pct": 47.9,
+      "median_blocked_requests": 59,
+      "median_bytes_saved_estimate": 2872320,
+      "median_requests_before": 297,
+      "median_requests_after": 254,
+      "loads": {
+        "before": [
+          {
+            "mode": "before",
+            "requests": 297,
+            "wire_bytes": 5419089,
+            "bytes_by_resource_type": {
+              "stylesheet": 140860,
+              "document": 53557,
+              "image": 1844858,
+              "script": 1095502,
+              "xhr": 38545,
+              "font": 750125,
+              "other": 1495642
+            },
+            "failed_requests": 1,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 11.94,
+            "documents": [
+              {
+                "url": "https://www.kettleandfire.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.kettleandfire.com-before-0/2026-11-07T16-06-43_151a0e8b.json"
+          },
+          {
+            "mode": "before",
+            "requests": 299,
+            "wire_bytes": 5421382,
+            "bytes_by_resource_type": {
+              "stylesheet": 140648,
+              "document": 54782,
+              "script": 1097054,
+              "image": 1844507,
+              "font": 750128,
+              "other": 1495546,
+              "xhr": 38717
+            },
+            "failed_requests": 1,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 5.4,
+            "documents": [
+              {
+                "url": "https://www.kettleandfire.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.kettleandfire.com-before-1/2026-11-07T16-07-03_faf73088.json"
+          },
+          {
+            "mode": "before",
+            "requests": 297,
+            "wire_bytes": 5419195,
+            "bytes_by_resource_type": {
+              "stylesheet": 140286,
+              "document": 54800,
+              "image": 1844567,
+              "script": 1095467,
+              "font": 750103,
+              "other": 1495384,
+              "xhr": 38588
+            },
+            "failed_requests": 1,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": true,
+            "seconds": 6.87,
+            "documents": [
+              {
+                "url": "https://www.kettleandfire.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.kettleandfire.com-before-2/2026-11-07T16-07-18_e3a8bbaf.json"
+          }
+        ],
+        "after": [
+          {
+            "mode": "after",
+            "requests": 256,
+            "wire_bytes": 2824485,
+            "bytes_by_resource_type": {
+              "script": 1095921,
+              "stylesheet": 140378,
+              "document": 53573,
+              "xhr": 38793,
+              "other": 1495820
+            },
+            "failed_requests": 1,
+            "blocked_requests": 58,
+            "bytes_saved_estimate": 2826240,
+            "network_idle": true,
+            "seconds": 6.79,
+            "documents": [
+              {
+                "url": "https://www.kettleandfire.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.kettleandfire.com-after-0/2026-11-07T16-06-56_e568e967.json"
+          },
+          {
+            "mode": "after",
+            "requests": 254,
+            "wire_bytes": 2824134,
+            "bytes_by_resource_type": {
+              "document": 54795,
+              "stylesheet": 140303,
+              "script": 1094833,
+              "other": 1495481,
+              "xhr": 38722
+            },
+            "failed_requests": 1,
+            "blocked_requests": 59,
+            "bytes_saved_estimate": 2872320,
+            "network_idle": true,
+            "seconds": 7.12,
+            "documents": [
+              {
+                "url": "https://www.kettleandfire.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.kettleandfire.com-after-1/2026-11-07T16-07-10_6f88d4ce.json"
+          },
+          {
+            "mode": "after",
+            "requests": 254,
+            "wire_bytes": 2818333,
+            "bytes_by_resource_type": {
+              "document": 54790,
+              "stylesheet": 139749,
+              "script": 1090384,
+              "other": 1494649,
+              "xhr": 38761
+            },
+            "failed_requests": 1,
+            "blocked_requests": 59,
+            "bytes_saved_estimate": 2872320,
+            "network_idle": true,
+            "seconds": 7.4,
+            "documents": [
+              {
+                "url": "https://www.kettleandfire.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.kettleandfire.com-after-2/2026-11-07T16-07-26_69d3416f.json"
+          }
+        ]
+      }
+    },
+    {
+      "site": "www.partakefoods.com",
+      "url": "https://www.partakefoods.com/",
+      "median_wire_bytes_before": 7562852,
+      "median_wire_bytes_after": 2972557,
+      "measured_saving_bytes": 4590295,
+      "measured_saving_pct": 60.7,
+      "median_blocked_requests": 97,
+      "median_bytes_saved_estimate": 3099262,
+      "median_requests_before": 443,
+      "median_requests_after": 355,
+      "loads": {
+        "before": [
+          {
+            "mode": "before",
+            "requests": 443,
+            "wire_bytes": 7566622,
+            "bytes_by_resource_type": {
+              "document": 57066,
+              "script": 2487150,
+              "stylesheet": 92144,
+              "image": 3171169,
+              "font": 252765,
+              "other": 1473371,
+              "xhr": 32957
+            },
+            "failed_requests": 16,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": false,
+            "seconds": 19.98,
+            "documents": [
+              {
+                "url": "https://www.partakefoods.com/",
+                "status": 301,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              },
+              {
+                "url": "https://partakefoods.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.partakefoods.com-before-0/2026-11-07T16-07-34_6c43894f.json"
+          },
+          {
+            "mode": "before",
+            "requests": 440,
+            "wire_bytes": 7558639,
+            "bytes_by_resource_type": {
+              "document": 58052,
+              "stylesheet": 89026,
+              "script": 2486819,
+              "image": 3170817,
+              "font": 252487,
+              "other": 1471636,
+              "xhr": 29802
+            },
+            "failed_requests": 18,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": false,
+            "seconds": 19.96,
+            "documents": [
+              {
+                "url": "https://www.partakefoods.com/",
+                "status": 301,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              },
+              {
+                "url": "https://partakefoods.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.partakefoods.com-before-1/2026-11-07T16-08-03_a5876d24.json"
+          },
+          {
+            "mode": "before",
+            "requests": 445,
+            "wire_bytes": 7562852,
+            "bytes_by_resource_type": {
+              "document": 58075,
+              "stylesheet": 88865,
+              "font": 252539,
+              "image": 3170882,
+              "script": 2486158,
+              "other": 1473312,
+              "xhr": 33021
+            },
+            "failed_requests": 16,
+            "blocked_requests": 0,
+            "bytes_saved_estimate": 0,
+            "network_idle": false,
+            "seconds": 19.95,
+            "documents": [
+              {
+                "url": "https://www.partakefoods.com/",
+                "status": 301,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              },
+              {
+                "url": "https://partakefoods.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.partakefoods.com-before-2/2026-11-07T16-08-32_dbc0e5d3.json"
+          }
+        ],
+        "after": [
+          {
+            "mode": "after",
+            "requests": 359,
+            "wire_bytes": 2981588,
+            "bytes_by_resource_type": {
+              "document": 57071,
+              "script": 1327362,
+              "stylesheet": 92148,
+              "other": 1472854,
+              "xhr": 32153
+            },
+            "failed_requests": 9,
+            "blocked_requests": 97,
+            "bytes_saved_estimate": 3048880,
+            "network_idle": true,
+            "seconds": 6.98,
+            "documents": [
+              {
+                "url": "https://www.partakefoods.com/",
+                "status": 301,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              },
+              {
+                "url": "https://partakefoods.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.partakefoods.com-after-0/2026-11-07T16-07-55_ce5db550.json"
+          },
+          {
+            "mode": "after",
+            "requests": 354,
+            "wire_bytes": 2970221,
+            "bytes_by_resource_type": {
+              "document": 58063,
+              "stylesheet": 90384,
+              "script": 1321371,
+              "other": 1471128,
+              "xhr": 29275
+            },
+            "failed_requests": 10,
+            "blocked_requests": 97,
+            "bytes_saved_estimate": 3107148,
+            "network_idle": true,
+            "seconds": 6.89,
+            "documents": [
+              {
+                "url": "https://www.partakefoods.com/",
+                "status": 301,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              },
+              {
+                "url": "https://partakefoods.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.partakefoods.com-after-1/2026-11-07T16-08-25_ceb3823d.json"
+          },
+          {
+            "mode": "after",
+            "requests": 355,
+            "wire_bytes": 2972557,
+            "bytes_by_resource_type": {
+              "document": 58048,
+              "stylesheet": 90360,
+              "script": 1323869,
+              "other": 1471220,
+              "xhr": 29060
+            },
+            "failed_requests": 10,
+            "blocked_requests": 97,
+            "bytes_saved_estimate": 3099262,
+            "network_idle": true,
+            "seconds": 6.89,
+            "documents": [
+              {
+                "url": "https://www.partakefoods.com/",
+                "status": 301,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              },
+              {
+                "url": "https://partakefoods.com/",
+                "status": 200,
+                "label": "ok",
+                "rule_id": null,
+                "signals": []
+              }
+            ],
+            "summary": "benchmarks/output/runs/pw-www.partakefoods.com-after-2/2026-11-07T16-08-53_de043dd0.json"
+          }
+        ]
+      }
+    }
+  ],
+  "guard": {
+    "books.toscrape.com": {
+      "ok": 11
+    },
+    "scrapethissite.com": {
+      "ok": 1
+    },
+    "webscraper.io": {
+      "ok": 9
+    },
+    "www.beardbrand.com": {
+      "ok": 7
+    },
+    "www.kettleandfire.com": {
+      "ok": 7
+    },
+    "www.partakefoods.com": {
+      "ok": 13
+    },
+    "quotes.toscrape.com": {
+      "ok": 6
+    }
+  },
+  "guard_non_ok": [],
+  "finished_at": "2026-11-07T16:09:01.930502+00:00"
+}

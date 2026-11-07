@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "run_id": "ec95b5138b8a49b78dac7eeae72b22a9",
+  "name": "pw-books.toscrape.com-before-0",
+  "started_at": "2026-11-07T16:04:10.031395Z",
+  "finished_at": "2026-11-07T16:04:11.172852Z",
+  "status": "finished",
+  "integration": "playwright",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": "2026.11.0",
+  "config_hash": "2d6040",
+  "counts": {
+    "responses": 31,
+    "document_responses": 1,
+    "bad_documents": 0,
+    "by_label": {
+      "error": 1,
+      "ok": 30
+    },
+    "by_status": {
+      "null": 1,
+      "200": 30
+    },
+    "retries": 0,
+    "records": 0,
+    "usable_records": 0,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {
+      "info": 1
+    },
+    "fixes_by_normalizer": {},
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 336944,
+    "by_domain": {
+      "ajax.googleapis.com": 1,
+      "books.toscrape.com": 30
+    },
+    "by_bytes_source": {
+      "measured": 31
+    },
+    "events_stored": 31,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 0.0002695552,
+    "by_domain": {
+      "ajax.googleapis.com": 0.0,
+      "books.toscrape.com": 0.0002695552
+    },
+    "by_proxy": {
+      "datacenter": 0.0002695552
+    },
+    "by_resource_type": {
+      "script": 5.653280000000001e-05,
+      "document": 4.416800000000001e-06,
+      "stylesheet": 2.8579200000000002e-05,
+      "image": 0.0001449432,
+      "font": 3.5083199999999996e-05
+    },
+    "browser_minutes": 0.01865592018333378,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 0,
+    "per_usable_record": null,
+    "per_record": null,
+    "per_1000_usable_records": null,
+    "per_1000_records": null
+  },
+  "waste": {
+    "bytes_by_resource_type": {
+      "script": 70666,
+      "document": 5521,
+      "stylesheet": 35724,
+      "image": 181179,
+      "font": 43854
+    },
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 1,
+    "failed_bytes": 0,
+    "failed_cost": 0.0,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 21,
+    "blockable_bytes": 225033,
+    "blockable_cost": 0.00018002640000000002,
+    "total_waste_cost": 0.00018002640000000002,
+    "blocked_requests": 0,
+    "bytes_saved_estimate": 0,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 1,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [],
+  "samples": {
+    "findings": [],
+    "fixes": []
+  },
+  "report_path": "/home/runner/work/scrapewatch/scrapewatch/benchmarks/output/runs/pw-books.toscrape.com-before-0/2026-11-07T16-04-10_ec95b513.html",
+  "overhead_ms_p50": 0.2888,
+  "overhead_ms_p95": 1.0795
+}

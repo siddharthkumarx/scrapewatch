@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "run_id": "9da1d0c1f97149d5839b3a5d39c78b3f",
+  "name": "httpx-www.partakefoods.com",
+  "started_at": "2026-11-07T16:04:08.562289Z",
+  "finished_at": "2026-11-07T16:04:09.265899Z",
+  "status": "finished",
+  "integration": "httpx",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": "2026.11.0",
+  "config_hash": "53d32b",
+  "counts": {
+    "responses": 1,
+    "document_responses": 1,
+    "bad_documents": 0,
+    "by_label": {
+      "ok": 1
+    },
+    "by_status": {
+      "200": 1
+    },
+    "retries": 0,
+    "records": 15,
+    "usable_records": 15,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {},
+    "fixes_by_normalizer": {
+      "price": 15
+    },
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 8561,
+    "by_domain": {
+      "www.partakefoods.com": 1
+    },
+    "by_bytes_source": {
+      "measured": 1
+    },
+    "events_stored": 1,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 6.8488e-06,
+    "by_domain": {
+      "www.partakefoods.com": 6.8488e-06
+    },
+    "by_proxy": {
+      "datacenter": 6.8488e-06
+    },
+    "by_resource_type": {
+      "document": 6.8488e-06
+    },
+    "browser_minutes": 0.0,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 15,
+    "per_usable_record": 4.5658666666666667e-07,
+    "per_record": 4.5658666666666667e-07,
+    "per_1000_usable_records": 0.0004565866666666667,
+    "per_1000_records": 0.0004565866666666667
+  },
+  "waste": {
+    "bytes_by_resource_type": {
+      "document": 8561
+    },
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 0,
+    "failed_bytes": 0,
+    "failed_cost": 0.0,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 0,
+    "blockable_bytes": 0,
+    "blockable_cost": 0.0,
+    "total_waste_cost": 0.0,
+    "blocked_requests": 0,
+    "bytes_saved_estimate": 0,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 1,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [
+    {
+      "finding_id": "70dcde157e5e435898a6cad7ae273af3",
+      "run_id": "9da1d0c1f97149d5839b3a5d39c78b3f",
+      "scope": "batch",
+      "ref": null,
+      "check": "batch.baseline",
+      "severity": "info",
+      "field": null,
+      "message": "No baseline yet: 0 of 3 passing runs. History comparisons start once there are enough.",
+      "observed": 0,
+      "expected": 3,
+      "rule_id": null
+    }
+  ],
+  "samples": {
+    "findings": [],
+    "fixes": [
+      {
+        "normalizer": "price",
+        "field": "price",
+        "count": 15,
+        "examples": [
+          {
+            "before": "0.00",
+            "after": 0.0
+          },
+          {
+            "before": "54.99",
+            "after": 54.99
+          },
+          {
+            "before": "54.99",
+            "after": 54.99
+          }
+        ]
+      }
+    ]
+  },
+  "report_path": "/home/runner/work/scrapewatch/scrapewatch/benchmarks/output/runs/httpx-www.partakefoods.com/2026-11-07T16-04-08_9da1d0c1.html",
+  "overhead_ms_p50": 0.1312,
+  "overhead_ms_p95": 0.7795
+}
