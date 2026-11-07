@@ -1,7 +1,9 @@
+import gc
 import json
 import multiprocessing
 import sqlite3
 import sys
+import warnings
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -358,3 +360,24 @@ def test_size_baseline_grouping_golden(tmp_path: Path) -> None:
     )
     store.update_size_baselines("r2", now=now)
     assert store.size_baseline("quotes.toscrape.com", "/page/{n}/") == (12200, 3)
+
+
+def test_unfinished_watch_releases_history_when_collected(tmp_path: Path) -> None:
+    w = Watch(Settings(name="t", history={"path": tmp_path}))
+    w.start()
+    assert w.store is not None
+    conn = w.store.conn
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", ResourceWarning)
+        del w
+        gc.collect()
+    with pytest.raises(sqlite3.ProgrammingError):
+        conn.execute("SELECT 1")
+
+
+def test_close_detaches_the_collector_hook(tmp_path: Path) -> None:
+    store = open_store(tmp_path)
+    store.close()
+    store.close()
+    with HistoryStore(tmp_path) as again:
+        assert again.event_count("r") == 0

@@ -1131,7 +1131,8 @@ as "measured" only when every event in the run is measured.
 
 ### 12.1 Files
 
-`<history.path>/history.sqlite` (WAL mode, `busy_timeout` 5 s), plus
+`<history.path>/history.sqlite` (WAL mode, `busy_timeout` 5 s; a store dropped without
+`close()`, such as a run that was never finished, closes its connection when collected), plus
 `<history.path>/reports/<name>/<started_at>_<run_id[:8]>.html` and `.json` (`report_dir`
 replaces `<history.path>/reports` when set; `started_at` is written `YYYY-MM-DDTHH-MM-SS` so
 the name is valid on Windows). `SCRAPEWATCH_HOME`

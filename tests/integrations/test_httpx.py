@@ -609,7 +609,10 @@ def test_example_draft_runs_offline(monkeypatch: pytest.MonkeyPatch, tmp_path: P
 
     monkeypatch.setattr(module.httpx, "Client", client)
     assert module.main(2) == 0
-    rows = [json.loads(line) for line in (tmp_path / "data" / "books.jsonl").open()]
+    rows = [
+        json.loads(line)
+        for line in (tmp_path / "data" / "books.jsonl").read_text("utf-8").splitlines()
+    ]
     assert len(rows) == 40
     assert rows[0] == {
         "title": "Book 1 & 0",

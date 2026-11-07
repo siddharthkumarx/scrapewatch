@@ -168,8 +168,9 @@ Notes for the next session:
   when `body_bytes` (the full decoded length) is larger (`extract_features(total_bytes=)`).
 - Still open for later items: write `tests/perf/test_overhead.py` (architecture 15) before
   item 24 (only the 64 KiB classify budget is tested so far, in
-  `tests/guard/test_classify.py`). On 3.13 tests that never finish a Watch leave SQLite
-  connections open (ResourceWarning); closing them in fixtures is a small follow-up.
+  `tests/guard/test_classify.py`). pytest treats `ResourceWarning` (and unraisable
+  exceptions) as errors: a dropped `HistoryStore` closes itself when collected, and
+  `tests/conftest.py` closes any history a test left open.
 - Tests that need an extra are marked `extras` and carry the extra's name in their id; the
   extras jobs of full.yml run `-m "extras and not live" -k <extra>` without coverage.
 - Stop before item 26 (README): the owner sends the README rules first. After M4 (item 24),

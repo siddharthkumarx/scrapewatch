@@ -121,7 +121,13 @@ markers = [
   "perf: overhead budget tests; may be skipped on slow runners",
   "extras: needs an optional dependency",
 ]
-filterwarnings = ["error::DeprecationWarning:scrapewatch.*"]
+filterwarnings = [
+  "error::DeprecationWarning:scrapewatch.*",
+  # Unclosed connections, files and sockets fail the run (they surface on 3.13 as
+  # ResourceWarning, raised from a finalizer, so pytest reports them as unraisable).
+  "error::ResourceWarning",
+  "error::pytest.PytestUnraisableExceptionWarning",
+]
 
 [tool.coverage.run]
 branch = true

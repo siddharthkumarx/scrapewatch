@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sqlite3
 import statistics
 import threading
+import weakref
 from collections.abc import Iterable, Sequence
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -57,13 +59,27 @@ def _iso(dt: datetime | None) -> str | None:
     return dt.astimezone(timezone.utc).isoformat() if dt else None
 
 
+def _release(conn: sqlite3.Connection, pid: int) -> None:
+    """Close a connection whose store was garbage-collected without ``close()``.
+
+    Skipped in a forked child: SQLite connections must not be used (or closed) across a fork.
+    """
+    if os.getpid() == pid:
+        conn.close()
+
+
 class HistoryStore:
-    """One SQLite file (WAL mode). Safe for several worker processes writing one run."""
+    """One SQLite file (WAL mode). Safe for several worker processes writing one run.
+
+    A store that is dropped without ``close()`` (a run that was never finished) releases its
+    connection when it is garbage-collected.
+    """
 
     def __init__(self, path: Path) -> None:
         """Bind to ``path``; nothing is opened until ``open()``."""
         self.path = path
         self._conn: sqlite3.Connection | None = None
+        self._finalizer: weakref.finalize[Any, Any] | None = None
         self._lock = threading.RLock()
 
     @property
@@ -98,10 +114,16 @@ class HistoryStore:
             conn.close()
             raise HistoryError(f"cannot prepare history at {self.db_path}: {exc}") from exc
         self._conn = conn
+        # Runs before SQLite's own finalizer (weakref callbacks come first in a collection),
+        # so an abandoned store closes quietly instead of leaking or warning.
+        self._finalizer = weakref.finalize(self, _release, conn, os.getpid())
 
     def close(self) -> None:
         """Flush pending writes and close the connection."""
         with self._lock:
+            if self._finalizer is not None:
+                self._finalizer.detach()
+                self._finalizer = None
             if self._conn is not None:
                 self._conn.close()
                 self._conn = None
