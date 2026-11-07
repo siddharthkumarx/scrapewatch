@@ -450,7 +450,7 @@ v0.2 or later.
 
 ### 23. Three runnable examples on practice sites `[v0.1]`
 
-- [ ] Scope: `examples/httpx_books/` (books.toscrape.com, watch + httpx + rules + gate),
+- [x] Scope: `examples/httpx_books/` (books.toscrape.com, watch + httpx + rules + gate),
   `examples/playwright_quotes/` (quotes.toscrape.com/js/, Playwright hooks + route blocker),
   `examples/scrapy_scrapethissite/` (scrapethissite.com/pages/simple/, extension +
   middleware + pipeline), `examples/any_language/` (a shell+curl scraper writing JSONL and
@@ -461,6 +461,12 @@ v0.2 or later.
   pass for all four and at least 1 record each; the examples' rules files load in a unit
   test (offline).
 - Done when: results committed and linked from examples/README.md.
+- Notes: done. Live run `checks/results/2026-11-07-examples/` (request at 1eb8261): all four
+  pass, records 100, 30, 250 and 60, every command exit 0. `checks/run_check.py` now takes
+  artifact globs and keeps repo-relative paths (four `output/` directories would otherwise
+  overwrite each other); only reports and summaries are kept, not the scraped data. Gap found,
+  not in this item: A§11.3 says `scrapewatch check` reports cost when given `--events`, but the
+  CLI has no such option; the any_language README says a file check has no cost figures.
 
 ### 24. Benchmark run and docs/benchmarks.md `[v0.1]`
 
@@ -515,8 +521,8 @@ v0.2 or later.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 23** (three runnable examples on practice sites,
-run as one live check). Items 1 to 22 are done; M3 is logged (matrix after item 19). Check that
+Next item: **docs/build-progress.md item 24** (benchmark run and docs/benchmarks.md; write
+`tests/perf/test_overhead.py` first). Items 1 to 23 are done; M3 is logged (matrix after item 19). Check that
 ci.yml and full.yml are green on the last commit of main before starting.
 
 Notes for the next session:

@@ -115,8 +115,8 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 23** (three runnable examples on practice sites,
-run as one live check). Items 1 to 22 are done; M3 is logged (matrix after item 19). Check that
+Next item: **docs/build-progress.md item 24** (benchmark run and docs/benchmarks.md; write
+`tests/perf/test_overhead.py` first). Items 1 to 23 are done; M3 is logged (matrix after item 19). Check that
 ci.yml and full.yml are green on the last commit of main before starting.
 
 Notes for the next session:
