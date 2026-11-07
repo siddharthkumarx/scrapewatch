@@ -44,6 +44,9 @@ def price_event(event: ResponseEvent, cost: CostConfig) -> float:
     return 0.0
 
 
+NOT_MODIFIED = 304
+
+
 def waste_category(event: ResponseEvent) -> str | None:
     """The first matching waste category (retry, failed, unchanged_refetch, blockable) or None."""
     if event.attempt > 1:
@@ -54,8 +57,8 @@ def waste_category(event: ResponseEvent) -> str | None:
         or event.error is not None
     ):
         return "failed"
-    if event.cache.unchanged and event.wire_bytes > 0:
-        return "unchanged_refetch"
+    if event.cache.unchanged and event.status != NOT_MODIFIED and event.wire_bytes > 0:
+        return "unchanged_refetch"  # the whole body again; a 304 is the cheap path
     if event.resource_type in BLOCKABLE_TYPES:
         return "blockable"
     return None
@@ -80,6 +83,7 @@ class CostMeter:
         self.unknown_labels: set[str] = set()
         self._waste = WasteBreakdown()
         self._waste_costs: dict[str, list[float]] = {c: [] for c in WASTE_CATEGORIES}
+        self._skipped = 0  # requests skipped by the in-run dedupe (no event)
 
     def add(self, event: ResponseEvent) -> float:
         """Price and accumulate one event; returns its cost."""
@@ -106,7 +110,7 @@ class CostMeter:
         w.bytes_by_resource_type[rtype] = w.bytes_by_resource_type.get(rtype, 0) + event.wire_bytes
         if event.cache.deduped:
             w.deduped_requests += 1
-        if event.cache.conditional and event.cache.unchanged:
+        if event.cache.conditional and event.status == NOT_MODIFIED:
             w.conditional_hits += 1
         category = waste_category(event)
         if category is None:
@@ -120,6 +124,11 @@ class CostMeter:
         self._waste.blocked_requests += count
         self._waste.bytes_saved_estimate += bytes_saved_estimate
 
+    def add_deduped(self, count: int = 1) -> None:
+        """Account requests the in-run URL dedupe skipped (they cost nothing)."""
+        self._skipped += count
+        self._waste.deduped_requests += count
+
     def merge_extras(self, other: CostMeter) -> None:
         """Copy browser time and blocked-request counts (not events) from another meter."""
         self._browser_seconds += other._browser_seconds
@@ -127,6 +136,8 @@ class CostMeter:
             self._browser_seconds_by_domain[d] = self._browser_seconds_by_domain.get(d, 0) + secs
         self._waste.blocked_requests += other._waste.blocked_requests
         self._waste.bytes_saved_estimate += other._waste.bytes_saved_estimate
+        self._skipped += other._skipped
+        self._waste.deduped_requests += other._skipped
 
     def add_browser_seconds(self, seconds: float, *, domain: str | None = None) -> None:
         """Account browser time (Playwright/Crawlee browser crawlers).

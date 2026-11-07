@@ -142,3 +142,13 @@ pre-navigation hook. `AdaptivePlaywrightCrawler` is not supported.
 quotes.toscrape.com, webscraper.io test sites, scrapethissite.com, a few independent Shopify
 stores, open-data and docs sites. No large marketplaces, no login-protected sites, so the
 examples stay runnable and the project stays uncontroversial.
+
+**D22. A 304 is a conditional hit, not waste.** The first cost model counted every event with
+`cache.unchanged` and bytes as an unchanged refetch, so a 304 (a few hundred header bytes,
+exactly what conditional requests are for) was reported both as a conditional hit and as
+waste. Item 22 separates them: a conditional hit is a 304 answer to a request that carried
+`If-None-Match` or `If-Modified-Since`; an unchanged refetch is a full response whose body hash
+equals the stored one (the server ignored the validators or none were sent), which is bytes
+paid for nothing. Records from unchanged pages still count in the row count, because the
+output still holds them, but not in the changed-share check, where they would read as stale
+data.

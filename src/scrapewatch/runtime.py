@@ -39,6 +39,7 @@ from scrapewatch.history.store import HistoryStore, open_store, path_pattern
 from scrapewatch.models import (
     BAD_LABELS,
     BytesSource,
+    CacheInfo,
     ErrorInfo,
     Finding,
     FindingScope,
@@ -358,6 +359,13 @@ class Watch:
         )
         if error is not None and status is None:
             event.guard = GuardResult(label=GuardLabel.ERROR, signals=["transport error"])
+        cache = meta.get("cache")
+        if isinstance(cache, Mapping):
+            event.cache = CacheInfo(
+                conditional=bool(cache.get("conditional")),
+                unchanged=bool(cache.get("unchanged")),
+                deduped=bool(cache.get("deduped")),
+            )
         if request_key is not None:
             with self._lock:
                 first = retry_of or event.event_id
@@ -461,14 +469,27 @@ class Watch:
         data: Mapping[str, Any],
         *,
         source_event_id: str | None = None,
+        unchanged: bool = False,
     ) -> Record | None:
-        """Clean and check one scraped item; returns the Record with fixes and findings."""
-        return self._record_record(data, source_event_id=source_event_id)
+        """Clean and check one scraped item; returns the Record with fixes and findings.
+
+        ``unchanged=True`` marks an item from a page the conditional cache found unchanged
+        (``scrapewatch.waste.ConditionalCache``): it counts in the row count but not in the
+        changed-share check.
+        """
+        return self._record_record(data, source_event_id=source_event_id, unchanged=unchanged)
 
     @_guarded("record_record")
-    def _record_record(self, data: Mapping[str, Any], *, source_event_id: str | None) -> Record:
+    def _record_record(
+        self, data: Mapping[str, Any], *, source_event_id: str | None, unchanged: bool
+    ) -> Record:
         t0 = time.perf_counter()
-        record = Record(run_id=self.run.run_id, source_event_id=source_event_id, data=dict(data))
+        record = Record(
+            run_id=self.run.run_id,
+            source_event_id=source_event_id,
+            data=dict(data),
+            unchanged=bool(unchanged),
+        )
         for name, hook in self._record_hooks:
             try:
                 hook(self, record)
@@ -485,6 +506,8 @@ class Watch:
         c.records += 1
         if record.usable:
             c.usable_records += 1
+        if record.unchanged:
+            c.unchanged_records += 1
         for finding in record.findings:
             sev = finding.severity.value
             c.findings_by_severity[sev] = c.findings_by_severity.get(sev, 0) + 1
@@ -694,6 +717,17 @@ class Watch:
                 self.meter.add_blocked(int(count), bytes_saved_estimate=int(bytes_saved_estimate))
         except Exception as exc:
             self._monitor_error("add_blocked", exc)
+
+    def add_deduped(self, count: int = 1) -> None:
+        """Count requests the in-run URL dedupe skipped (``waste.deduped_requests``); never raises.
+
+        A skipped request is not a response event and costs nothing.
+        """
+        try:
+            with self._lock:
+                self.meter.add_deduped(int(count))
+        except Exception as exc:
+            self._monitor_error("add_deduped", exc)
 
     def monitor_error(self, where: str, exc: BaseException) -> None:
         """Count a failure inside an integration hook (fail open, architecture 14).

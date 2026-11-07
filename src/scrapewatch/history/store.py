@@ -315,7 +315,23 @@ class HistoryStore:
         self._write("INSERT OR REPLACE INTO size_baseline VALUES (?,?,?,?,?)", out)
         return len(out)
 
+    def write_cache_entries(
+        self, rows: Iterable[tuple[str, str | None, str | None, str | None, str]]
+    ) -> int:
+        """Upsert conditional-cache rows ``(url, etag, last_modified, body_sha256, seen_at)``."""
+        return self._write("INSERT OR REPLACE INTO cache_entries VALUES (?,?,?,?,?)", rows)
+
     # --- reads ------------------------------------------------------------------------
+    def cache_entry(self, url: str) -> tuple[str | None, str | None, str | None] | None:
+        """``(etag, last_modified, body_sha256)`` stored for ``url``, or None."""
+        rows = self._read(
+            "SELECT etag, last_modified, body_sha256 FROM cache_entries WHERE url = ?", (url,)
+        )
+        if not rows:
+            return None
+        r = rows[0]
+        return r["etag"], r["last_modified"], r["body_sha256"]
+
     def get_run(self, run_id: str) -> Run | None:
         """Return one run summary."""
         rows = self._read("SELECT summary_json FROM runs WHERE run_id = ?", (run_id,))

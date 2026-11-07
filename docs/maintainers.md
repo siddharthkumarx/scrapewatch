@@ -115,8 +115,8 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 22** (waste cutter: conditional-request cache and
-in-run URL dedupe). Items 1 to 21 are done; M3 is logged (matrix after item 19). Check that
+Next item: **docs/build-progress.md item 23** (three runnable examples on practice sites,
+run as one live check). Items 1 to 22 are done; M3 is logged (matrix after item 19). Check that
 ci.yml and full.yml are green on the last commit of main before starting.
 
 Notes for the next session:

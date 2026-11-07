@@ -117,6 +117,7 @@ class BatchStats:
         self.flagged_records = 0
         self.stats = StatsAccumulator()
         self.value_hashes: dict[str, str] = {}
+        self.unchanged_keys: set[str] = set()  # from unchanged pages: not in changed share
         self.currency_checked = 0
         self.currency_mismatches = 0
         self.currency_examples: list[Any] = []
@@ -138,6 +139,8 @@ class BatchStats:
         self.stats.add(record.data)
         if record.dedupe_key and record.usable:
             self.value_hashes.setdefault(record.dedupe_key, value_hash(record.data))
+            if record.unchanged:
+                self.unchanged_keys.add(record.dedupe_key)
         rule = self.rules.batch.currency if self.rules is not None else None
         if rule is not None:
             value = record.data.get(rule.field)
@@ -363,9 +366,10 @@ def batch_findings(
                         expected={"baseline_p50": base["p50"], "ratio": factor},
                     )
 
-    # Changed share: same dedupe key, different values, vs the previous passing run.
+    # Changed share: same dedupe key, different values, vs the previous passing run. Records
+    # from pages the conditional cache found unchanged are left out: they cannot have changed.
     prev = baseline.previous_value_hashes
-    common = [k for k in batch.value_hashes if k in prev]
+    common = [k for k in batch.value_hashes if k in prev and k not in batch.unchanged_keys]
     if common:
         changed = sum(1 for k in common if batch.value_hashes[k] != prev[k])
         share = changed / len(common) * 100

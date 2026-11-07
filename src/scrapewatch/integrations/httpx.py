@@ -16,6 +16,12 @@ Per-request options travel in ``request.extensions["scrapewatch"]``, for example
 ``client.get(url, extensions={"scrapewatch": {"request_key": url, "proxy": "residential"}})``:
 ``proxy``, ``attempt``, ``retry_times``, ``request_key``, ``resource_type``.
 
+With ``cache=ConditionalCache(...)`` (``scrapewatch.waste``) GET requests carry
+``If-None-Match``/``If-Modified-Since`` for pages seen before (headers you set yourself are
+kept), and each response updates the cache; :func:`unchanged` tells the scraper whether a
+response was a 304 or the same body as last time. Events carry ``cache.conditional`` and
+``cache.unchanged``.
+
 Transport errors (connect, timeout, TLS) never reach a response hook; record them with
 :func:`record_error` in the scraper's ``except httpx.RequestError`` block.
 
@@ -35,6 +41,7 @@ from typing import Any
 from scrapewatch.cost.bytes import content_length, header_bytes_estimate
 from scrapewatch.models import ResponseEvent
 from scrapewatch.runtime import Watch
+from scrapewatch.waste.cache import ConditionalCache, is_conditional
 
 INTEGRATION = "httpx"
 EXTENSION_KEY = "scrapewatch"
@@ -51,6 +58,8 @@ class _RequestState:
 # and the scraper's objects are never modified (redirect requests share ``extensions``).
 _REQUESTS: weakref.WeakKeyDictionary[Any, _RequestState] = weakref.WeakKeyDictionary()
 _LOCK = threading.Lock()
+# Response -> unchanged (304 or same body hash), for :func:`unchanged`.
+_UNCHANGED: weakref.WeakKeyDictionary[Any, bool] = weakref.WeakKeyDictionary()
 
 
 def _stamp(request: Any) -> None:
@@ -87,9 +96,12 @@ def _use_integration(watch: Watch) -> None:
 class _Recorder:
     """Shared logic of the sync and async hooks for one Watch."""
 
-    def __init__(self, watch: Watch, proxy: str | None) -> None:
+    def __init__(
+        self, watch: Watch, proxy: str | None, cache: ConditionalCache | None = None
+    ) -> None:
         self.watch = watch
         self.proxy = proxy
+        self.cache = cache
 
     def safely(self, where: str, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         try:
@@ -101,6 +113,23 @@ class _Recorder:
     # --- request ------------------------------------------------------------------------
     def on_request(self, request: Any) -> None:
         _stamp(request)
+        if self.cache is not None and str(request.method).upper() == "GET":
+            for name, value in self.cache.request_headers(str(request.url)).items():
+                if name not in request.headers:
+                    request.headers[name] = value
+
+    def cache_info(
+        self, response: Any, body: bytes | None, error: BaseException | None
+    ) -> dict[str, bool]:
+        conditional = is_conditional(response.request.headers)
+        status = int(response.status_code)
+        if self.cache is not None and error is None and str(response.request.method) == "GET":
+            unchanged = self.cache.observe(str(response.url), status, response.headers, body)
+        else:
+            unchanged = conditional and status == 304
+        with _LOCK:
+            _UNCHANGED[response] = unchanged
+        return {"conditional": conditional, "unchanged": unchanged}
 
     # --- response -----------------------------------------------------------------------
     def finish(self, response: Any, error: BaseException | None = None) -> ResponseEvent | None:
@@ -123,6 +152,7 @@ class _Recorder:
                 source = "content_length"
         body = _content(response)
         opts = _options(first)
+        cache = self.safely("cache", self.cache_info, response, body, error) or {}
         return self.watch.record_response(
             str(first.url),
             status=int(response.status_code),
@@ -138,7 +168,11 @@ class _Recorder:
             proxy=opts.get("proxy", self.proxy),
             attempt=_int(opts.get("attempt"), 1),
             error=error,
-            meta={**{k: opts[k] for k in _META_KEYS if k in opts}, "body_seen": body is not None},
+            meta={
+                **{k: opts[k] for k in _META_KEYS if k in opts},
+                "body_seen": body is not None,
+                "cache": cache,
+            },
         )
 
     def error(self, exc: BaseException, request: Any, proxy: str | None) -> ResponseEvent | None:
@@ -278,15 +312,31 @@ def _wrap_async(rec: _Recorder, response: Any) -> None:
     response.aclose = aclose
 
 
-def hooks(watch: Watch, *, proxy: str | None = None) -> dict[str, list[Callable[[Any], None]]]:
+def unchanged(response: Any) -> bool:
+    """True when the hooks found this response unchanged: a 304, or the cache's body hash.
+
+    Without a cache, only a 304 to a conditional request counts. False for a response the
+    hooks have not recorded yet (a streamed body not read or closed).
+    """
+    with _LOCK:
+        try:
+            return _UNCHANGED.get(response, False)
+        except TypeError:
+            return False
+
+
+def hooks(
+    watch: Watch, *, proxy: str | None = None, cache: ConditionalCache | None = None
+) -> dict[str, list[Callable[[Any], None]]]:
     """Return ``{"request": [...], "response": [...]}`` for ``httpx.Client(event_hooks=...)``.
 
     ``proxy`` is the cost label of the client's traffic (A§11.1); a request can override it
     with ``extensions={"scrapewatch": {"proxy": ...}}``. Bytes: ``num_bytes_downloaded`` once
     the body is read (measured, compressed). To keep hooks you already have, merge the lists:
-    ``{k: mine[k] + sw[k] for k in sw}``.
+    ``{k: mine[k] + sw[k] for k in sw}``. ``cache`` turns on conditional requests (see the
+    module docstring).
     """
-    rec = _Recorder(watch, proxy)
+    rec = _Recorder(watch, proxy, cache)
     _use_integration(watch)
 
     def on_request(request: Any) -> None:
@@ -299,10 +349,13 @@ def hooks(watch: Watch, *, proxy: str | None = None) -> dict[str, list[Callable[
 
 
 def async_hooks(
-    watch: Watch, *, proxy: str | None = None
+    watch: Watch, *, proxy: str | None = None, cache: ConditionalCache | None = None
 ) -> dict[str, list[Callable[[Any], Awaitable[None]]]]:
-    """Same for ``httpx.AsyncClient(event_hooks=...)`` (the hooks are coroutines)."""
-    rec = _Recorder(watch, proxy)
+    """Same for ``httpx.AsyncClient(event_hooks=...)`` (the hooks are coroutines).
+
+    The cache is read and written from the hooks (SQLite, batched writes), as in ``hooks``.
+    """
+    rec = _Recorder(watch, proxy, cache)
     _use_integration(watch)
 
     async def on_request(request: Any) -> None:

@@ -230,6 +230,9 @@ class Record(_Model):
     fixes: list[Fix] = Field(default_factory=list)
     usable: bool = True  # False when any finding has severity hold, or schema failed
     dedupe_key: str | None = None
+    # From a page the conditional cache found unchanged (item 22): still counted in the row
+    # count, left out of the changed-share check (it cannot have changed).
+    unchanged: bool = False
 
 
 class CostBreakdown(_Model):
@@ -329,6 +332,7 @@ class RunCounts(_Model):
     by_domain: dict[str, int] = Field(default_factory=dict)  # responses per domain
     by_bytes_source: dict[str, int] = Field(default_factory=dict)  # how wire_bytes was measured
     events_stored: int = 0  # events written to history by this process
+    unchanged_records: int = 0  # records from pages the conditional cache found unchanged
 
 
 class FindingSample(_Model):

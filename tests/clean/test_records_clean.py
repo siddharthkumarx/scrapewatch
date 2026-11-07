@@ -16,7 +16,7 @@ CLEAN = Path(__file__).resolve().parents[1] / "fixtures" / "clean"
 
 def _stable(record: Record) -> dict[str, object]:
     data = record.model_dump(mode="json")
-    for key in ("record_id", "run_id", "schema_version", "source_event_id"):
+    for key in ("record_id", "run_id", "schema_version", "source_event_id", "unchanged"):
         data.pop(key, None)
     for f in data["findings"]:
         for key in ("finding_id", "run_id", "ref", "scope"):

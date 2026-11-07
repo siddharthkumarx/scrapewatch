@@ -1,6 +1,7 @@
 import gc
 import json
 import multiprocessing
+import os
 import sqlite3
 import sys
 import warnings
@@ -15,7 +16,7 @@ from scrapewatch.errors import HistoryError
 from scrapewatch.history import migrations
 from scrapewatch.history.baselines import Baseline, compute_baseline
 from scrapewatch.history.stats import FieldStats, field_stats_of, quantile, value_hash
-from scrapewatch.history.store import HistoryStore, open_store, path_pattern
+from scrapewatch.history.store import HistoryStore, _release, open_store, path_pattern
 from scrapewatch.models import (
     Finding,
     FindingScope,
@@ -381,3 +382,15 @@ def test_close_detaches_the_collector_hook(tmp_path: Path) -> None:
     store.close()
     with HistoryStore(tmp_path) as again:
         assert again.event_count("r") == 0
+
+
+def test_collector_hook_leaves_a_forked_childs_copy_alone(tmp_path: Path) -> None:
+    conn = sqlite3.connect(tmp_path / "x.sqlite")
+    try:
+        _release(conn, os.getpid() + 1)  # as if run in a child after fork
+        assert conn.execute("SELECT 1").fetchone() == (1,)
+        _release(conn, os.getpid())
+        with pytest.raises(sqlite3.ProgrammingError):
+            conn.execute("SELECT 1")
+    finally:
+        conn.close()

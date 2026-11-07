@@ -427,7 +427,7 @@ v0.2 or later.
 
 ### 22. Waste cutter: conditional-request cache and in-run URL dedupe
 
-- [ ] Scope: `ConditionalCache` over `cache_entries` (ETag, Last-Modified, body hash),
+- [x] Scope: `ConditionalCache` over `cache_entries` (ETag, Last-Modified, body hash),
   helpers for httpx/requests to add conditional headers and observe responses, 304 and
   same-hash → `cache.unchanged`, records from unchanged pages marked so the engine does not
   count them as new (`Record` gets `unchanged: bool` in schema_version 1 as an optional
@@ -437,6 +437,16 @@ v0.2 or later.
   `unchanged_refetch_*` zero; server ignoring conditionals but same body: unchanged by hash;
   duplicate URLs in one run deduped and counted.
 - Done when: pass.
+- Notes: done. Contract change (D22, A§11.2): a 304 to a conditional request is a conditional
+  hit and never an unchanged refetch; an unchanged refetch is a full response with the stored
+  body hash. The cost golden's e10 became a 200 (server ignored the validators) so the golden
+  still covers the refetch; its conditional hits went from 1 to 0. `cache=` on httpx
+  `hooks`/`async_hooks` and requests `adapter`/`mount`, plus `unchanged(response)` in both;
+  `record_record(..., unchanged=True)` (Record.unchanged, `counts.unchanged_records`) keeps
+  those records in the row count and out of `batch.changed_share`. `RunDedupe(w)` counts
+  skipped URLs through the new `Watch.add_deduped` (not events, so response counts stay
+  real). Cache keys are canonical, redacted URLs; writes batched; failures fail open. Tests:
+  `tests/waste/test_cache.py`, `test_cache_httpx.py`, `test_cache_requests.py` (extras).
 
 ### 23. Three runnable examples on practice sites `[v0.1]`
 
@@ -505,8 +515,8 @@ v0.2 or later.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 22** (waste cutter: conditional-request cache and
-in-run URL dedupe). Items 1 to 21 are done; M3 is logged (matrix after item 19). Check that
+Next item: **docs/build-progress.md item 23** (three runnable examples on practice sites,
+run as one live check). Items 1 to 22 are done; M3 is logged (matrix after item 19). Check that
 ci.yml and full.yml are green on the last commit of main before starting.
 
 Notes for the next session:

@@ -147,6 +147,10 @@ Field notes:
 
 `usable` is false when the record failed schema validation, has a finding of severity hold,
 or is a duplicate (the later copy). Only usable records count in cost per usable record.
+`unchanged` (optional, default false; added in item 22 within schema_version 1) marks an item
+from a page the conditional cache found unchanged: it counts in records, usable records and
+the row count, adds to `counts.unchanged_records`, and is left out of the changed-share check
+(section 8.2), because it cannot have changed.
 
 ### 2.3 Finding
 
@@ -266,12 +270,13 @@ class Watch:
                         body_bytes=None, bytes_source="unknown", final_url=None, method="GET",
                         elapsed_ms=None, resource_type="document", proxy=None, attempt=1,
                         retry_of=None, error=None, meta=None) -> ResponseEvent | None
-    def record_record(self, data, *, source_event_id=None) -> Record | None
+    def record_record(self, data, *, source_event_id=None, unchanged=False) -> Record | None
     def finish(self, *, crashed: bool = False) -> Run
     verdict: Verdict                      # property
     def report_path(self) -> Path | None
     def add_browser_seconds(self, seconds, *, domain=None) -> None   # browser time (11.2)
     def add_blocked(self, count=1, *, bytes_saved_estimate=0) -> None   # waste cutter (11.3)
+    def add_deduped(self, count=1) -> None   # requests skipped by RunDedupe (waste cutter)
     def monitor_error(self, where, exc) -> None   # integrations count their own failures
 ```
 
@@ -314,6 +319,30 @@ except httpx.RequestError as exc:
 An error while a body is being read is recorded by the hooks (with the status) and a later
 `record_error` for the same request is ignored. Interrupts and task cancellation are not
 recorded.
+
+Conditional requests and in-run dedupe (item 22, `scrapewatch.waste`):
+
+```python
+seen = RunDedupe(w)                                   # skipped URLs → waste.deduped_requests
+with ConditionalCache(w.settings.history.path, watch=w) as cache:
+    client = httpx.Client(event_hooks=sw_httpx.hooks(w, cache=cache))
+    for url in urls:
+        if seen.seen_before(url):                     # canonical URL (section 10.5 defaults)
+            continue
+        r = client.get(url)                           # If-None-Match / If-Modified-Since added
+        changed = not sw_httpx.unchanged(r)           # False for a 304 or the same body hash
+        for item in (parse(r.text) if changed else items_saved_for(url)):
+            w.record_record(item, unchanged=not changed)
+```
+
+`hooks(w, cache=...)` and `async_hooks(w, cache=...)` add the cache's validators to GET
+requests that do not carry their own, update the cache from every complete GET response
+(status 200 or 304; the cache key is the final URL) and set `cache.conditional` and
+`cache.unchanged` on the event. Without a cache, a 304 to a request that carried validators
+is still `unchanged`. The requests adapter takes the same `cache=` (`adapter`, `mount`) and
+has `sw_requests.unchanged(response)`; a streamed body larger than the guard window is never
+hashed. The cache fails open (lookups return no validators, updates report "changed") and
+counts its failures in the Watch given to it.
 
 ### 3.2 check()
 
@@ -804,7 +833,7 @@ Compared with the baseline (section 12.3) when it exists; otherwise info finding
 | `batch.null_rate` | alias view of coverage for the report | | |
 | `batch.distribution.numeric` | PSI of a numeric field vs baseline (10 quantile bins) | PSI > 0.25 | PSI > `psi_hold` if set |
 | `batch.distribution.categorical` | share of values never seen in baseline | > 10% | |
-| `batch.changed_share` | share of same-key records whose value hash changed vs previous run | > 50% (or < `warn_below_pct`) | > `hold_above_pct` if set |
+| `batch.changed_share` | share of same-key records whose value hash changed vs previous run (records marked `unchanged` left out) | > 50% (or < `warn_below_pct`) | > `hold_above_pct` if set |
 | `batch.unit_error` | median of field vs baseline median; ratio within 15% of 100, 1000, 1/100, 1/1000 | | hold (default severity) |
 | `batch.currency` | share of records where `currency` disagrees with the currency parsed from `value_field` or is outside `expected` | | > 1% |
 | `batch.duplicates` | duplicates share | > 1% | > `duplicates_hold_pct` if set |
@@ -1107,7 +1136,7 @@ per_1000_usable_records = cost_per_usable_record × 1000  (same rule)
 waste:
   retry_cost             = Σ cost(event) with attempt > 1
   failed_cost            = Σ cost(event) with label in BAD_LABELS or status ≥ 400 or error
-  unchanged_refetch_cost = Σ cost(event) with cache.unchanged and wire_bytes > 0
+  unchanged_refetch_cost = Σ cost(event) with cache.unchanged, status ≠ 304 and wire_bytes > 0
   blockable_cost         = Σ cost(event) with resource_type in {image, media, font}
   total_waste_cost       = sum of the four (an event is counted once, in the first matching
                            category in this order: retry, failed, unchanged, blockable)
@@ -1116,7 +1145,11 @@ waste:
 Bytes by resource type and the four waste categories are also reported in bytes and request
 counts. Browser time given with a domain (`add_browser_seconds(s, domain=...)`) is charged to that
 domain; other browser time is spread by document-response share (by response share when the
-run had no documents). A request skipped by the in-run dedupe costs nothing. Costs are stored
+run had no documents). A request skipped by the in-run dedupe costs nothing: it is not an
+event, only `deduped_requests` (`Watch.add_deduped`; an event an integration marks
+`cache.deduped` is counted there too and priced at 0). `conditional_hits` counts 304 answers
+to conditional requests; a 304 is the cheap path, so it is never an unchanged refetch (D22).
+`blocked_requests` and `bytes_saved_estimate` come from the route blocker. Costs are stored
 in the configured currency with full float precision; the report
 rounds for display and shows "< $0.0001" rather than 0. When the cost per usable record is
 below 0.01 (in the run's currency) the headline figure everywhere (report tiles, history
@@ -1175,6 +1208,11 @@ size_baseline(domain TEXT, path_pattern TEXT, n INTEGER, p50_bytes INTEGER, upda
 cache_entries(url TEXT PRIMARY KEY, etag TEXT, last_modified TEXT, body_sha256 TEXT, seen_at TEXT);
 -- indexes: events(run_id), events(domain, path_pattern, label), runs(name, started_at), findings(run_id)
 ```
+
+`cache_entries` belongs to the waste cutter's `ConditionalCache` (item 22): the key is the
+canonical URL (section 10.5 defaults) with secret-looking query values redacted, never a body,
+only its SHA-256. The cache uses its own connection, reads by primary key and writes in
+batches of 200 entries or every 2 seconds, and on `close()`.
 
 `path_pattern` replaces digit runs in the URL path with `{n}` and keeps at most three
 segments, so `/catalogue/page-2.html` and `/catalogue/page-3.html` share a size baseline.

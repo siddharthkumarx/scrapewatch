@@ -16,7 +16,7 @@ Event costs (`wire_bytes / 1e9 × per_gb`, or `per_1000_requests / 1000` for an 
 | e07 | quotes | residential | font | 125,000 | 0.001 | blockable |
 | e08 | quotes | residential | document | 100,000 | 0.0008 | failed (challenge) |
 | e09 | quotes | unblocker (API, 2.5 / 1000) | document | 3,000,000 | 0.0025 | |
-| e10 | quotes | datacenter | document | 50,000 | 0.00004 | unchanged refetch |
+| e10 | quotes | datacenter | document | 50,000 | 0.00004 | unchanged refetch (conditional request, server sent the same body again with 200) |
 | e11 | books | mystery-pool (unknown) | document | 1,000,000 | 0 | (finding cost.unknown_label) |
 | e12 | scrapethissite | direct (0) | document | 400,000 | 0 | |
 | e13 | quotes | residential | image | 1,000,000 | 0.008 | retry (also failed, unchanged, blockable: retry wins) |
@@ -37,4 +37,5 @@ Sums:
 
 Waste: retry 2 requests, 2,000,000 bytes, 0.0088; failed 3, 600,000, 0.0012; unchanged 1,
 50,000, 0.00004; blockable 2, 375,000, 0.003; total 0.01304. Bytes by type: document
-9,550,000, image 1,250,000, font 125,000, xhr 0. Conditional hits: 1 (e10).
+9,550,000, image 1,250,000, font 125,000, xhr 0. Conditional hits: 0 (a hit is a 304; e10
+was a full 200).

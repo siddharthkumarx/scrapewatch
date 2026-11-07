@@ -18,6 +18,11 @@ guard's body window. Redirects: requests sends each hop through the adapter, so 
 an event; the response that follows a redirect carries the first URL as ``url`` and its own
 as ``final_url``, so redirect rules (login, geo, consent) apply.
 
+With ``cache=ConditionalCache(...)`` (``scrapewatch.waste``) GET requests carry
+``If-None-Match``/``If-Modified-Since`` for pages seen before (headers you set are kept) and
+each response updates the cache; :func:`unchanged` tells whether a response was a 304 or the
+same body as last time. A streamed body larger than the guard's window is never hashed.
+
 Retries inside urllib3 (``max_retries``) are not visible to the adapter; to count retries
 done by your own code, record them with ``Watch.record_response(meta={"request_key": ...})``.
 Every hook fails open: errors inside scrapewatch are counted in ``counts.monitor_errors``.
@@ -36,6 +41,7 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 from scrapewatch.cost.bytes import content_length, header_bytes_estimate
 from scrapewatch.models import ResponseEvent
 from scrapewatch.runtime import Watch
+from scrapewatch.waste.cache import ConditionalCache, is_conditional
 
 INTEGRATION = "requests"
 CHAIN_TTL_SECONDS = 60.0  # a redirect's follow-up must arrive within this time
@@ -81,10 +87,31 @@ def _use_integration(watch: Watch) -> None:
         watch.run.integration = INTEGRATION
 
 
+# Response -> unchanged (304 or same body hash), for :func:`unchanged`.
+_UNCHANGED: weakref.WeakKeyDictionary[Any, bool] = weakref.WeakKeyDictionary()
+_UNCHANGED_LOCK = threading.Lock()
+
+
+def unchanged(response: Any) -> bool:
+    """True when the adapter found this response unchanged: a 304, or the cache's body hash.
+
+    Without a cache, only a 304 to a conditional request counts. False for a response not
+    recorded yet (a stream not exhausted or closed).
+    """
+    with _UNCHANGED_LOCK:
+        try:
+            return _UNCHANGED.get(response, False)
+        except TypeError:
+            return False
+
+
 class _Recorder:
-    def __init__(self, watch: Watch, proxy: str | None) -> None:
+    def __init__(
+        self, watch: Watch, proxy: str | None, cache: ConditionalCache | None = None
+    ) -> None:
         self.watch = watch
         self.proxy = proxy
+        self.cache = cache
         self.counters: weakref.WeakKeyDictionary[Any, _Counter] = weakref.WeakKeyDictionary()
         self._local = threading.local()
 
@@ -143,6 +170,28 @@ class _Recorder:
             return length + header_bytes_estimate(headers), "content_length"
         return body_len + header_bytes_estimate(headers), "decoded"
 
+    def add_conditional(self, request: Any) -> None:
+        if self.cache is None or str(request.method or "GET").upper() != "GET":
+            return
+        for name, value in self.cache.request_headers(str(request.url)).items():
+            if name not in request.headers:
+                request.headers[name] = value
+
+    def cache_info(
+        self, response: Any, body: bytes | None, error: BaseException | None
+    ) -> dict[str, bool]:
+        request = response.request
+        conditional = request is not None and is_conditional(request.headers)
+        status = int(response.status_code)
+        method = str(getattr(request, "method", None) or "GET").upper()
+        if self.cache is not None and error is None and method == "GET":
+            unchanged = self.cache.observe(str(response.url), status, response.headers, body)
+        else:
+            unchanged = conditional and status == 304
+        with _UNCHANGED_LOCK:
+            _UNCHANGED[response] = unchanged
+        return {"conditional": conditional, "unchanged": unchanged}
+
     def record(
         self,
         response: Any,
@@ -158,6 +207,7 @@ class _Recorder:
         wire, source = self.wire(response, body, body_len)
         raw = response.raw
         headers = getattr(raw, "headers", None) or response.headers
+        cache = self.safely("cache", self.cache_info, response, body if body_seen else None, error)
         event = self.watch.record_response(
             origin or url,
             status=int(response.status_code),
@@ -171,7 +221,7 @@ class _Recorder:
             elapsed_ms=(time.perf_counter() - started) * 1000.0,
             proxy=self.proxy,
             error=error,
-            meta={"body_seen": body_seen},
+            meta={"body_seen": body_seen, "cache": cache or {}},
         )
         self._remember_redirect(response, origin or url)
         return event
@@ -260,9 +310,15 @@ def _adapter_class() -> Any:
         class ScrapewatchAdapter(HTTPAdapter):
             """``HTTPAdapter`` that records every response and transport error."""
 
-            def __init__(self, watch: Watch, proxy: str | None = None, **kwargs: Any) -> None:
+            def __init__(
+                self,
+                watch: Watch,
+                proxy: str | None = None,
+                cache: ConditionalCache | None = None,
+                **kwargs: Any,
+            ) -> None:
                 super().__init__(**kwargs)
-                self.scrapewatch = _Recorder(watch, proxy)
+                self.scrapewatch = _Recorder(watch, proxy, cache)
                 _use_integration(watch)
 
             def build_response(self, req: Any, resp: Any) -> Any:
@@ -273,6 +329,7 @@ def _adapter_class() -> Any:
             def send(self, request: Any, stream: bool = False, *args: Any, **kwargs: Any) -> Any:
                 rec = self.scrapewatch
                 started = time.perf_counter()
+                rec.safely("conditional headers", rec.add_conditional, request)
                 try:
                     response = super().send(request, stream, *args, **kwargs)
                 except Exception as exc:
@@ -311,17 +368,31 @@ def _adapter_class() -> Any:
         return _CLASS
 
 
-def adapter(watch: Watch, *, proxy: str | None = None, **adapter_kwargs: Any) -> Any:
+def adapter(
+    watch: Watch,
+    *,
+    proxy: str | None = None,
+    cache: ConditionalCache | None = None,
+    **adapter_kwargs: Any,
+) -> Any:
     """Return an ``HTTPAdapter`` subclass instance to ``session.mount("https://", ...)``.
 
-    ``proxy`` is the cost label of the traffic through this adapter (A§11.1);
-    ``adapter_kwargs`` go to ``HTTPAdapter`` (``max_retries``, ``pool_maxsize``, ...).
+    ``proxy`` is the cost label of the traffic through this adapter (A§11.1); ``cache`` turns
+    on conditional requests (module docstring); ``adapter_kwargs`` go to ``HTTPAdapter``
+    (``max_retries``, ``pool_maxsize``, ...).
     """
-    return _adapter_class()(watch, proxy, **adapter_kwargs)
+    return _adapter_class()(watch, proxy, cache, **adapter_kwargs)
 
 
-def mount(session: Any, watch: Watch, *, proxy: str | None = None, **adapter_kwargs: Any) -> None:
+def mount(
+    session: Any,
+    watch: Watch,
+    *,
+    proxy: str | None = None,
+    cache: ConditionalCache | None = None,
+    **adapter_kwargs: Any,
+) -> None:
     """Mount one recording adapter on ``http://`` and ``https://`` of ``session``."""
-    a = adapter(watch, proxy=proxy, **adapter_kwargs)
+    a = adapter(watch, proxy=proxy, cache=cache, **adapter_kwargs)
     session.mount("http://", a)
     session.mount("https://", a)
