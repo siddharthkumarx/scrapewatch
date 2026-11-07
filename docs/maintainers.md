@@ -115,36 +115,60 @@ does not depend on it.
 
 ## Continue here
 
-Next item: **docs/build-progress.md item 16** (httpx integration). M1, M2 (items 1 to 14) and
-the post-M2 report fixes (908d3ef) are done and green on GitHub. Item 15 (alerts, ef18d7e) is
-done and green locally; first confirm its ci.yml run 42271244740 and full.yml run
-42271244600 are green (fix and log in docs/incidents.md if not), then start item 16.
+Next item: **docs/build-progress.md item 21** (waste cutter: Playwright route blocker and
+compression headers). Items 1 to 20 are done; M3 is logged (matrix after item 19). Item 20
+(42db60c) turned CI red on mypy; the fix 5ef8db3 is pushed: first confirm its ci.yml and
+full.yml runs are green (the crawlee extras job must pass too), then start item 21.
+
+Plan for item 21 (worked out, not committed):
+
+- `Watch.add_blocked(count=1, *, bytes_saved_estimate=0)`: public, takes the lock, calls
+  `meter.add_blocked`, fails open; list it in A§3.1.
+- In `integrations/playwright.py`: a module `ABORTED` WeakSet of requests the blocker aborted
+  (the `requestfailed` listener skips them, so a block is not an error event), and per-Watch
+  recent sizes per resource type (`note_size` in `_Recorder.record`, `median_size` for
+  estimates; deque of 200).
+- `waste/routes.py`: `context.route("**/*", handler)`; never block the document; allow
+  globs (fnmatch on the URL) win; block when the resource type is in `policy.resource_types`,
+  the host is in `waste/trackers.txt` (host or subdomain) with `block_trackers`, or the URL
+  matches `block_url_globs`. Blocked: add to `ABORTED`, `route.abort("blockedbyclient")`,
+  `watch.add_blocked(1, bytes_saved_estimate=median or A§11.3 table)`. Otherwise
+  `route.fallback()` so the user's own routes still run. Handler errors fall back (fail open).
+- `waste/trackers.txt` (about 25 ad and analytics hosts, comment header) and
+  `waste/headers.py::compression_headers()` returning `gzip, deflate, br` only when brotli
+  or brotlicffi is importable (else `gzip, deflate`, so the client can always decode).
+- Tests in `tests/waste/test_routes_playwright.py` (the name must contain `playwright` for the
+  extras job) reusing `tests/integrations/pw_site.py`: 3 images (1 allowlisted), 1 font, 1
+  tracker script on a tracker host (route intercepts it, no network) → 4 aborted, the
+  allowlisted image loads, no error events, `waste.blocked_requests == 4` and the estimate
+  equals the table values; `resource_types: []` blocks only the tracker.
 
 Notes for the next session:
 
 - Local gate: `uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run
-  pytest -m "not live"`. Export `UV_SYSTEM_CERTS=1` and unset `UV_NATIVE_TLS`. The sandbox
-  cannot download the gitleaks binary; use the gitleaks job of full.yml as the evidence.
+  pytest -m "not live"`. Export `UV_SYSTEM_CERTS=1` and unset `UV_NATIVE_TLS`. Work with
+  `uv sync --python 3.12 --group dev --all-extras`, and run mypy also after
+  `uv sync --group dev --extra httpx` (CI's environment) before pushing integration tests.
+- Browser tests locally: `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium` (the locked Playwright
+  wants a newer browser build than the sandbox has; CI installs its own and never skips).
+  Crawlee's Playwright crawler needs Chromium's sandbox off as root (the test does that).
+- Confirm CI from the shell: the public API works without auth, e.g.
+  `curl -s "https://api.github.com/repos/siddharthkumarx/scrapewatch/actions/runs?head_sha=$(git rev-parse HEAD)"`.
 - `tests/conftest.py` runs every test in its own temporary working directory and clears
   `SCRAPEWATCH_*` variables, so default history paths never touch the repository.
 - Runtime structure (`runtime.py`): response hooks `guard` then `cost`, record hook `checks`;
-  each hook fails open (counted in `monitor_errors`). Records are never kept: `BatchStats`
-  (`checks/batch.py`) accumulates counts, field stats, value hashes and currency mismatches.
-  `finish()` order: flush, aggregate (workers), cost, status, verdict (fails closed), overhead,
-  report (HTML and summary.json), store, alerts, prune, close.
-- Normalizers: all done (items 10 and 11). Shared number parsing in `clean/_numeric.py`,
-  currency table in `clean/_currency.py`. The pipeline passes the field type as the reserved
-  option `_field_type`; a normalizer's `note` becomes an info finding. Record finding and fix
-  examples are on `Run.samples` (A§2.4), filled by `checks/batch.SampleKeeper`.
-- A normalizer's `extra` (the currency of a price) fills an empty field with a Fix, and a
-  conflicting non-empty value gives a `clean.<name>.extra_conflict` info finding that
-  `batch.currency` counts.
-- Still open for later items: write `tests/perf/test_overhead.py` (architecture 15) before item 24 (only the 64 KiB classify
-  budget is tested so far, in `tests/guard/test_classify.py`).
-- mypy runs in CI without most extras (their modules are `Any` there) but locally with
-  them: run `uv run mypy` after `uv sync --group dev --extra httpx` and again after
-  `--all-extras` before pushing integration tests (docs/incidents.md, 2026-11-07).
+  each hook fails open (counted in `monitor_errors`); integrations report their own failures
+  through `Watch.monitor_error`. `finish()` order: flush, aggregate (workers), cost, status,
+  verdict (fails closed), overhead, report (HTML and summary.json), store, alerts, prune,
+  close.
+- Guard inputs from integrations: `meta={"body_seen": False}` when the body was never read
+  (only status, header, cookie, URL and content-type signals apply); a body may be a prefix
+  when `body_bytes` (the full decoded length) is larger (`extract_features(total_bytes=)`).
+- Still open for later items: write `tests/perf/test_overhead.py` (architecture 15) before
+  item 24 (only the 64 KiB classify budget is tested so far, in
+  `tests/guard/test_classify.py`). On 3.13 tests that never finish a Watch leave SQLite
+  connections open (ResourceWarning); closing them in fixtures is a small follow-up.
 - Tests that need an extra are marked `extras` and carry the extra's name in their id; the
   extras jobs of full.yml run `-m "extras and not live" -k <extra>` without coverage.
-- full.yml installs Chromium only once `tests/integrations/` exists; from item 16 on the
-  extras jobs take several minutes.
+- Stop before item 26 (README): the owner sends the README rules first. After M4 (item 24),
+  post a five-line status.
