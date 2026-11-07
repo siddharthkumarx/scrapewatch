@@ -85,7 +85,7 @@ def test_beautifulsoup_crawler_measured(base: str, monkeypatch: pytest.MonkeyPat
     )
     sw_crawlee.attach(crawler, w)
 
-    @crawler.router.default_handler
+    @crawler.router.default_handler  # type: ignore[untyped-decorator, unused-ignore]
     async def handler(context: Any) -> None:
         for pod in context.soup.select("article.product_pod"):
             w.record_record({"title": pod.h3.text, "price": pod.select_one(".price").text})
@@ -145,7 +145,7 @@ def test_playwright_crawler(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     sw_crawlee.attach(crawler, w, proxy="browser")
 
-    @crawler.router.default_handler
+    @crawler.router.default_handler  # type: ignore[untyped-decorator, unused-ignore]
     async def handler(context: Any) -> None:
         await context.page.wait_for_load_state("networkidle")
 

@@ -141,6 +141,9 @@ Notes for the next session:
   `batch.currency` counts.
 - Still open for later items: write `tests/perf/test_overhead.py` (architecture 15) before item 24 (only the 64 KiB classify
   budget is tested so far, in `tests/guard/test_classify.py`).
+- mypy runs in CI without most extras (their modules are `Any` there) but locally with
+  them: run `uv run mypy` after `uv sync --group dev --extra httpx` and again after
+  `--all-extras` before pushing integration tests (docs/incidents.md, 2026-11-07).
 - Tests that need an extra are marked `extras` and carry the extra's name in their id; the
   extras jobs of full.yml run `-m "extras and not live" -k <extra>` without coverage.
 - full.yml installs Chromium only once `tests/integrations/` exists; from item 16 on the

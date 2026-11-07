@@ -20,6 +20,21 @@ file becomes public.
 
 ## Entries
 
+## 2026-11-07 — mypy red on CI after the Crawlee adapter
+
+- Item: build-progress item 20 (CI)
+- Symptom: ci.yml run 42364557356 and the four matrix jobs of full.yml run 42364557470
+  failed in `mypy`: `Untyped decorator makes function "handler" untyped` in
+  `tests/integrations/test_crawlee.py`.
+- Cause: CI type-checks without the crawlee extra, where Crawlee's router decorator is `Any`;
+  locally all extras were installed, so the decorator was typed and mypy passed. The same
+  trap was avoided for Scrapy in item 19 but mypy was not re-run without extras here.
+- Fix: `# type: ignore[untyped-decorator, unused-ignore]` on the two handlers (green with and
+  without extras).
+- Prevention: before pushing a change to an integration test, run mypy in both environments
+  (`uv sync --group dev --extra httpx` and `--all-extras`); noted in docs/maintainers.md.
+- Minutes spent (Actions): one ci.yml and one full.yml run.
+
 ## 2026-11-07 — streamed responses closed unread were labelled empty
 
 - Item: build-progress item 16 (found while starting item 17)
