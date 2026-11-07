@@ -403,6 +403,19 @@ SCRAPEWATCH_CONFIG = "scrapewatch.yml"      # optional
 SCRAPEWATCH_PROXY_META_KEY = "proxy_label"  # request.meta key holding the proxy label
 ```
 
+Fixed in item 19: more settings are `SCRAPEWATCH_ENABLED` (default True), `SCRAPEWATCH_NAME`
+(default: the spider's name), `SCRAPEWATCH_PROXY` (label when the meta key is absent) and
+`SCRAPEWATCH_DROP_UNUSABLE` (default False). The extension keeps the Watch on
+`crawler.scrapewatch`, finishes it on `spider_closed` (`crashed` for the reasons `shutdown`
+and `cancelled`) and sets `scrapewatch/*` stats (verdict, run id, counts, labels, cost, report
+path); it never closes the spider. The middleware gives each request a key in
+`request.meta["scrapewatch_request_key"]` that its retries share, so a retry is linked to its
+first attempt; a redirect hop gets a new key, and the response after a redirect carries
+`meta["redirect_urls"][0]` as `url`. `IgnoreRequest` (robots.txt, offsite) is not a failure
+and is not recorded. The pipeline writes fixes back to the item (fields a `scrapy.Item` does
+not declare are left out) and never puts findings in items. Middleware methods take
+`spider=None`, as Scrapy 2.13+ expects.
+
 Crawlee for Python:
 
 ```python
@@ -1095,7 +1108,7 @@ both per-1,000 fields (null when the per-record cost is 0.01 or more), and
 | httpx | `response.num_bytes_downloaded` after the body is read, plus header estimate, summed over the redirect hops | measured (content_length for a response a transport built already read, such as `httpx.Response(content=...)` in a mock transport: no stream count exists, so Content-Length is used) | Hook runs on the response event before the body is read; the integration wraps `response.read()`/`aread()` and `close()`/`aclose()` to get the final count (verified in `tests/integrations/test_httpx.py` with gzip bodies). A streamed response closed early counts the bytes read so far. HTTP/2 framing and TLS bytes are not included. |
 | requests | urllib3's `HTTPResponse.tell()` once the body is read (compressed bytes off the socket); for chunked bodies, where `tell()` stays 0, the raw chunk payload urllib3 passes to its decoder; plus header estimate | measured (content_length, then decoded, only when neither count exists) | Verified in `tests/integrations/test_requests.py` against a local gzip server with Content-Length, close-delimited and chunked bodies, on urllib3 2.x and 1.26. Chunk-size lines are not counted. The chunked count wraps urllib3's private `_decode` on each response; if it is missing, the labelled fallbacks apply. Retries inside urllib3 (`max_retries`) are not seen. Each redirect hop is an event; the response after a redirect has the first URL as `url` and its own as `final_url`. |
 | Playwright | `request.sizes()` at `requestfinished` → `responseBodySize + responseHeadersSize` (encoded) | measured (verified in `tests/integrations/test_playwright.py`: a gzip image counts its encoded size) | Responses served from the browser cache or a service worker report 0 or cached sizes; events carry `cache.unchanged` when `from_cache`-like signals are available. Aborted routes record 0 bytes and an estimate in `bytes_saved_estimate` (median size of that resource type seen earlier in the run, else a fixed table: image 45 KiB, font 60 KiB, media 500 KiB, script 80 KiB, stylesheet 30 KiB). |
-| Scrapy | middleware at priority 900 sees `len(response.body)` before `HttpCompressionMiddleware` (590) decodes it, plus header estimate | measured | Must be verified in the integration test with a gzip fixture served through the full middleware chain; if Scrapy's ordering changes, fall back to Content-Length and label accordingly. |
+| Scrapy | middleware at priority 900 sees `len(response.body)` before `HttpCompressionMiddleware` (590) decodes it, plus header estimate; 0 for responses flagged `cached` | measured | Verified in `tests/integrations/test_scrapy.py` by a real crawl through the full chain (Scrapy 2.19): the body at 900 equals the gzip bytes the server sent, the spider gets the decoded page. If Scrapy's ordering changes, that test fails; fall back to Content-Length then. The guard gets a window the middleware decodes itself (gzip, deflate, br; at most `guard.body_window_bytes` of output, the full size from the gzip trailer), so a compression bomb costs nothing. |
 | Crawlee | httpx-based crawlers: as httpx; Playwright crawler: as Playwright | as above | Depends on hook access to the response object. |
 | CLI (`check`) | no responses; cost is reported only if a `--events events.jsonl` file is supplied | n/a | |
 

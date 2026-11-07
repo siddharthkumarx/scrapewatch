@@ -8,6 +8,14 @@ settings.py::
     }
     ITEM_PIPELINES = {"scrapewatch.integrations.scrapy.ScrapewatchPipeline": 1000}
     SCRAPEWATCH_RULES = "rules.yml"
+    SCRAPEWATCH_CONFIG = "scrapewatch.yml"      # optional
+    SCRAPEWATCH_PROXY_META_KEY = "proxy_label"  # request.meta key holding the proxy label
+
+Other settings: ``SCRAPEWATCH_ENABLED`` (default True), ``SCRAPEWATCH_NAME`` (default: the
+spider's name), ``SCRAPEWATCH_PROXY`` (label when the meta key is absent),
+``SCRAPEWATCH_DROP_UNUSABLE`` (default False: monitoring never removes items).
+
+The extension never closes the spider: a hold verdict is reported, not enforced.
 """
 
 from scrapewatch.integrations.scrapy.extension import ScrapewatchExtension

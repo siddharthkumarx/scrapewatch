@@ -110,7 +110,7 @@ files = ["src", "tests", "scripts"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["scrapy.*", "playwright.*", "crawlee.*", "pyarrow.*", "twisted.*"]
+module = ["scrapy.*", "playwright.*", "crawlee.*", "pyarrow.*", "twisted.*", "brotli", "itemadapter.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
@@ -129,5 +129,5 @@ source = ["scrapewatch"]
 
 [tool.coverage.report]
 # Stubs raise NotImplementedError; the builder raises this as items land.
-fail_under = 86
+fail_under = 87
 exclude_lines = ["pragma: no cover", "raise NotImplementedError", "if TYPE_CHECKING:"]

@@ -111,14 +111,17 @@ def extract_features(
     markers: Iterable[str] | None = None,
     transport_error: bool = False,
     body_seen: bool = True,
+    total_bytes: int | None = None,
 ) -> Features:
     """Compute features from a raw response. Only the first ``window_bytes`` of body are read.
 
     ``markers`` are the lower-case ``body_marker`` strings of the rule set (default: the
     bundled rules); only those found in the window are listed. ``body_seen=False`` means the
     body was never read (``body`` is ignored), so only status, header, cookie, URL and
-    content-type signals can match. Non-text content types (JSON,
-    images) skip text analysis, so only status and header rules apply to them.
+    content-type signals can match. ``total_bytes`` is the full decoded length when ``body``
+    is only its first part (an integration that decoded a window): size signals use it.
+    Non-text content types (JSON, images) skip text analysis, so only status and header rules
+    apply to them.
     """
     headers = headers or {}
     content_type = _content_type(headers)
@@ -140,10 +143,10 @@ def extract_features(
         feats.body_bytes = len(body.encode("utf-8", errors="replace"))
         raw_len = min(feats.body_bytes, window_bytes)
     else:
-        feats.body_bytes = len(body)
+        feats.body_bytes = max(len(body), total_bytes or 0)
         raw = bytes(body[:window_bytes])
         raw_len = len(raw)
-        decoded = decode_window(raw, _charset(headers), truncated=len(body) > window_bytes)
+        decoded = decode_window(raw, _charset(headers), truncated=feats.body_bytes > raw_len)
         if decoded is None:
             feats.decode_error = True
             return feats

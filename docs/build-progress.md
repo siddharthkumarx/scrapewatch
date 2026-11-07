@@ -364,7 +364,7 @@ v0.2 or later.
 
 ### 19. Scrapy extension, downloader middleware, item pipeline `[v0.1]`
 
-- [ ] Scope: A§3.5 Scrapy settings; extension opens/closes the Watch per spider and exports
+- [x] Scope: A§3.5 Scrapy settings; extension opens/closes the Watch per spider and exports
   `scrapewatch/*` stats (verdict, counts, cost); middleware at 900 measures compressed bytes,
   records retries via `request.meta["retry_times"]`, proxy label from
   `SCRAPEWATCH_PROXY_META_KEY`; pipeline cleans and checks items, optional drop of unusable
@@ -374,7 +374,14 @@ v0.2 or later.
   through the full middleware chain: `wire_bytes` equals compressed size (this verifies the
   A§11.3 ordering claim; if it fails, switch to Content-Length and update A§11.3); retries
   linked; items get fixes; stats exported; middleware exception does not drop the response.
-- Done when: pass. **M3 ends: full local matrix, log it.**
+- Done when: pass; coverage ≥ 87. **M3 ends: full local matrix, log it.**
+- Notes: the A§11.3 ordering claim holds on Scrapy 2.19: in a real crawl (subprocess, since
+  Twisted's reactor cannot restart inside pytest) a probe middleware at 901 saw exactly the
+  gzip bytes the server sent, and the event's `wire_bytes` is that plus the header estimate,
+  while the spider got the decoded page. For the guard the middleware decodes a bounded
+  window itself (`integrations/_decode.py`), and `extract_features(total_bytes=...)` lets
+  size signals use the full decoded length. Scrapy 2.13+ calls `start()`, not
+  `start_requests()`, and deprecates a required `spider` argument; both handled.
 
 ### 20. Crawlee for Python
 
