@@ -3,6 +3,7 @@ name: books
 rules: rules.yml
 history:
   path: .scrapewatch
+report_dir: output              # report.html and summary.json per run, under output/books/
 cost:
   currency: USD
   default_proxy: direct

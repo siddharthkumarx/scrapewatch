@@ -1,8 +1,8 @@
-"""books.toscrape.com with httpx, monitored by scrapewatch (draft; finalised in build item 23).
+"""books.toscrape.com with httpx, monitored by scrapewatch.
 
 Run from this directory: ``python scrape.py [pages]`` (default 5 pages, 20 books each).
 The output goes to data/books.jsonl only when the run passes (or warns); otherwise the last
-good file stays live and the report says why.
+good file stays live and the report (output/books/) says why.
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ import httpx
 
 import scrapewatch
 from scrapewatch.integrations import httpx as sw_httpx
+from scrapewatch.waste import compression_headers
 
 START = "https://books.toscrape.com/catalogue/page-{page}.html"
 ITEM_RE = re.compile(
@@ -47,7 +48,8 @@ def main(pages: int) -> int:
         staging.open("w", encoding="utf-8") as out,
         httpx.Client(
             event_hooks=sw_httpx.hooks(w, proxy="direct"),
-            headers={"user-agent": "scrapewatch-example/0.1"},
+            # gzip/deflate (and br when Brotli is installed): fewer bytes on the wire
+            headers={"user-agent": "scrapewatch-example/0.1", **compression_headers()},
             timeout=30,
         ) as client,
     ):

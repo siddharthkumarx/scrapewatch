@@ -1,0 +1,8 @@
+# Data rules for the quotes example (docs/architecture.md section 7).
+schema_version: 1
+name: quotes
+key: [text, author]
+fields:
+  text: {type: string, required: true, min_length: 10, clean: [whitespace]}
+  author: {type: string, required: true, min_length: 2, clean: [whitespace]}
+  tags: {type: array}

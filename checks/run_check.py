@@ -2,8 +2,10 @@
 """Run the commands in a checks/request.yml and collect results under checks/results/<id>/.
 
 Writes: log.txt (all output), meta.json (id, question, started/finished, exit codes, versions)
-and every file listed under ``artifacts``. Secrets never go in request.yml; the workflow has
-none configured on purpose.
+and every file matched by ``artifacts``: paths or glob patterns relative to the repository
+root (``**`` matches directories). Each file keeps its relative path under the results
+directory, so files with the same name from different places do not overwrite each other.
+Secrets never go in request.yml; the workflow has none configured on purpose.
 """
 
 from __future__ import annotations
@@ -48,12 +50,18 @@ def main(path: str) -> int:
                 {"cmd": cmd, "exit": proc.returncode, "seconds": round(time.monotonic() - t0, 1)}
             )
             worst = max(worst, proc.returncode)
+    copied = []
     for art in req.get("artifacts") or []:
-        src = Path(art)
-        if src.is_file():
-            shutil.copy2(src, out / src.name)
-        elif src.is_dir():
-            shutil.copytree(src, out / src.name, dirs_exist_ok=True)
+        for src in sorted(Path().glob(art)) if any(c in art for c in "*?[") else [Path(art)]:
+            dest = out / src
+            if src.is_file():
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dest)
+                copied.append(str(src))
+            elif src.is_dir():
+                shutil.copytree(src, dest, dirs_exist_ok=True)
+                copied.append(str(src) + "/")
+    meta["artifacts"] = copied
     meta["finished_at"] = datetime.now(timezone.utc).isoformat()
     meta["exit"] = worst
     (out / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")

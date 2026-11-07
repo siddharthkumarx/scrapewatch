@@ -1,0 +1,11 @@
+# Data rules for the countries example (docs/architecture.md section 7).
+schema_version: 1
+name: countries
+key: [name]
+fields:
+  name: {type: string, required: true, min_length: 2, clean: [whitespace]}
+  capital: {type: string, required: true, clean: [whitespace]}
+  population: {type: integer, required: true, min: 0, clean: [number]}
+  area_km2: {type: number, required: true, min: 0, clean: [number]}
+batch:
+  row_count: {warn_pct: 5, hold_pct: 20, min_rows: 200}

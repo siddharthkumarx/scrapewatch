@@ -1,0 +1,15 @@
+# Sample settings (docs/architecture.md section 5). The cost model is an example, not a quote.
+name: quotes
+rules: rules.yml
+history:
+  path: .scrapewatch
+report_dir: output              # report.html and summary.json per run, under output/quotes/
+cost:
+  currency: USD
+  default_proxy: direct
+  proxies:
+    direct: {per_gb: 0}
+    datacenter: {per_gb: 0.8}
+    residential: {per_gb: 8.0}
+  browser:
+    per_minute: 0.002           # sample price of a browser minute

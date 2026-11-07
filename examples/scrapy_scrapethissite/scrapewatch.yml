@@ -1,0 +1,13 @@
+# Sample settings (docs/architecture.md section 5). The cost model is an example, not a quote.
+name: countries
+rules: rules.yml
+history:
+  path: .scrapewatch
+report_dir: output              # report.html and summary.json per run, under output/countries/
+cost:
+  currency: USD
+  default_proxy: direct
+  proxies:
+    direct: {per_gb: 0}
+    datacenter: {per_gb: 0.8}
+    residential: {per_gb: 8.0}

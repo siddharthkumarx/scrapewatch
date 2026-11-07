@@ -1,0 +1,13 @@
+# Sample settings (docs/architecture.md section 5), read by `scrapewatch check` in this
+# directory. A file check has no response events, so the cost model below does not apply
+# here; it is the one the other examples use. History keeps the baselines.
+name: books-shell
+history:
+  path: .scrapewatch
+cost:
+  currency: USD
+  default_proxy: direct
+  proxies:
+    direct: {per_gb: 0}
+    datacenter: {per_gb: 0.8}
+    residential: {per_gb: 8.0}

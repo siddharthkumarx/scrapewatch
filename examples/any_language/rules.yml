@@ -1,0 +1,8 @@
+# Data rules for the shell-scraper example (docs/architecture.md section 7).
+schema_version: 1
+name: books-shell
+key: [url]
+fields:
+  title: {type: string, required: true, min_length: 1, clean: [whitespace, html_entities]}
+  price: {type: number, required: true, min: 0, max: 1000, clean: [price], severity: hold}
+  url: {type: url, required: true, clean: [url]}

@@ -577,8 +577,8 @@ def test_five_minute_example(tmp_path: Path) -> None:
     assert summary["counts"]["wire_bytes"] == run.counts.wire_bytes > 0
 
 
-def test_example_draft_runs_offline(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """examples/httpx_books/scrape.py against a mock books site (the live run is item 23)."""
+def test_httpx_books_example_runs_offline(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """examples/httpx_books/scrape.py against a mock books site (live run: examples/README.md)."""
     import importlib.util
     import shutil
 
