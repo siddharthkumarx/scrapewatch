@@ -92,6 +92,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D", "ANN", "S", "T20"]
 "scripts/**" = ["T20", "D"]
+"benchmarks/**" = ["T20", "D", "S"]
 "checks/**" = ["T20", "D", "S", "ANN"]
 "examples/**" = ["T20", "D", "ANN", "S"]
 

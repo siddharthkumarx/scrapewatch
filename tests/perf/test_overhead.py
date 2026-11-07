@@ -30,6 +30,9 @@ CALLS = 2_000
 WARMUP = 50
 SLACK = 3.0
 RESULTS: dict[str, dict[str, float]] = {}
+# Read at import: tests run in their own directory with SCRAPEWATCH_* variables cleared.
+_OUT_ENV = os.environ.get("SCRAPEWATCH_PERF_OUT")
+PERF_OUT = Path(_OUT_ENV).resolve() if _OUT_ENV else None
 
 TEXT = "<p>A Light in the Attic, Tipping the Velvet, Soumission, Sharp Objects.</p>\n"
 BODY_64K = (
@@ -85,10 +88,9 @@ def _p50_ms(fn: Callable[[int], object]) -> float:
 
 
 def _write() -> None:
-    out = os.environ.get("SCRAPEWATCH_PERF_OUT")
-    if out:
-        Path(out).parent.mkdir(parents=True, exist_ok=True)
-        Path(out).write_text(json.dumps(RESULTS, indent=2, sort_keys=True), encoding="utf-8")
+    if PERF_OUT is not None:
+        PERF_OUT.parent.mkdir(parents=True, exist_ok=True)
+        PERF_OUT.write_text(json.dumps(RESULTS, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def _report(name: str, p50: float, budget: float) -> None:
