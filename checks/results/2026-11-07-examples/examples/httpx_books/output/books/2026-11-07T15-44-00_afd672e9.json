@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "run_id": "afd672e95de1405c85e59632ec86b826",
+  "name": "books",
+  "started_at": "2026-11-07T15:44:00.376091Z",
+  "finished_at": "2026-11-07T15:44:01.435017Z",
+  "status": "finished",
+  "integration": "httpx",
+  "scrapewatch_version": "0.1.0.dev0",
+  "rules_version": "2026.11.0",
+  "config_hash": "2848de",
+  "counts": {
+    "responses": 5,
+    "document_responses": 5,
+    "bad_documents": 0,
+    "by_label": {
+      "ok": 5
+    },
+    "by_status": {
+      "200": 5
+    },
+    "retries": 0,
+    "records": 100,
+    "usable_records": 100,
+    "duplicates": 0,
+    "schema_invalid": 0,
+    "findings_by_severity": {},
+    "fixes_by_normalizer": {
+      "price": 200
+    },
+    "flags": 0,
+    "monitor_errors": 0,
+    "wire_bytes": 28606,
+    "by_domain": {
+      "books.toscrape.com": 5
+    },
+    "by_bytes_source": {
+      "measured": 5
+    },
+    "events_stored": 5,
+    "unchanged_records": 0
+  },
+  "cost": {
+    "currency": "USD",
+    "total": 0.0,
+    "by_domain": {
+      "books.toscrape.com": 0.0
+    },
+    "by_proxy": {
+      "direct": 0.0
+    },
+    "by_resource_type": {
+      "document": 0.0
+    },
+    "browser_minutes": 0.0,
+    "browser_cost": 0.0,
+    "api_requests": 0,
+    "api_cost": 0.0,
+    "usable_records": 100,
+    "per_usable_record": 0.0,
+    "per_record": 0.0,
+    "per_1000_usable_records": 0.0,
+    "per_1000_records": 0.0
+  },
+  "waste": {
+    "bytes_by_resource_type": {
+      "document": 28606
+    },
+    "retry_requests": 0,
+    "retry_bytes": 0,
+    "retry_cost": 0.0,
+    "failed_requests": 0,
+    "failed_bytes": 0,
+    "failed_cost": 0.0,
+    "unchanged_refetch_requests": 0,
+    "unchanged_refetch_bytes": 0,
+    "unchanged_refetch_cost": 0.0,
+    "blockable_requests": 0,
+    "blockable_bytes": 0,
+    "blockable_cost": 0.0,
+    "total_waste_cost": 0.0,
+    "blocked_requests": 0,
+    "bytes_saved_estimate": 0,
+    "deduped_requests": 0,
+    "conditional_hits": 0
+  },
+  "verdict": {
+    "status": "pass",
+    "reasons": [],
+    "counts": {
+      "info": 1,
+      "warn": 0,
+      "hold": 0
+    },
+    "thresholds": {
+      "blocked_share_warn_pct": 2.0,
+      "blocked_share_hold_pct": 20.0,
+      "schema_invalid_warn_pct": 1.0,
+      "schema_invalid_hold_pct": 5.0,
+      "flagged_warn_pct": 5.0,
+      "monitor_errors_warn": 1,
+      "min_usable_records": 1
+    },
+    "baseline_runs": []
+  },
+  "findings": [
+    {
+      "finding_id": "8e62d027de8b4aa2b56fa55f583e8fa9",
+      "run_id": "afd672e95de1405c85e59632ec86b826",
+      "scope": "batch",
+      "ref": null,
+      "check": "batch.baseline",
+      "severity": "info",
+      "field": null,
+      "message": "No baseline yet: 0 of 3 passing runs. History comparisons start once there are enough.",
+      "observed": 0,
+      "expected": 3,
+      "rule_id": null
+    }
+  ],
+  "samples": {
+    "findings": [],
+    "fixes": [
+      {
+        "normalizer": "price",
+        "field": "currency",
+        "count": 100,
+        "examples": [
+          {
+            "before": null,
+            "after": "GBP"
+          },
+          {
+            "before": null,
+            "after": "GBP"
+          },
+          {
+            "before": null,
+            "after": "GBP"
+          }
+        ]
+      },
+      {
+        "normalizer": "price",
+        "field": "price",
+        "count": 100,
+        "examples": [
+          {
+            "before": "£51.77",
+            "after": 51.77
+          },
+          {
+            "before": "£53.74",
+            "after": 53.74
+          },
+          {
+            "before": "£50.10",
+            "after": 50.1
+          }
+        ]
+      }
+    ]
+  },
+  "report_path": "output/books/2026-11-07T15-44-00_afd672e9.html",
+  "overhead_ms_p50": 0.0644,
+  "overhead_ms_p95": 0.9165
+}

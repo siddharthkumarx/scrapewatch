@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "f5016c490e044c13aee60708759c2c55",
+  "run_id": "cb9c2dd2515443f893bf329948424264",
   "name": "books-shell",
-  "started_at": "2026-11-07T15:38:19.583430Z",
-  "finished_at": "2026-11-07T15:38:19.594878Z",
+  "started_at": "2026-11-07T15:44:06.543718Z",
+  "finished_at": "2026-11-07T15:44:06.549910Z",
   "status": "finished",
   "integration": "cli",
   "scrapewatch_version": "0.1.0.dev0",
@@ -90,8 +90,8 @@
   },
   "findings": [
     {
-      "finding_id": "ef1c9aea8b8743a5ab70173f6d4ec5a6",
-      "run_id": "f5016c490e044c13aee60708759c2c55",
+      "finding_id": "4757a8c5cfe04be3b096f7cb5cbceff0",
+      "run_id": "cb9c2dd2515443f893bf329948424264",
       "scope": "batch",
       "ref": null,
       "check": "batch.baseline",

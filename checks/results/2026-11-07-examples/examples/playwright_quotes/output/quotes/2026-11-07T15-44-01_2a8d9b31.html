@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="scrapewatch 0.1.0.dev0">
+<title>quotes · PASS · scrapewatch</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1d2330; --muted: #5d6677; --line: #dfe3ea; --panel: #f6f7f9;
+  --pass: #1a7f37; --warn: #9a6700; --hold: #c62828; --accent: #2f5bd3; --track: #e8ebf0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171c; --fg: #e6e9ef; --muted: #9aa3b2; --line: #2b313b; --panel: #1b1f26;
+    --pass: #3fb950; --warn: #d29922; --hold: #f47067; --accent: #79a6ff; --track: #2b313b;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+header { display: flex; overflow-wrap: anywhere; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+h1 { font-size: 24px; margin: 0; }
+h2 { font-size: 18px; margin: 32px 0 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+h3 { font-size: 15px; margin: 16px 0 6px; }
+.badge {
+  display: inline-block; padding: 2px 12px; border-radius: 999px; color: #fff;
+  font-weight: 700; letter-spacing: .04em;
+}
+.badge.pass { background: var(--pass); } .badge.warn { background: var(--warn); }
+.badge.hold { background: var(--hold); }
+.meta { color: var(--muted); font-size: 13px; width: 100%; }
+.reasons { font-size: 16px; padding-left: 20px; }
+.small, .muted { color: var(--muted); font-size: 13px; }
+.tiles { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 14px; min-width: 150px; }
+.tile.headline { border-color: var(--accent); }
+.notice { margin: 0 0 16px; padding: 8px 12px; border: 2px dashed var(--warn); border-radius: 8px;
+  font-weight: 700; color: var(--warn); }
+.tile .v { font-size: 20px; font-weight: 700; } .tile .k { color: var(--muted); font-size: 12px; }
+.tw { overflow-x: auto; margin: 6px 0 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line);
+  vertical-align: top; overflow-wrap: normal; word-break: normal; hyphens: manual; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.sev { font-weight: 700; } .sev.hold { color: var(--hold); } .sev.warn { color: var(--warn); }
+.sev.info { color: var(--muted); }
+.track { fill: var(--track); } .bar { fill: var(--accent); } .bar.bad { fill: var(--hold); }
+.spark .line { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+.spark .dot { fill: var(--accent); } .spark .dot.now { fill: var(--hold); }
+.spark text { font-size: 11px; fill: var(--muted); }
+footer { margin-top: 40px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line);
+  padding-top: 12px; }
+footer a { color: var(--accent); }
+@media print { body { background: #fff; color: #000; } }
+</style>
+</head>
+<body>
+<main>
+
+<header><h1>quotes</h1><span class="badge pass">PASS</span><div class="meta">started 2026-11-07 15:44:01 UTC · finished 2026-11-07 15:44:03 UTC · took 2 s · scrapewatch 0.1.0.dev0 · guard rules 2026.11.0 · run <code>2a8d9b31b1d7484799ee4249a729d2ed</code></div></header>
+<section id="meaning"><h2>What this means</h2><p class="reasons">Everything checked out: no problems were found.</p><p>The output can be used.</p></section>
+<section id="responses"><h2>Responses</h2><div class="tiles"><div class="tile"><div class="v">15</div><div class="k">responses</div></div><div class="tile"><div class="v">0.0%</div><div class="k">pages without data</div></div><div class="tile"><div class="v">0</div><div class="k">retries</div></div><div class="tile"><div class="v">175.1 KB</div><div class="k">downloaded</div></div></div><p>0 of 3 pages (0.0%) were blocked, empty or otherwise without data.</p><h3>What answered</h3><div class="tw"><table><thead><tr><th>meaning</th><th>label</th><th class="num">responses</th><th class="num">share</th><th></th></tr></thead><tbody><tr><td>pages with content</td><td><code>ok</code></td><td class="num">15</td><td class="num">100.0%</td><td><svg class="barsvg" width="160" height="10" viewBox="0 0 160 10" aria-hidden="true"><rect width="160" height="10" class="track"/><rect width="160" height="10" class="bar"/></svg></td></tr></tbody></table></div><h3>By domain</h3><div class="tw"><table><thead><tr><th>domain</th><th class="num">responses</th><th class="num">cost</th><th></th></tr></thead><tbody><tr><td>quotes.toscrape.com</td><td class="num">12</td><td class="num">&lt; $0.0001</td><td><svg class="barsvg" width="160" height="10" viewBox="0 0 160 10" aria-hidden="true"><rect width="160" height="10" class="track"/><rect width="160" height="10" class="bar"/></svg></td></tr><tr><td>fonts.googleapis.com</td><td class="num">3</td><td class="num">$0</td><td><svg class="barsvg" width="160" height="10" viewBox="0 0 160 10" aria-hidden="true"><rect width="160" height="10" class="track"/><rect width="40" height="10" class="bar"/></svg></td></tr></tbody></table></div></section>
+<section id="data"><h2>Data checks</h2><div class="tiles"><div class="tile"><div class="v">30</div><div class="k">records</div></div><div class="tile"><div class="v">30</div><div class="k">usable records</div></div><div class="tile"><div class="v">0</div><div class="k">duplicates</div></div><div class="tile"><div class="v">0</div><div class="k">failed the schema</div></div></div><p>Every record passed the schema, field and cross-field rules.</p><h3>This run compared with earlier runs</h3><div class="tw"><table><thead><tr><th>severity</th><th>check</th><th>field</th><th>what</th><th>this run</th><th>expected</th></tr></thead><tbody><tr><td><span class="sev info">info</span></td><td><code>batch.baseline</code></td><td>–</td><td>No baseline yet: 0 of 3 passing runs. History comparisons start once there are enough.</td><td>0</td><td>3</td></tr></tbody></table></div><p class="small">Thresholds used: blocked_share_hold_pct 20.0, blocked_share_warn_pct 2.0, flagged_warn_pct 5.0, min_usable_records 1, monitor_errors_warn 1, schema_invalid_hold_pct 5.0, schema_invalid_warn_pct 1.0.</p></section>
+<section id="cleaning"><h2>Cleaning</h2><p>No values were changed.</p></section>
+<section id="cost"><h2>Cost</h2><div class="tiles"><div class="tile headline"><div class="v">$0.001339</div><div class="k">per 1,000 usable records</div></div><div class="tile"><div class="v">&lt; $0.0001</div><div class="k">total</div></div><div class="tile"><div class="v">$0.001339</div><div class="k">per 1,000 records</div></div><div class="tile"><div class="v">$0</div><div class="k">bought nothing usable</div></div></div><h3>By proxy or API</h3><div class="tw"><table><thead><tr><th>label</th><th class="num">cost</th></tr></thead><tbody><tr><td>direct</td><td class="num">$0</td></tr></tbody></table></div><p>Browser time: 0.0 minutes, &lt; $0.0001.</p><h3>Waste</h3><div class="tw"><table><thead><tr><th>what</th><th class="num">requests</th><th class="num">downloaded</th><th class="num">cost</th></tr></thead><tbody><tr><td>Retries</td><td class="num">0</td><td class="num">0 B</td><td class="num">$0</td></tr><tr><td>Failed or blocked responses</td><td class="num">0</td><td class="num">0 B</td><td class="num">$0</td></tr><tr><td>Pages fetched again without changes</td><td class="num">0</td><td class="num">0 B</td><td class="num">$0</td></tr><tr><td>Images, fonts and media</td><td class="num">0</td><td class="num">0 B</td><td class="num">$0</td></tr><tr><td><strong>Total</strong></td><td class="num"></td><td class="num"></td><td class="num"><strong>$0</strong></td></tr></tbody></table></div><h3>Waste cutter</h3><p>6 requests blocked (about 368.6 KB not downloaded, an estimate), 0 repeated URLs skipped, 0 pages unchanged since the last run.</p><p class="small">All byte counts were measured on the wire.</p></section>
+<section id="history"><h2>History</h2><p>The last 1 runs of <strong>quotes</strong>, oldest first; this run is the red dot.</p><div class="tw"><table><thead><tr><th></th><th>trend</th><th class="num">this run</th></tr></thead><tbody><tr><td>Records</td><td><svg class="spark" role="img" width="220" height="40" viewBox="0 0 220 40"><title>Records</title><circle cx="110" cy="36" r="3" class="dot now"/></svg></td><td class="num">30</td></tr><tr><td>Pages without data (%)</td><td><svg class="spark" role="img" width="220" height="40" viewBox="0 0 220 40"><title>Pages without data (%)</title><circle cx="110" cy="36" r="3" class="dot now"/></svg></td><td class="num">0.0%</td></tr><tr><td>Cost per 1,000 usable records</td><td><svg class="spark" role="img" width="220" height="40" viewBox="0 0 220 40"><title>Cost per 1,000 usable records</title><circle cx="110" cy="36" r="3" class="dot now"/></svg></td><td class="num">$0.001339</td></tr></tbody></table></div><p class="small">Verdicts: <span class="sev pass">P</span></p></section>
+<section id="health"><h2>Monitor health</h2><p>No monitoring errors.</p><div class="tw"><table><thead><tr><th>measure</th><th class="num">value</th></tr></thead><tbody><tr><td>Monitoring time per call, median</td><td class="num">0.073 ms</td></tr><tr><td>Monitoring time per call, 95th percentile</td><td class="num">0.521 ms</td></tr><tr><td>Responses stored in history</td><td class="num">15</td></tr></tbody></table></div></section>
+<footer>Reproduce this report: <code>scrapewatch report 2a8d9b31b1d7484799ee4249a729d2ed</code><br>report: <code>output/quotes/2026-11-07T15-44-01_2a8d9b31.html</code><br>summary: <code>output/quotes/2026-11-07T15-44-01_2a8d9b31.json</code><br>Made by <a href="https://github.com/siddharthkumarx/scrapewatch">scrapewatch</a> 0.1.0.dev0; this file needs no network and holds no scripts.</footer>
+</main>
+</body>
+</html>
