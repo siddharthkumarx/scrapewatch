@@ -340,3 +340,33 @@ def test_classify_64k_under_budget() -> None:
 def test_extract_features_export() -> None:
     f = extract_features(status=200, headers={}, body=None, request_url=None, final_url=None)
     assert isinstance(f, Features)
+
+
+def test_body_not_seen_only_judges_status_and_headers() -> None:
+    """A streamed response closed unread is not an empty page (meta body_seen False)."""
+    rules = load_rules(None)
+    html = {"content-type": "text/html"}
+    unseen = extract_features(
+        status=200,
+        headers=html,
+        body=None,
+        request_url="https://a.example/",
+        final_url=None,
+        body_seen=False,
+    )
+    assert unseen.body_seen is False
+    assert classify_features(unseen, rules).label == GuardLabel.OK
+    seen_empty = extract_features(
+        status=200, headers=html, body=None, request_url="https://a.example/", final_url=None
+    )
+    assert classify_features(seen_empty, rules).label == GuardLabel.EMPTY
+    blocked = extract_features(
+        status=429,
+        headers=html,
+        body=b"ignored",
+        request_url="https://a.example/",
+        final_url=None,
+        body_seen=False,
+    )
+    assert blocked.body_bytes == 0  # the body argument is ignored when not seen
+    assert classify_features(blocked, rules).label == GuardLabel.RATE_LIMIT

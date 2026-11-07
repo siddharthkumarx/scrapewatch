@@ -138,7 +138,7 @@ class _Recorder:
             proxy=opts.get("proxy", self.proxy),
             attempt=_int(opts.get("attempt"), 1),
             error=error,
-            meta={k: opts[k] for k in _META_KEYS if k in opts},
+            meta={**{k: opts[k] for k in _META_KEYS if k in opts}, "body_seen": body is not None},
         )
 
     def error(self, exc: BaseException, request: Any, proxy: str | None) -> ResponseEvent | None:

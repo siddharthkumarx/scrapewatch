@@ -726,6 +726,7 @@ def _guard_hook(w: Watch, event: ResponseEvent, ctx: ResponseContext) -> None:
         baseline_p50_bytes=baseline if isinstance(baseline, int) else None,
         markers=rules.markers(),
         transport_error=event.error is not None,
+        body_seen=ctx.meta.get("body_seen") is not False,
     )
     event.guard = classify_features(features, rules)
 

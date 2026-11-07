@@ -115,6 +115,9 @@ Field notes:
   Integrations can pass `meta={"retry_times": n}` (attempt is n + 1) or
   `meta={"request_key": k}`, a stable id of one logical request: a repeated key becomes the
   next attempt with `retry_of` set to the first attempt's event.
+  `meta={"body_seen": False}` says the body was never read (a streamed response closed
+  unread): the guard then judges only status, headers, cookies, URLs and content type, so
+  the missing body is not mistaken for an empty page (section 6.1).
 - `headers` is the allow-listed, redacted subset (section 16). `cookie_names` are names only.
 - `guard.label` is one of ok, block, challenge, captcha, consent, login, rate_limit, empty,
   redirect, error_page, error, unknown.
@@ -513,6 +516,7 @@ the only view of a response the rules get, and it is also the fixture format.
 | `body_window` | first `body_window_bytes` decoded, in memory only | never stored |
 | `decode_error` | the window could not be decoded (declared charset, UTF-8 and cp1252 all failed, or NUL bytes) | label `unknown` when no rule matches |
 | `transport_error` | no response (timeout, DNS, TLS, reset) | label `error` when no rule matches |
+| `body_seen` | false when the integration never read the body (`meta={"body_seen": False}`, a streamed response closed unread) | body signals (`body_marker`, `body_regex`, `title_regex`, `size_below*`, `text_*`, `has_*`) then never match; default true |
 
 The window is the first 64 KiB by default. Non-HTML content types (JSON, images) skip text
 analysis; the guard still applies status and header rules. `extract_features(..., markers=...)` takes the rule set's

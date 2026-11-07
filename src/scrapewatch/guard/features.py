@@ -49,6 +49,10 @@ class Features(BaseModel):
     baseline_p50_bytes: int | None = None  # from history, for empty-shell detection
     decode_error: bool = False  # the body window could not be decoded as text
     transport_error: bool = False  # no response at all (timeout, DNS, TLS, reset)
+    # False when the integration never saw the body (a streamed response closed unread):
+    # body-derived signals (markers, title, size, text, forms, widgets) then never match.
+    # Not serialized (like body_window in dumps): fixtures may set it, goldens never show it.
+    body_seen: bool = Field(default=True, exclude=True)
     # In-memory only; never written to history. Fixtures may hold at most
     # MARKER_SNIPPET_MAX synthetic characters here, for body_regex rules.
     body_window: str | None = None
@@ -106,11 +110,14 @@ def extract_features(
     baseline_p50_bytes: int | None = None,
     markers: Iterable[str] | None = None,
     transport_error: bool = False,
+    body_seen: bool = True,
 ) -> Features:
     """Compute features from a raw response. Only the first ``window_bytes`` of body are read.
 
     ``markers`` are the lower-case ``body_marker`` strings of the rule set (default: the
-    bundled rules); only those found in the window are listed. Non-text content types (JSON,
+    bundled rules); only those found in the window are listed. ``body_seen=False`` means the
+    body was never read (``body`` is ignored), so only status, header, cookie, URL and
+    content-type signals can match. Non-text content types (JSON,
     images) skip text analysis, so only status and header rules apply to them.
     """
     headers = headers or {}
@@ -124,8 +131,9 @@ def extract_features(
         content_type=content_type,
         baseline_p50_bytes=baseline_p50_bytes,
         transport_error=transport_error,
+        body_seen=body_seen,
     )
-    if body is None:
+    if body is None or not body_seen:
         return feats
     if isinstance(body, str):
         window = body[:window_bytes]

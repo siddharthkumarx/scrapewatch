@@ -182,6 +182,8 @@ def test_streaming_recorded_when_consumed_or_closed(monkeypatch: pytest.MonkeyPa
     streamed, read, unread = events
     assert unread.wire_bytes == header_bytes_estimate(r3.headers)
     assert unread.bytes_source == BytesSource.MEASURED
+    # an unread body is not evidence of an empty page
+    assert [e.guard.label for e in events] == [GuardLabel.OK] * 3
     assert streamed.wire_bytes == _expected_wire(r)
     assert streamed.body_bytes == 0  # streamed without read(): no body for the guard
     assert read.wire_bytes == _expected_wire(r2)

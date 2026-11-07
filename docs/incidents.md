@@ -20,6 +20,21 @@ file becomes public.
 
 ## Entries
 
+## 2026-11-07 — streamed responses closed unread were labelled empty
+
+- Item: build-progress item 16 (found while starting item 17)
+- Symptom: an httpx response opened with `client.stream(...)` and closed without reading the
+  body was recorded with no body; the guard rule `generic.empty.tiny` matched (`size 0 <
+  2048`), so a normal page counted as a bad document. The item 16 test checked bytes, not
+  the label.
+- Cause: the runtime treated "body not seen" the same as "body empty".
+- Fix: a `body_seen` feature (not serialized; default true). Integrations pass
+  `meta={"body_seen": False}` when they never read the body, and body-derived signals then
+  never match; status, header, cookie, URL and content-type rules still apply. Architecture
+  2.1 and 6.1 updated. Size baselines already ignore events with no body bytes.
+- Prevention: the httpx streaming test asserts the label; a guard test covers `body_seen`.
+- Minutes spent (Actions): 0 (found locally).
+
 ## 2026-11-06 — extras tests outside tests/integrations never ran in CI
 
 - Item: build-progress item 12 (CI)

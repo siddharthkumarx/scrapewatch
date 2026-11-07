@@ -9,6 +9,18 @@ from scrapewatch.guard.rules import GuardRule, GuardRuleSet, Signal, bundled_rul
 from scrapewatch.models import GUARD_LABEL_PRECEDENCE, GuardLabel, GuardResult
 
 _RANK = {label: i for i, label in enumerate(GUARD_LABEL_PRECEDENCE)}
+# Signals computed from the body; none of them matches when the body was never read.
+_BODY_SIGNALS = (
+    "body_marker",
+    "body_regex",
+    "title_regex",
+    "size_below",
+    "size_below_baseline_pct",
+    "text_density_below",
+    "text_length_below",
+    "has_form_password",
+    "has_captcha_widget",
+)
 
 
 def _fmt(value: float) -> str:
@@ -31,6 +43,8 @@ def _signal(sig: Signal, f: Features, rules: GuardRuleSet, lower_window: str | N
     if sig.cookie is not None:
         pat = rules.pattern(sig.cookie)
         return f"cookie ~ {sig.cookie}" if any(pat.search(c) for c in f.cookie_names) else None
+    if not f.body_seen and any(getattr(sig, name) is not None for name in _BODY_SIGNALS):
+        return None  # the body was never read: no evidence either way
     if sig.body_marker is not None:
         marker = sig.body_marker.lower()
         found = marker in f.markers or (lower_window is not None and marker in lower_window)
