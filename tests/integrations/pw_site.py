@@ -42,6 +42,11 @@ WASTE = (
     "document.body.appendChild(i)})</script>"
     f"{TEXT}</body></html>"
 ).encode()
+FRAMED = (
+    '<!doctype html><html><head><title>Framed</title><link rel="icon" href="data:,"></head>'
+    f'<body>{TEXT}<iframe src="/tiny.html"></iframe><iframe src="/old"></iframe></body></html>'
+).encode()
+TINY = b"<!doctype html><html><body>pixel</body></html>"
 BROKEN = (
     '<!doctype html><html><head><title>Broken</title></head><body><img src="/img/broken.png">'
     f"{TEXT}</body></html>"
@@ -70,6 +75,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._send(200, "text/html; charset=utf-8", PAGE, Set_Cookie="sid=1; Path=/")
         elif path == "/waste.html":
             self._send(200, "text/html; charset=utf-8", WASTE)
+        elif path == "/framed.html":
+            self._send(200, "text/html; charset=utf-8", FRAMED)
+        elif path == "/tiny.html":
+            self._send(200, "text/html; charset=utf-8", TINY)
         elif path == "/broken.html":
             self._send(200, "text/html; charset=utf-8", BROKEN)
         elif path in ("/img/a.png", "/img/b.png", "/img/keep.png"):

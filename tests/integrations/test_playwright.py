@@ -171,3 +171,27 @@ def test_attach_never_raises() -> None:
     w = _watch()
     sw_pw.attach(object(), w)  # not a context or page
     assert w.run.counts.monitor_errors == 1
+
+
+def test_iframe_documents_are_not_pages(
+    browser: Any, site: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Item 24: ad, consent and login frames are small or redirect by design."""
+    w = _watch()
+    events = _spy(w, monkeypatch)
+    page = browser.new_page()
+    sw_pw.attach(page, w)
+    page.goto(site + "/framed.html")
+    page.wait_for_load_state("networkidle")
+    page.close()
+    got = {(e.final_url or e.url).removeprefix(site): e for e in events}
+    assert got["/framed.html"].resource_type.value == "document"
+    assert got["/framed.html"].guard.label == GuardLabel.OK
+    tiny = got["/tiny.html"]
+    assert tiny.resource_type.value == "other"  # a document in an iframe
+    assert tiny.guard.label == GuardLabel.OK  # not an empty page: its body is not judged
+    hop = [e for e in events if e.url == site + "/old" and e.final_url]
+    assert hop
+    assert hop[0].resource_type.value == "other"
+    assert w.run.counts.document_responses == 1
+    assert w.run.counts.bad_documents == 0

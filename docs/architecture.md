@@ -421,6 +421,9 @@ page, through `Watch.add_browser_seconds`). Each redirect hop is an event; the r
 a redirect carries the chain's first URL as `url` and its own as `final_url`. The guard reads
 the body and `all_headers()` (cookie names included) of documents only; sub-resources are
 judged by status and headers (`body_seen`, section 6.1). `xhr` and `fetch` map to `xhr`.
+A document loaded in an iframe (ad, consent, payment and login frames) maps to `other` (item
+24): it is not the page the scraper reads, so it is judged by status and headers only and is
+not counted in `document_responses` or `bad_documents`.
 
 Fixed in item 21 (`waste/routes.py`): `install_route_blocker(context_or_page, w, policy)`
 (and `install_route_blocker_async`) routes `**/*`. A navigation request is never blocked; a URL
@@ -598,9 +601,11 @@ the only view of a response the rules get, and it is also the fixture format.
 | `decode_error` | the window could not be decoded (declared charset, UTF-8 and cp1252 all failed, or NUL bytes) | label `unknown` when no rule matches |
 | `transport_error` | no response (timeout, DNS, TLS, reset) | label `error` when no rule matches |
 | `body_seen` | false when the integration never read the body (`meta={"body_seen": False}`, a streamed response closed unread) | body signals (`body_marker`, `body_regex`, `title_regex`, `size_below*`, `text_*`, `has_*`) then never match; default true |
+| `window_truncated` | true when the body is longer than the window (in memory only, like `body_seen`) | `text_length_below` and `text_density_below` then never match: the text counted is only part of the page (item 24) |
 
-The window is the first 64 KiB by default. Non-HTML content types (JSON, images) skip text
-analysis; the guard still applies status and header rules. `extract_features(..., markers=...)` takes the rule set's
+The window is the first 64 KiB by default. Visible text excludes comments, scripts, styles,
+templates and the title, including one the window cut before its closing tag. Non-HTML content
+types (JSON, images) skip text analysis; the guard still applies status and header rules. `extract_features(..., markers=...)` takes the rule set's
 `body_marker` strings (default: the bundled rules). A fixture may carry a `body_window` of at
 most 200 synthetic characters so `body_regex` rules can be tested; it never holds a page.
 
@@ -679,6 +684,13 @@ a challenge, and the project does not accept rules that do.
 Redirect classification: a `redirect` label is produced only by rules with
 `final_url_regex` (login, geo, currency, consent paths) when the final URL differs from the
 request URL. Plain in-site redirects (http to https, trailing slash) stay `ok`.
+
+"Little text" is evidence only when the guard saw the whole body: every rule that uses
+`text_length_below` or `text_density_below` describes a small interstitial (challenge, captcha,
+rate limit, login, consent, empty, error page), and a page with more than 64 KiB of inline
+script and style in `<head>` shows almost no text in its window. The item 24 benchmark found
+exactly that on a shop home page that loads hCaptcha's config (labelled captcha before the
+fix; fixture `tests/guard/fixtures/hcaptcha.large_page_ok.yml`).
 
 Empty shell: `generic.empty.small_vs_baseline` fires when body is below 30% of the domain's
 size baseline, text density is below 0.05 and no captcha widget was found. Without a

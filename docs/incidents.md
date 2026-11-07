@@ -20,6 +20,28 @@ file becomes public.
 
 ## Entries
 
+## 2026-11-07 — Benchmark found guard false positives on shop pages
+
+- Item: build-progress item 24 (benchmark), found in a local trial run before the committed one
+- Symptom: Playwright loads of the three Shopify home pages had non-ok document labels:
+  `empty` (an ad-tech pixel frame and a consent frame under 2,048 bytes), `redirect` (Shop
+  Pay's login-callback frame, matched by the login path rule), `error` (a payment frame that
+  failed) and, on one store's main page, `captcha` (marker `h-captcha` with 229 characters of
+  visible text).
+- Cause: two gaps. (1) Playwright reports an iframe's navigation with resource type
+  `document`, so frames were judged and counted as pages. (2) The shop page has more than
+  64 KiB of inline script and style in `<head>`; the guard's window ended there (inside an
+  unclosed `<script>`), so "less than 1,500 characters of text" held for a normal page, and
+  the marker came from hCaptcha's config for its forms.
+- Fix: iframe documents map to `other` (architecture 3.5); `Features.window_truncated` stops
+  text-length and text-density signals when the window was cut (architecture 6.1, 6.3); visible
+  text also drops a script, style or comment the window cut before its closing tag.
+- Prevention: `tests/integrations/test_playwright.py::test_iframe_documents_are_not_pages`,
+  `tests/guard/test_classify.py::test_little_text_in_a_cut_window_is_not_an_interstitial` and
+  the fixture `tests/guard/fixtures/hcaptcha.large_page_ok.yml`. The committed benchmark run
+  lists any remaining non-ok label (`guard_non_ok` in its results.json).
+- Minutes spent (Actions): none (local trial run).
+
 ## 2026-11-07 — Crawlee's Playwright crawler could not start Chromium on CI
 
 - Item: build-progress item 20 (CI)

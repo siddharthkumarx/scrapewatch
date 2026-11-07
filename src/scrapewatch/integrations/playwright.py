@@ -11,10 +11,10 @@
   context (or page) before the ``watch()`` block ends, or the time is not counted.
 
 Resource types map to the data model: document, stylesheet, image, media, font, script;
-``xhr`` and ``fetch`` become ``xhr``; anything else is ``other``. The guard reads the body
-and all headers (cookie names included) of documents only; sub-resources are judged by
-status and headers. A response that follows a redirect carries the first URL of the chain as
-``url`` and its own as ``final_url``.
+``xhr`` and ``fetch`` become ``xhr``; an iframe's document and anything else is ``other``.
+The guard reads the body and all headers (cookie names included) of documents only;
+sub-resources are judged by status and headers. A response that follows a redirect carries
+the first URL of the chain as ``url`` and its own as ``final_url``.
 
 Requests the waste cutter aborted (``scrapewatch.waste.install_route_blocker``) are in
 ``ABORTED``: ``requestfailed`` skips them, because a block is counted as
@@ -75,9 +75,24 @@ def median_size(watch: Watch, resource_type: str) -> int | None:
     return int(statistics.median(sizes)) if sizes else None
 
 
+def _in_subframe(request: Any) -> bool:
+    try:
+        return request.frame.parent_frame is not None
+    except Exception:  # a service worker request has no frame
+        return False
+
+
 def resource_type_of(request: Any) -> str:
-    """Playwright's resource type mapped to the data model (``xhr``/``fetch`` → ``xhr``)."""
-    return RESOURCE_TYPES.get(str(request.resource_type), "other")
+    """Playwright's resource type mapped to the data model (``xhr``/``fetch`` → ``xhr``).
+
+    An iframe's document is ``other``: it is not the page the scraper reads (ad, consent and
+    payment frames are small or redirect by design), so it is judged by status and headers
+    only and is not counted as a document.
+    """
+    rtype = RESOURCE_TYPES.get(str(request.resource_type), "other")
+    if rtype == "document" and _in_subframe(request):
+        return "other"
+    return rtype
 
 
 class RequestFailedError(Exception):

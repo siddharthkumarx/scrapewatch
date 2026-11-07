@@ -1,0 +1,15 @@
+# A shop home page (seen in the item 24 benchmark) whose <head> holds more than 64 KiB of
+# inline script and style: the guard's window ends before any visible text, and the page
+# loads hCaptcha's config for its forms. Little text in a cut window is not evidence of an
+# interstitial, so this is ok.
+expect: {label: ok}
+features:
+  status: 200
+  headers: {content-type: text/html; charset=utf-8, server: cloudflare}
+  content_type: text/html
+  title: Snacks - Home
+  body_bytes: 412000
+  text_length: 229
+  text_density: 0.0035
+  markers: [h-captcha]
+  window_truncated: true

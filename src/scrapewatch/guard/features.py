@@ -20,8 +20,11 @@ CAPTCHA_WIDGET_MARKERS: tuple[str, ...] = ("g-recaptcha", "h-captcha", "cf-turns
 TEXT_TYPES: frozenset[str] = frozenset({"text/html", "application/xhtml+xml", "text/plain"})
 
 _TITLE_RE = re.compile(r"<title\b[^>]*>(.*?)</title\s*>", re.IGNORECASE | re.DOTALL)
+# Comments, scripts, styles, templates and the title; one the window cut before its closing
+# tag is invisible up to the end of the window.
 _INVISIBLE_RE = re.compile(
-    r"<!--.*?-->|<(script|style|template|title)\b[^>]*>.*?</\1\s*>", re.IGNORECASE | re.DOTALL
+    r"<!--.*?(?:-->|\Z)|<(script|style|template|title)\b[^>]*>.*?(?:</\1\s*>|\Z)",
+    re.IGNORECASE | re.DOTALL,
 )
 _TAG_RE = re.compile(r"<[^>]*>")
 _SPACE_RE = re.compile(r"\s+")
@@ -53,6 +56,11 @@ class Features(BaseModel):
     # body-derived signals (markers, title, size, text, forms, widgets) then never match.
     # Not serialized (like body_window in dumps): fixtures may set it, goldens never show it.
     body_seen: bool = Field(default=True, exclude=True)
+    # True when the body is longer than the window the guard read: the visible text counted
+    # is then only part of the page, so "less text than N" signals never match (a page with
+    # more than 64 KiB of inline script and style in <head> is not an interstitial).
+    # Not serialized, like body_seen.
+    window_truncated: bool = Field(default=False, exclude=True)
     # In-memory only; never written to history. Fixtures may hold at most
     # MARKER_SNIPPET_MAX synthetic characters here, for body_regex rules.
     body_window: str | None = None
@@ -147,10 +155,12 @@ def extract_features(
         window = body[:window_bytes]
         feats.body_bytes = len(body.encode("utf-8", errors="replace"))
         raw_len = min(feats.body_bytes, window_bytes)
+        feats.window_truncated = len(body) > window_bytes
     else:
         feats.body_bytes = max(len(body), total_bytes or 0)
         raw = bytes(body[:window_bytes])
         raw_len = len(raw)
+        feats.window_truncated = feats.body_bytes > raw_len
         decoded = decode_window(raw, _charset(headers), truncated=feats.body_bytes > raw_len)
         if decoded is None:
             feats.decode_error = True

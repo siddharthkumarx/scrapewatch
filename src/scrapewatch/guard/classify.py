@@ -76,11 +76,11 @@ def _signal(sig: Signal, f: Features, rules: GuardRuleSet, lower_window: str | N
             return f"size {f.body_bytes} < {sig.size_below_baseline_pct}% of baseline {base}"
         return None
     if sig.text_density_below is not None:
-        if f.text_density < sig.text_density_below:
+        if f.text_density < sig.text_density_below and not f.window_truncated:
             return f"text density {_fmt(f.text_density)} < {_fmt(sig.text_density_below)}"
         return None
     if sig.text_length_below is not None:
-        if f.text_length < sig.text_length_below:
+        if f.text_length < sig.text_length_below and not f.window_truncated:
             return f"text length {f.text_length} < {sig.text_length_below}"
         return None
     if sig.has_form_password is not None:

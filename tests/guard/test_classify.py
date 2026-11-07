@@ -11,6 +11,7 @@ from scrapewatch.guard.features import Features
 from scrapewatch.guard.rules import (
     BUNDLED_RULES,
     GuardRuleSet,
+    bundled_rules,
     check_regex,
     rule_fixture_paths,
     validate_rules_file,
@@ -370,3 +371,38 @@ def test_body_not_seen_only_judges_status_and_headers() -> None:
     )
     assert blocked.body_bytes == 0  # the body argument is ignored when not seen
     assert classify_features(blocked, rules).label == GuardLabel.RATE_LIMIT
+
+
+def test_little_text_in_a_cut_window_is_not_an_interstitial() -> None:
+    """Item 24: a shop page with > 64 KiB of inline script in <head> is not a captcha."""
+    script = "<script>var widget='h-captcha';" + "var a=1;" * 9000 + "</script>"
+    tail = "<body><div class='h-captcha'></div>" + "<p>Snacks for everyone.</p>" * 400 + "</body>"
+    large = f"<html><head><title>Shop</title>{script}</head>{tail}</html>".encode()
+    small = (
+        b"<html><head><title>Verify</title></head><body>"
+        b"<div class='h-captcha'></div><p>Please verify you are human.</p></body></html>"
+    )
+    headers = {"content-type": "text/html; charset=utf-8"}
+    feats = extract_features(
+        status=200, headers=headers, body=large, request_url="https://s.test/", final_url=None
+    )
+    assert feats.window_truncated
+    assert feats.text_length < 1500
+    assert "h-captcha" in feats.markers
+    assert classify_features(feats, bundled_rules()).label == GuardLabel.OK
+    whole = extract_features(
+        status=200, headers=headers, body=small, request_url="https://s.test/", final_url=None
+    )
+    assert not whole.window_truncated
+    assert classify_features(whole, bundled_rules()).label == GuardLabel.CAPTCHA
+    # a prefix decoded by an integration (total_bytes larger than the body) is cut too
+    prefix = extract_features(
+        status=200,
+        headers=headers,
+        body=small,
+        request_url="https://s.test/",
+        final_url=None,
+        total_bytes=200_000,
+    )
+    assert prefix.window_truncated
+    assert "window_truncated" not in prefix.model_dump()
